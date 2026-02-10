@@ -1,0 +1,445 @@
+"use client"
+
+import React, { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { cotizacionesApi } from "@/lib/api/cotizaciones"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { ArrowLeft, Calculator, Save, Plus, Printer, Copy, CheckSquare } from "lucide-react"
+import { formatCurrency } from "@/lib/utils"
+import { Checkbox } from "@/components/ui/checkbox"
+import { ClientCombobox } from "./client-combobox"
+import { DespiecePreview } from "@/components/trx/despiece-preview"
+import { CotizacionItemDialog } from "./cotizacion-item-dialog"
+import { CotizacionDetallada, CotizacionDetalleEnriquecido } from "@/types/cotizaciones"
+import { MstCliente, MstMarca } from "@/types"
+import { useToast } from "@/components/ui/use-toast"
+
+export function CotizacionDetail({ id }: { id: string }) {
+    const router = useRouter()
+    const { toast } = useToast()
+    const [cotizacion, setCotizacion] = useState<CotizacionDetallada | null>(null)
+    const [loading, setLoading] = useState(true)
+    const [items, setItems] = useState<CotizacionDetalleEnriquecido[]>([])
+
+    // Header Data
+    const [clientes, setClientes] = useState<MstCliente[]>([])
+    const [marcas, setMarcas] = useState<MstMarca[]>([])
+
+    // Bulk Actions & Selection
+    const [selectedItems, setSelectedItems] = useState<string[]>([])
+
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedItems(items.map(i => i.id_linea_cot))
+        } else {
+            setSelectedItems([])
+        }
+    }
+
+    const handleToggleSelect = (id: string, checked: boolean) => {
+        if (checked) {
+            setSelectedItems(prev => [...prev, id])
+        } else {
+            setSelectedItems(prev => prev.filter(i => i !== id))
+        }
+    }
+
+    // Handlers
+    async function handleCloneCotizacion() {
+        if (!confirm("¿Duplicar esta cotización?")) return
+        try {
+            const newId = await cotizacionesApi.clonarCotizacion(id)
+            toast({
+                title: "Éxito",
+                description: "Cotización duplicada correctamente"
+            })
+            router.push(`/cotizaciones/${newId}`)
+        } catch (e) {
+            console.error(e)
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "No se pudo duplicar la cotización"
+            })
+        }
+    }
+
+    async function handleCloneItem(idLinea: string) {
+        try {
+            await cotizacionesApi.clonarItem(idLinea)
+            toast({
+                title: "Ítem duplicado",
+                description: "El ítem se ha duplicado correctamente"
+            })
+            load()
+        } catch (e) {
+            console.error(e)
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "No se pudo clonar el ítem"
+            })
+        }
+    }
+
+    async function handleBulkUpdate(updates: any) {
+        if (!confirm(`¿Actualizar ${selectedItems.length} ítems?`)) return
+        try {
+            setLoading(true)
+            await cotizacionesApi.updateLineItems(selectedItems, updates)
+            // Refresh to update prices if needed (despiece might need regen? 
+            // Update only updates columns. To regen despiece we might need to trigger it for all.
+            // For now let's just reload. Despiece might use OLD values if not re-triggered.
+            // Logic improvement: allow API to trigger despiece after update.
+            // But for now color change doesn't always affect despiece price unless it's a different price?
+            // Yes it does. "Color" implies different material SKU.
+            // We should loop and trigger despiece? 
+            // Or `updateLineItems` API could trigger it?
+            // The API I wrote is just a simple update.
+            // I'll stick to simple update for now, but warned user in prompt "Recalculando...".
+            // Actually, color change REQUIRES despiece recalc to find new profiles.
+
+            // Ejecutar despiece en paralelo para mejor performance
+            await Promise.all(
+                selectedItems.map(id => cotizacionesApi.triggerDespiece(id))
+            )
+
+            await load()
+            setSelectedItems([])
+            toast({
+                title: "Éxito",
+                description: `${selectedItems.length} ítems actualizados correctamente`
+            })
+        } catch (e) {
+            console.error(e)
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "No se pudieron actualizar los ítems"
+            })
+        } finally {
+            setLoading(false)
+        }
+    }
+
+
+    // Reload function
+    // Reload function
+    async function load() {
+        setLoading(true)
+        try {
+            console.log("Cargando datos cotización...", id)
+
+            // 1. Fetch Cotizacion
+            let quoteData = null
+            try {
+                quoteData = await cotizacionesApi.getCotizacionById(id)
+            } catch (err: any) {
+                console.error("Error fetching cotizacion:", err)
+                // If it's a 406 or similar from single(), it means not found
+                if (err.code === 'PGRST116') {
+                    toast({
+                        variant: "destructive",
+                        title: "Error",
+                        description: "Cotización no encontrada o eliminada"
+                    })
+                    router.push('/cotizaciones')
+                    return
+                }
+                throw err
+            }
+
+            setCotizacion(quoteData)
+            setItems(quoteData.detalles || [])
+
+            // 2. Fetch Master Data (Non-critical locally handled)
+            try {
+                const clientsData = await cotizacionesApi.getClientes()
+                setClientes(clientsData || [])
+            } catch (err) {
+                console.error("Error fetching clients:", err)
+            }
+
+            try {
+                const brandsData = await cotizacionesApi.getMarcas()
+                setMarcas(brandsData || [])
+            } catch (err) {
+                console.error("Error fetching brands:", err)
+            }
+
+        } catch (e: any) {
+            console.error("Error General Load:", e)
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: `Error cargando cotización: ${e.message || 'Error desconocido'}`
+            })
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    async function handleSave() {
+        if (!cotizacion) return
+        try {
+            await cotizacionesApi.updateCotizacion(id, {
+                nombre_proyecto: cotizacion.nombre_proyecto,
+                id_cliente: cotizacion.id_cliente,
+                id_marca: cotizacion.id_marca,
+                costo_fijo_instalacion: cotizacion.costo_fijo_instalacion || 0,
+                // Add validation validity, currency here if needed
+            })
+            toast({
+                title: "Guardado",
+                description: "Los cambios se guardaron correctamente"
+            })
+            load() // Reload to get fresh view data
+        } catch (e) {
+            console.error(e)
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "No se pudieron guardar los cambios"
+            })
+        }
+    }
+
+    useEffect(() => {
+        load()
+    }, [id])
+
+    async function handleRefreshCalculations(idLinea: string) {
+        await cotizacionesApi.triggerDespiece(idLinea)
+        load()
+    }
+
+    if (loading) return <div>Cargando detalle...</div>
+    if (!cotizacion) return <div>No encontrado</div>
+
+    return (
+        <div className="flex flex-col h-full gap-4">
+            {/* Header Toolbar */}
+            <div className="flex items-center justify-between border-b pb-4">
+                <div className="flex items-center gap-4">
+                    <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                        <ArrowLeft className="h-5 w-5" />
+                    </Button>
+                    <div>
+                        <h2 className="text-2xl font-bold">{cotizacion.nombre_proyecto}</h2>
+                        <div className="flex gap-2 text-sm text-muted-foreground">
+                            <span>{cotizacion.id_cotizacion}</span>
+                            <span>•</span>
+                            <span className="font-semibold text-primary">{cotizacion.estado}</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" onClick={handleCloneCotizacion}>
+                        <Copy className="mr-2 h-4 w-4" /> Duplicar Cotización
+                    </Button>
+                    <Button variant="outline" onClick={() => router.push(`/cotizaciones/${id}/print`)}>
+                        <Printer className="mr-2 h-4 w-4" /> Imprimir
+                    </Button>
+                    <Button variant="outline" onClick={() => load()}>Refrescar</Button>
+                    <Button onClick={handleSave}>
+                        <Save className="mr-2 h-4 w-4" /> Guardar Cambios
+                    </Button>
+                </div>
+            </div>
+
+            {/* Bulk Actions Toolbar */}
+            {selectedItems.length > 0 && (
+                <div className="bg-muted/50 p-2 rounded-md flex items-center gap-2 animate-in fade-in slide-in-from-top-2 flex-wrap">
+                    <span className="text-sm font-medium ml-2">{selectedItems.length} seleccionados</span>
+                    <Separator orientation="vertical" className="h-6" />
+                    <Button size="sm" variant="secondary" onClick={() => {
+                        const val = prompt("Nuevo Color de Perfil (ej: BLA, CHA, MAD, MAT, NEG):")
+                        if (val) handleBulkUpdate({ color_perfiles: val.toUpperCase() })
+                    }}>
+                        Cambiar Color
+                    </Button>
+                    <Button size="sm" variant="secondary" onClick={() => {
+                        const val = prompt("Nuevo ID de Vidrio (SKU del producto):")
+                        if (val) handleBulkUpdate({ tipo_vidrio: val })
+                    }}>
+                        Cambiar Vidrio
+                    </Button>
+                    <Button size="sm" variant="secondary" onClick={async () => {
+                        const marcasData = await cotizacionesApi.getMarcas()
+                        const marcasList = marcasData?.map((m: any) => `${m.id_marca}: ${m.nombre_marca}`).join('\n')
+                        const val = prompt(`Seleccione ID de Marca:\n\n${marcasList || 'No hay marcas disponibles'}`)
+                        if (val) {
+                            // Update at header level since marca is in cabecera
+                            // For now, show info message
+                            alert("La marca se define a nivel de cotización, no de ítem individual. Use el panel izquierdo para cambiar la marca.")
+                        }
+                    }}>
+                        Cambiar Marca
+                    </Button>
+                    <div className="flex-1" />
+                    <Button size="sm" variant="ghost" onClick={() => setSelectedItems([])}>Cancelar</Button>
+                </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full overflow-hidden">
+                {/* Left Panel: General Info */}
+                <Card className="md:col-span-1 h-fit">
+                    <CardHeader>
+                        <CardTitle>Información General</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid gap-2">
+                            <Label>Nombre del Proyecto</Label>
+                            <Input
+                                value={cotizacion.nombre_proyecto || ''}
+                                onChange={(e) => setCotizacion({ ...cotizacion, nombre_proyecto: e.target.value })}
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Cliente</Label>
+                            <ClientCombobox
+                                value={cotizacion.id_cliente}
+                                onChange={(val) => setCotizacion({ ...cotizacion, id_cliente: val })}
+                                clientes={clientes}
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Marca / Sistema</Label>
+                            <Select
+                                value={cotizacion.id_marca ?? undefined}
+                                onValueChange={(val) => setCotizacion({ ...cotizacion, id_marca: val })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Seleccionar Marca" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {marcas.map((m) => (
+                                        <SelectItem key={m.id_marca} value={m.id_marca}>
+                                            {m.nombre_marca}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                            <Label className="text-amber-800 font-semibold">Servicios de Instalación (Embalaje, Flete a obra, Movilidad, Viáticos)</Label>
+                            <Input
+                                type="number"
+                                step="0.01"
+                                min={0}
+                                placeholder="Monto fijo para todo el proyecto"
+                                value={cotizacion.costo_fijo_instalacion ?? ""}
+                                onChange={(e) => setCotizacion({ ...cotizacion, costo_fijo_instalacion: Number(e.target.value) || 0 })}
+                                className="bg-white"
+                            />
+                            <p className="text-xs text-amber-600">Este monto se suma al total de la cotización</p>
+                        </div>
+                        <Separator />
+                        <div className="grid gap-2">
+                            <Label>Total Materiales</Label>
+                            <div className="text-xl font-mono">{formatCurrency(cotizacion._vc_total_costo_materiales)}</div>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Precio Cliente (Inc IGV)</Label>
+                            <div className="text-2xl font-bold text-green-600">{formatCurrency(cotizacion._vc_precio_final_cliente)}</div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Right Panel: Items & Engineering */}
+                <Card className="md:col-span-2 flex flex-col h-full overflow-hidden">
+                    <CardHeader className="flex flex-row items-center justify-between py-3">
+                        <CardTitle>Ítems de Cotización</CardTitle>
+                        <CotizacionItemDialog
+                            idCotizacion={id}
+                            onItemAdded={async (item) => {
+                                const newLine = await cotizacionesApi.addLineItem(id, item)
+                                await cotizacionesApi.triggerDespiece(newLine.id_linea_cot)
+                                load()
+                            }}
+                        />
+                    </CardHeader>
+                    <CardContent className="flex-1 overflow-auto p-0">
+                        <table className="w-full text-sm">
+                            <thead className="bg-muted sticky top-0 z-10">
+                                <tr className="text-left border-b">
+                                    <th className="p-3 w-[40px]">
+                                        <Checkbox
+                                            checked={selectedItems.length === items.length && items.length > 0}
+                                            onCheckedChange={(c) => handleSelectAll(c as boolean)}
+                                        />
+                                    </th>
+                                    <th className="p-3">Item</th>
+                                    <th className="p-3">Medidas</th>
+                                    <th className="p-3">Cant</th>
+                                    <th className="p-3 text-right">Unitario</th>
+                                    <th className="p-3 text-right">Subtotal</th>
+                                    <th className="p-3 text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {items.map((item) => (
+                                    <React.Fragment key={item.id_linea_cot}>
+                                        <tr className="border-b hover:bg-muted/50 transition-colors">
+                                            <td className="p-3">
+                                                <Checkbox
+                                                    checked={selectedItems.includes(item.id_linea_cot)}
+                                                    onCheckedChange={(c) => handleToggleSelect(item.id_linea_cot, c as boolean)}
+                                                />
+                                            </td>
+                                            <td className="p-3">
+                                                <div className="font-bold">{item.etiqueta_item}</div>
+                                                <div className="text-xs text-muted-foreground">{item.id_modelo}</div>
+                                                <div className="text-xs text-muted-foreground">Color: {item.color_perfiles}</div>
+                                            </td>
+                                            <td className="p-3">
+                                                {item.ancho_mm} x {item.alto_mm}
+                                            </td>
+                                            <td className="p-3 font-mono">{item.cantidad}</td>
+                                            <td className="p-3 text-right font-mono text-muted-foreground">
+                                                {formatCurrency(
+                                                    item.cantidad > 0
+                                                        ? item._vc_precio_unit_oferta_calc / item.cantidad
+                                                        : 0
+                                                )}
+                                            </td>
+                                            <td className="p-3 text-right font-bold">
+                                                {formatCurrency(item._vc_subtotal_linea_calc)}
+                                            </td>
+                                            <td className="p-3 text-center flex items-center justify-center gap-1">
+                                                <Button size="icon" variant="ghost" title="Regenerar Ingeniería" onClick={() => handleRefreshCalculations(item.id_linea_cot)}>
+                                                    <Calculator className="h-4 w-4" />
+                                                </Button>
+                                                <Button size="icon" variant="ghost" title="Duplicar Ítem" onClick={() => handleCloneItem(item.id_linea_cot)}>
+                                                    <Copy className="h-4 w-4" />
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                        {/* Mini Desglose Preview */}
+                                        <tr className="bg-slate-50 border-b">
+                                            <td colSpan={7} className="p-2 pl-12 text-xs">
+                                                <DespiecePreview idLinea={item.id_linea_cot} />
+                                            </td>
+                                        </tr>
+                                    </React.Fragment>
+                                ))}
+                            </tbody>
+                        </table>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    )
+}
