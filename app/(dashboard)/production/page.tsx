@@ -88,7 +88,38 @@ export default function ProductionPage() {
 
     const moveMutation = useMutation({
         mutationFn: ({ id, col, idx }: { id: string, col: string, idx: number }) => kanbanApi.moveCard(id, col, idx),
-        onSuccess: () => {
+        onMutate: async ({ id, col, idx }) => {
+            // 1. Cancelar queries salientes para evitar sobreescritura
+            await queryClient.cancelQueries({ queryKey: ["kanbanBoard"] })
+
+            // 2. Snapshot del estado anterior
+            const previousOrders = queryClient.getQueryData<KanbanOrder[]>(["kanbanBoard"])
+
+            // 3. Actualizar cache optimista
+            if (previousOrders) {
+                queryClient.setQueryData<KanbanOrder[]>(["kanbanBoard"], (old) => {
+                    if (!old) return []
+                    return old.map(order =>
+                        order.id === id
+                            ? { ...order, column_id: col, position_rank: idx } // Actualización optimista
+                            : order
+                    )
+                })
+            }
+
+            // Return context para rollback
+            return { previousOrders }
+        },
+        onError: (err, variables, context) => {
+            // Rollback en caso de error
+            console.error("Move error:", err)
+            if (context?.previousOrders) {
+                queryClient.setQueryData(["kanbanBoard"], context.previousOrders)
+            }
+            toast({ variant: "destructive", title: "Error al mover", description: "No se pudo actualizar la posición." })
+        },
+        onSettled: () => {
+            // Re-fetch final para asegurar consistencia
             queryClient.invalidateQueries({ queryKey: ["kanbanBoard"] })
         }
     })
