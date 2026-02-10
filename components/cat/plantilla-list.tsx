@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { catApi } from "@/lib/api/cat"
 import {
     Table,
@@ -12,8 +12,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Plus, Search } from "lucide-react"
-import { Input } from "@/components/ui/input"
+import { Plus, Pencil, Trash2, Search, ImageIcon } from "lucide-react"
 import { useState } from "react"
 import {
     Dialog,
@@ -22,86 +21,195 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
+    DialogFooter
 } from "@/components/ui/dialog"
-import { PlantillaFormCmp } from "./plantilla-form"
+import { PlantillaForm } from "./plantilla-form"
+import { Input } from "@/components/ui/input"
+import { useToast } from "@/components/ui/use-toast"
 
-export function PlantillaList({ active }: { active: boolean }) {
+export function PlantillaList() {
+    const queryClient = useQueryClient()
+    const { toast } = useToast()
     const { data: plantillas, isLoading } = useQuery({
         queryKey: ["catPlantillas"],
-        queryFn: catApi.getPlantillas,
-        enabled: active
+        queryFn: catApi.getPlantillas
     })
 
     const [search, setSearch] = useState("")
-    const [open, setOpen] = useState(false)
+    const [isCreateOpen, setIsCreateOpen] = useState(false)
+    const [editingPlantilla, setEditingPlantilla] = useState<any>(null)
+    const [deletingId, setDeletingId] = useState<string | null>(null)
+    const [deleteDTOpen, setDeleteDTOpen] = useState(false)
 
-    if (isLoading && active) return <div>Cargando plantillas...</div>
+    const deleteMutation = useMutation({
+        mutationFn: catApi.deletePlantilla,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["catPlantillas"] })
+            toast({ title: "Plantilla eliminada correctamente", variant: "default" })
+            setDeletingId(null)
+            setDeleteDTOpen(false)
+        },
+        onError: (error) => {
+            toast({ title: "Error al eliminar plantilla: " + error.message, variant: "destructive" })
+            setDeletingId(null)
+            setDeleteDTOpen(false)
+        }
+    })
+
+    const confirmDelete = (id: string) => {
+        setDeletingId(id)
+        setDeleteDTOpen(true)
+    }
 
     const filteredPlantillas = plantillas?.filter((p: any) =>
         p.nombre_generico.toLowerCase().includes(search.toLowerCase()) ||
-        p.id_plantilla.toLowerCase().includes(search.toLowerCase())
-    )
+        p.mst_familias?.nombre_familia.toLowerCase().includes(search.toLowerCase())
+    ) || []
 
     return (
         <div className="space-y-4">
-            <div className="flex justify-between items-center">
-                <div className="relative w-72">
+            <div className="flex justify-between items-center gap-4">
+                <div className="relative max-w-sm w-full">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Buscar modelo..."
+                        placeholder="Buscar plantilla..."
                         className="pl-8"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
-                <Dialog open={open} onOpenChange={setOpen}>
+                <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                     <DialogTrigger asChild>
                         <Button>
                             <Plus className="mr-2 h-4 w-4" />
                             Nueva Plantilla
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[600px]">
+                    <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Crear Nueva Plantilla</DialogTitle>
                             <DialogDescription>
-                                Defina un modelo base para productos terminados (ej. Ventana Mod. 20).
+                                Define un nuevo "recetario" base para productos manufacturados.
                             </DialogDescription>
                         </DialogHeader>
-                        <PlantillaFormCmp onSuccess={() => setOpen(false)} />
+                        <PlantillaForm onSuccess={() => setIsCreateOpen(false)} />
                     </DialogContent>
                 </Dialog>
             </div>
 
-            <div className="border rounded-md">
+            <div className="border rounded-md bg-white dark:bg-gray-800">
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Código</TableHead>
-                            <TableHead>Modelo</TableHead>
+                            <TableHead className="w-[80px]">ID</TableHead>
+                            <TableHead>Nombre Genérico</TableHead>
                             <TableHead>Familia</TableHead>
                             <TableHead>Sistema</TableHead>
+                            <TableHead className="text-right">Largo Estándar</TableHead>
+                            <TableHead className="text-right">Peso Teórico</TableHead>
+                            <TableHead className="text-center">Ref.</TableHead>
+                            <TableHead className="text-right">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredPlantillas?.length === 0 && (
+                        {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={4} className="text-center h-24">
+                                <TableCell colSpan={8} className="text-center h-24">
+                                    Cargando plantillas...
+                                </TableCell>
+                            </TableRow>
+                        ) : filteredPlantillas.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={8} className="text-center h-24">
                                     No se encontraron plantillas.
                                 </TableCell>
                             </TableRow>
+                        ) : (
+                            filteredPlantillas.map((plantilla: any) => (
+                                <TableRow key={plantilla.id_plantilla}>
+                                    <TableCell className="font-mono text-xs font-medium">{plantilla.id_plantilla}</TableCell>
+                                    <TableCell className="font-medium">{plantilla.nombre_generico}</TableCell>
+                                    <TableCell>{plantilla.mst_familias?.nombre_familia}</TableCell>
+                                    <TableCell>{plantilla.mst_series_equivalencias?.nombre_comercial || '-'}</TableCell>
+                                    <TableCell className="text-right">
+                                        {plantilla.largo_estandar_mm ? `${Number(plantilla.largo_estandar_mm).toLocaleString()} mm` : '-'}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        {plantilla.peso_teorico_kg ? `${Number(plantilla.peso_teorico_kg).toFixed(3)} Kg/m` : '-'}
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        {plantilla.imagen_ref ? (
+                                            <a href={plantilla.imagen_ref} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center">
+                                                <ImageIcon className="h-4 w-4 text-blue-500" />
+                                            </a>
+                                        ) : (
+                                            <span className="text-muted-foreground">-</span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => setEditingPlantilla(plantilla)}
+                                            >
+                                                <Pencil className="h-4 w-4 text-gray-500" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => confirmDelete(plantilla.id_plantilla)}
+                                            >
+                                                <Trash2 className="h-4 w-4 text-red-500" />
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))
                         )}
-                        {filteredPlantillas?.map((p: any) => (
-                            <TableRow key={p.id_plantilla}>
-                                <TableCell className="font-medium">{p.id_plantilla}</TableCell>
-                                <TableCell>{p.nombre_generico}</TableCell>
-                                <TableCell>{p.mst_familias?.nombre_familia || "-"}</TableCell>
-                                <TableCell>{p.mst_series_equivalencias?.nombre_comercial || "-"}</TableCell>
-                            </TableRow>
-                        ))}
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Edit Dialog */}
+            <Dialog open={!!editingPlantilla} onOpenChange={(open) => !open && setEditingPlantilla(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Editar Plantilla</DialogTitle>
+                        <DialogDescription>
+                            Modificar los datos de la plantilla existente.
+                        </DialogDescription>
+                    </DialogHeader>
+                    {editingPlantilla && (
+                        <PlantillaForm
+                            initialData={editingPlantilla}
+                            onSuccess={() => setEditingPlantilla(null)}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Confirmation */}
+            <Dialog open={deleteDTOpen} onOpenChange={setDeleteDTOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>¿Está seguro?</DialogTitle>
+                        <DialogDescription>
+                            Esta acción no se puede deshacer. Eliminará la plantilla permanentemente.
+                            Asegúrese de que no haya productos vinculados a esta plantilla antes de eliminarla.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setDeleteDTOpen(false)}>Cancelar</Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => deletingId && deleteMutation.mutate(deletingId)}
+                        >
+                            Eliminar
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

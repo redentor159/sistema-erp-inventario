@@ -38,6 +38,8 @@ export interface TrxCotizacionCabecera {
     total_precio_venta?: number | null
     observaciones?: string | null
     link_pdf?: string | null
+    terminos_personalizados?: string | null
+    titulo_documento?: string | null
 }
 
 /**

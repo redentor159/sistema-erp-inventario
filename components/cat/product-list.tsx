@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { catApi } from "@/lib/api/cat"
 import {
     Table,
@@ -13,9 +13,9 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Plus, Search, X } from "lucide-react"
+import { Plus, Search, X, Edit2, Pencil, Trash2, Save, XCircle } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
     Dialog,
     DialogContent,
@@ -23,6 +23,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
+    DialogFooter
 } from "@/components/ui/dialog"
 import { ProductFormCmp } from "./product-form"
 import { ProductDetailSheet } from "./product-detail-sheet"
@@ -33,12 +34,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-
 import { StockAdjustmentDialog } from "./stock-adjustment-dialog"
 import { MarketCostDialog } from "./market-cost-dialog"
-import { DollarSign } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
 
 export function ProductList({ active }: { active: boolean }) {
+    const queryClient = useQueryClient()
+    const { toast } = useToast()
 
     // Fetch filters data
     const { data: familias } = useQuery({ queryKey: ["mstFamilias"], queryFn: catApi.getFamilias })
@@ -57,9 +59,17 @@ export function ProductList({ active }: { active: boolean }) {
     const [page, setPage] = useState(0)
     const [pageSize, setPageSize] = useState(100)
 
-    const [open, setOpen] = useState(false)
+    const [open, setOpen] = useState(false) // Create Dialog
+    const [editDialogOpen, setEditDialogOpen] = useState(false)
+    const [editingProduct, setEditingProduct] = useState<any>(null)
+    const [deletingId, setDeletingId] = useState<string | null>(null)
+
     const [selectAdjustProduct, setSelectAdjustProduct] = useState<any>(null)
     const [selectCostProduct, setSelectCostProduct] = useState<any>(null)
+
+    // --- BULK EDIT STATE ---
+    const [isEditMode, setIsEditMode] = useState(false)
+    const [pendingChanges, setPendingChanges] = useState<Record<string, number>>({})
 
     const { data: result, isLoading } = useQuery({
         queryKey: ["catProductos", page, pageSize, search, familiaFilter, marcaFilter, materialFilter, sistemaFilter, acabadoFilter],
@@ -79,6 +89,45 @@ export function ProductList({ active }: { active: boolean }) {
     const products = result?.data || []
     const totalCount = result?.count || 0
     const totalPages = Math.ceil(totalCount / pageSize)
+
+    // --- MUTATIONS ---
+    const deleteMutation = useMutation({
+        mutationFn: catApi.deleteProducto,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["catProductos"] })
+            toast({ title: "Producto eliminado correctamente", variant: "default" })
+            setDeletingId(null)
+        },
+        onError: (error) => {
+            toast({ title: "Error al eliminar producto: " + error.message, variant: "destructive" })
+            setDeletingId(null)
+        }
+    })
+
+    const bulkUpdateMutation = useMutation({
+        mutationFn: catApi.updatePreciosMasivos,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["catProductos"] })
+            toast({ title: "Precios actualizados masivamente", variant: "default" })
+            setPendingChanges({})
+            setIsEditMode(false)
+        },
+        onError: (error) => {
+            toast({ title: "Error al actualizar precios: " + error.message, variant: "destructive" })
+        }
+    })
+
+    const handleSaveBulk = () => {
+        const updates = Object.entries(pendingChanges).map(([id_sku, costo]) => ({
+            id_sku,
+            costo_mercado_unit: costo
+        }))
+        if (updates.length === 0) {
+            setIsEditMode(false)
+            return
+        }
+        bulkUpdateMutation.mutate(updates)
+    }
 
     const clearFilters = () => {
         setSearchInput("")
@@ -126,6 +175,38 @@ export function ProductList({ active }: { active: boolean }) {
                     </div>
 
                     <div className="flex items-center gap-2">
+                        {/* BULK EDIT TOGGLE */}
+                        <div className="mr-2 flex items-center gap-2 border-r pr-4">
+                            {isEditMode ? (
+                                <>
+                                    <Button
+                                        variant="default"
+                                        className="bg-green-600 hover:bg-green-700 text-white"
+                                        onClick={handleSaveBulk}
+                                        disabled={Object.keys(pendingChanges).length === 0 || bulkUpdateMutation.isPending}
+                                    >
+                                        <Save className="mr-2 h-4 w-4" />
+                                        Guardar ({Object.keys(pendingChanges).length})
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() => {
+                                            setIsEditMode(false)
+                                            setPendingChanges({})
+                                        }}
+                                    >
+                                        <XCircle className="mr-2 h-4 w-4" />
+                                        Cancelar
+                                    </Button>
+                                </>
+                            ) : (
+                                <Button variant="outline" onClick={() => setIsEditMode(true)}>
+                                    <Edit2 className="mr-2 h-4 w-4" />
+                                    Edición Rápida
+                                </Button>
+                            )}
+                        </div>
+
                         <span className="text-sm text-muted-foreground hidden md:inline">Mostrar:</span>
                         <Select value={pageSize.toString()} onValueChange={(val) => {
                             setPageSize(Number(val))
@@ -243,11 +324,13 @@ export function ProductList({ active }: { active: boolean }) {
                                 <TableHead>Producto</TableHead>
                                 <TableHead>Familia / Marca</TableHead>
                                 <TableHead>Acabado</TableHead>
-                                <TableHead className="text-right">Costo Mercado</TableHead>
+                                <TableHead className="text-right w-[140px]">
+                                    {isEditMode ? "Costo (Edit)" : "Costo Mercado"}
+                                </TableHead>
                                 <TableHead className="text-right">Stock Actual</TableHead>
                                 <TableHead className="text-right">PMP (Unit)</TableHead>
                                 <TableHead className="text-right">Inversión (Total)</TableHead>
-                                <TableHead className="w-[100px]">Estado</TableHead>
+                                <TableHead className="text-right">Acciones</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -259,14 +342,15 @@ export function ProductList({ active }: { active: boolean }) {
                                 </TableRow>
                             ) : (
                                 products.map((product: any) => {
-                                    // ... (Keep existing row logic) ...
                                     const stock = Number(product.stock_actual || 0)
                                     const pmp = Number(product.costo_promedio || 0)
-                                    // CHANGE: Use costo_mercado_unit instead of costo_estandar
-                                    const costoMercado = Number(product.costo_mercado_unit || 0)
-                                    const inversion = Number(product.inversion_total || 0)
 
-                                    // CHANGE: Dynamic Currency
+                                    // Use pending change if available, else standard cost
+                                    const costoMercado = pendingChanges[product.id_sku] !== undefined
+                                        ? pendingChanges[product.id_sku]
+                                        : Number(product.costo_mercado_unit || 0)
+
+                                    const inversion = Number(product.inversion_total || 0)
                                     const moneda = product.moneda_reposicion === 'USD' ? 'USD' : 'PEN'
 
                                     const isNegative = stock < 0
@@ -274,79 +358,113 @@ export function ProductList({ active }: { active: boolean }) {
                                     const rowClass = isNegative ? "bg-red-50 dark:bg-red-900/10 hover:bg-red-100" : "hover:bg-muted/50"
                                     const stockClass = isNegative ? "text-red-600 font-bold" : (isPositive ? "text-green-600 font-bold" : "text-gray-500")
 
+                                    const isDirty = pendingChanges[product.id_sku] !== undefined
+
                                     return (
-                                        <ProductDetailSheet key={product.id_sku} product={product}>
-                                            <TableRow className={`cursor-pointer ${rowClass}`}>
-                                                <TableCell className="font-mono text-xs font-medium">
-                                                    {product.id_sku}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex flex-col">
-                                                        <span className="font-medium text-sm">{product.nombre_completo}</span>
-                                                        <span className="text-xs text-muted-foreground">{product.unidad_medida}</span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex flex-col text-xs">
-                                                        <span>{product.nombre_familia}</span>
-                                                        <span className="text-muted-foreground">{product.nombre_marca}</span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <span className="text-xs">{product.nombre_acabado || '-'}</span>
-                                                </TableCell>
-                                                <TableCell className="text-right text-xs font-mono group relative">
-                                                    <div className="flex items-center justify-end gap-1">
-                                                        {/* CHANGE: Display in correct currency */}
-                                                        <span>{costoMercado.toLocaleString('es-PE', { style: 'currency', currency: moneda })}</span>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setSelectCostProduct(product);
+                                        <TableRow key={product.id_sku} className={`${rowClass}`}>
+                                            <TableCell className="font-mono text-xs font-medium">
+                                                {product.id_sku}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium text-sm">{product.nombre_completo}</span>
+                                                    <span className="text-xs text-muted-foreground">{product.unidad_medida}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex flex-col text-xs">
+                                                    <span>{product.nombre_familia}</span>
+                                                    <span className="text-muted-foreground">{product.nombre_marca}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="text-xs">{product.nombre_acabado || '-'}</span>
+                                            </TableCell>
+                                            <TableCell className="text-right text-xs font-mono p-1">
+                                                {isEditMode ? (
+                                                    <div className="flex items-center gap-1">
+                                                        <span className="text-[10px] text-muted-foreground">{moneda}</span>
+                                                        <Input
+                                                            type="number"
+                                                            className={`h-8 text-right w-full ${isDirty ? "bg-yellow-50 border-yellow-400" : ""}`}
+                                                            value={costoMercado}
+                                                            onChange={(e) => {
+                                                                const val = parseFloat(e.target.value)
+                                                                if (!isNaN(val)) {
+                                                                    setPendingChanges(prev => ({
+                                                                        ...prev,
+                                                                        [product.id_sku]: val
+                                                                    }))
+                                                                }
                                                             }}
-                                                            title="Actualizar Costo Mercado"
-                                                        >
-                                                            <DollarSign className="h-3 w-3 text-blue-600" />
-                                                        </Button>
+                                                        />
                                                     </div>
-                                                </TableCell>
-                                                <TableCell className={`text-right text-base ${stockClass}`}>
-                                                    {stock.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
-                                                </TableCell>
-                                                <TableCell className="text-right font-mono text-xs">
-                                                    {/* PMP is typically kept in system currency (PEN), keeping as is for now */}
-                                                    {pmp.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' })}
-                                                </TableCell>
-                                                <TableCell className="text-right font-medium text-xs">
-                                                    {inversion.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' })}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-2">
-                                                        <Badge variant={isNegative ? "destructive" : (isPositive ? "outline" : "secondary")}
-                                                            className={isPositive ? "text-green-600 border-green-600 bg-green-50" : ""}
-                                                        >
-                                                            {isNegative ? "Quiebre" : (isPositive ? "OK" : "Cero")}
-                                                        </Badge>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-6 w-6"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setSelectAdjustProduct(product);
-                                                            }}
-                                                            title="Ajuste Rápido"
-                                                        >
-                                                            <span className="sr-only">Ajustar</span>
-                                                            <div className="text-[10px] font-bold border rounded px-1">±</div>
+                                                ) : (
+                                                    <span>{costoMercado.toLocaleString('es-PE', { style: 'currency', currency: moneda })}</span>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className={`text-right text-base ${stockClass}`}>
+                                                {stock.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
+                                            </TableCell>
+                                            <TableCell className="text-right font-mono text-xs">
+                                                {pmp.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' })}
+                                            </TableCell>
+                                            <TableCell className="text-right font-medium text-xs">
+                                                {inversion.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' })}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex items-center justify-end gap-1">
+                                                    {/* Detail View */}
+                                                    <ProductDetailSheet product={product}>
+                                                        <Button variant="ghost" size="icon" className="h-6 w-6">
+                                                            <Search className="h-3 w-3" />
                                                         </Button>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        </ProductDetailSheet>
+                                                    </ProductDetailSheet>
+
+                                                    {/* Quick Adjust */}
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-6 w-6"
+                                                        onClick={() => setSelectAdjustProduct(product)}
+                                                        title="Ajuste Stock"
+                                                    >
+                                                        <div className="text-[10px] font-bold border rounded px-1">±</div>
+                                                    </Button>
+
+                                                    {/* Edit */}
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-6 w-6"
+                                                        onClick={async () => {
+                                                            try {
+                                                                // Fetch full product data (all columns)
+                                                                const fullProduct = await catApi.getProductoBySku(product.id_sku)
+                                                                setEditingProduct(fullProduct)
+                                                                setEditDialogOpen(true)
+                                                            } catch (err) {
+                                                                // Fallback to view data if fetch fails
+                                                                setEditingProduct(product)
+                                                                setEditDialogOpen(true)
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Pencil className="h-3 w-3 text-blue-500" />
+                                                    </Button>
+
+                                                    {/* Delete */}
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-6 w-6"
+                                                        onClick={() => setDeletingId(product.id_sku)}
+                                                    >
+                                                        <Trash2 className="h-3 w-3 text-red-500" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
                                     )
                                 })
                             )}
@@ -394,6 +512,50 @@ export function ProductList({ active }: { active: boolean }) {
                 onOpenChange={(open) => !open && setSelectCostProduct(null)}
                 product={selectCostProduct}
             />
+
+            {/* EDIT DIALOG */}
+            <Dialog open={editDialogOpen} onOpenChange={(open) => !open && setEditDialogOpen(false)}>
+                <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Editar Producto</DialogTitle>
+                        <DialogDescription>
+                            Modifique los datos del SKU.
+                        </DialogDescription>
+                    </DialogHeader>
+                    {editingProduct && (
+                        <ProductFormCmp
+                            initialData={editingProduct}
+                            onSuccess={() => {
+                                setEditDialogOpen(false)
+                                setEditingProduct(null)
+                            }}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            {/* DELETE ALERT */}
+            {/* DELETE ALERT */}
+            <Dialog open={!!deletingId} onOpenChange={(open) => !open && setDeletingId(null)}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>¿Está seguro?</DialogTitle>
+                        <DialogDescription>
+                            Esta acción eliminará permanentemente el SKU <b>{deletingId}</b>.
+                            Si tiene stock o movimientos, podría causar inconsistencias.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setDeletingId(null)}>Cancelar</Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => deletingId && deleteMutation.mutate(deletingId)}
+                        >
+                            Eliminar
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div >
     )
 }

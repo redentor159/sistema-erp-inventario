@@ -4,6 +4,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { ProductList } from "@/components/cat/product-list"
+import { PlantillaList } from "@/components/cat/plantilla-list"
 
 export default function CatalogPage() {
     return (
@@ -26,8 +27,7 @@ export default function CatalogPage() {
                         <p className="text-sm text-muted-foreground mb-4">
                             Aquí definirá los "Recetarios" para ventanas, mamparas, etc.
                         </p>
-                        {/* <PlantillaList /> */}
-                        <p className="text-sm italic text-gray-500">Próximamente: Tabla de Plantillas</p>
+                        <PlantillaList />
                     </div>
                 </TabsContent>
                 <TabsContent value="items" className="space-y-4">

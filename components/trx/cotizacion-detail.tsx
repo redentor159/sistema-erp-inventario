@@ -199,6 +199,7 @@ export function CotizacionDetail({ id }: { id: string }) {
                 id_cliente: cotizacion.id_cliente,
                 id_marca: cotizacion.id_marca,
                 costo_fijo_instalacion: cotizacion.costo_fijo_instalacion || 0,
+                incluye_igv: cotizacion.incluye_igv
                 // Add validation validity, currency here if needed
             })
             toast({
@@ -333,8 +334,8 @@ export function CotizacionDetail({ id }: { id: string }) {
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="grid gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                            <Label className="text-amber-800 font-semibold">Servicios de Instalación (Embalaje, Flete a obra, Movilidad, Viáticos)</Label>
+                        <div className="grid gap-2">
+                            <Label>Servicios de Instalación (Opcional)</Label>
                             <Input
                                 type="number"
                                 step="0.01"
@@ -342,9 +343,18 @@ export function CotizacionDetail({ id }: { id: string }) {
                                 placeholder="Monto fijo para todo el proyecto"
                                 value={cotizacion.costo_fijo_instalacion ?? ""}
                                 onChange={(e) => setCotizacion({ ...cotizacion, costo_fijo_instalacion: Number(e.target.value) || 0 })}
-                                className="bg-white"
                             />
-                            <p className="text-xs text-amber-600">Este monto se suma al total de la cotización</p>
+                            <p className="text-xs text-muted-foreground">Incluye: Embalaje, Flete, Movilidad, Viáticos</p>
+                        </div>
+                        <div className="flex items-center gap-2 py-2">
+                            <div className="flex items-center space-x-2">
+                                <Checkbox
+                                    id="incluye_igv"
+                                    checked={cotizacion.incluye_igv}
+                                    onCheckedChange={(c) => setCotizacion({ ...cotizacion, incluye_igv: c as boolean })}
+                                />
+                                <Label htmlFor="incluye_igv">Incluye IGV en Precio Final</Label>
+                            </div>
                         </div>
                         <Separator />
                         <div className="grid gap-2">
@@ -352,8 +362,12 @@ export function CotizacionDetail({ id }: { id: string }) {
                             <div className="text-xl font-mono">{formatCurrency(cotizacion._vc_total_costo_materiales)}</div>
                         </div>
                         <div className="grid gap-2">
-                            <Label>Precio Cliente (Inc IGV)</Label>
-                            <div className="text-2xl font-bold text-green-600">{formatCurrency(cotizacion._vc_precio_final_cliente)}</div>
+                            <Label>
+                                Precio Cliente ({cotizacion.incluye_igv ? 'Inc. IGV' : 'Sin IGV'})
+                            </Label>
+                            <div className="text-2xl font-bold text-green-600">
+                                {formatCurrency(cotizacion._vc_precio_final_cliente)}
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -365,6 +379,11 @@ export function CotizacionDetail({ id }: { id: string }) {
                         <CotizacionItemDialog
                             idCotizacion={id}
                             onItemAdded={async (item) => {
+                                if (item && item._type === 'SERVICE_DONE') {
+                                    // Item already added and costed manually. Just reload.
+                                    load()
+                                    return
+                                }
                                 const newLine = await cotizacionesApi.addLineItem(id, item)
                                 await cotizacionesApi.triggerDespiece(newLine.id_linea_cot)
                                 load()
@@ -401,11 +420,18 @@ export function CotizacionDetail({ id }: { id: string }) {
                                             </td>
                                             <td className="p-3">
                                                 <div className="font-bold">{item.etiqueta_item}</div>
-                                                <div className="text-xs text-muted-foreground">{item.id_modelo}</div>
-                                                <div className="text-xs text-muted-foreground">Color: {item.color_perfiles}</div>
+                                                {item.id_modelo !== 'SERVICIO' && (
+                                                    <>
+                                                        <div className="text-xs text-muted-foreground">{item.id_modelo}</div>
+                                                        <div className="text-xs text-muted-foreground">Color: {item.color_perfiles}</div>
+                                                    </>
+                                                )}
+                                                {item.id_modelo === 'SERVICIO' && (
+                                                    <div className="text-xs text-blue-600 font-medium">Servicio / Extra</div>
+                                                )}
                                             </td>
                                             <td className="p-3">
-                                                {item.ancho_mm} x {item.alto_mm}
+                                                {item.id_modelo === 'SERVICIO' ? '-' : `${item.ancho_mm} x ${item.alto_mm}`}
                                             </td>
                                             <td className="p-3 font-mono">{item.cantidad}</td>
                                             <td className="p-3 text-right font-mono text-muted-foreground">
@@ -419,22 +445,44 @@ export function CotizacionDetail({ id }: { id: string }) {
                                                 {formatCurrency(item._vc_subtotal_linea_calc)}
                                             </td>
                                             <td className="p-3 text-center flex items-center justify-center gap-1">
-                                                <Button size="icon" variant="ghost" title="Regenerar Ingeniería" onClick={() => handleRefreshCalculations(item.id_linea_cot)}>
-                                                    <Calculator className="h-4 w-4" />
-                                                </Button>
+                                                {item.id_modelo !== 'SERVICIO' && (
+                                                    <Button size="icon" variant="ghost" title="Regenerar Ingeniería" onClick={() => handleRefreshCalculations(item.id_linea_cot)}>
+                                                        <Calculator className="h-4 w-4" />
+                                                    </Button>
+                                                )}
                                                 <Button size="icon" variant="ghost" title="Duplicar Ítem" onClick={() => handleCloneItem(item.id_linea_cot)}>
                                                     <Copy className="h-4 w-4" />
                                                 </Button>
                                             </td>
                                         </tr>
-                                        {/* Mini Desglose Preview */}
-                                        <tr className="bg-slate-50 border-b">
-                                            <td colSpan={7} className="p-2 pl-12 text-xs">
-                                                <DespiecePreview idLinea={item.id_linea_cot} />
-                                            </td>
-                                        </tr>
+                                        {item.id_modelo !== 'SERVICIO' && (
+                                            <tr className="bg-slate-50 border-b">
+                                                <td colSpan={7} className="p-2 pl-12 text-xs">
+                                                    <DespiecePreview idLinea={item.id_linea_cot} />
+                                                </td>
+                                            </tr>
+                                        )}
                                     </React.Fragment>
                                 ))}
+                                {/* RENDERIZADO DE COSTO FIJO DE INSTALACIÓN COMO ÍTEM VIRTUAL */}
+                                {(cotizacion.costo_fijo_instalacion ?? 0) > 0 && (
+                                    <tr className="bg-blue-50/50 border-b border-blue-100">
+                                        <td className="p-3 text-center text-blue-600 font-mono text-xs">+</td>
+                                        <td className="p-3">
+                                            <div className="font-bold text-blue-800">Servicios de Instalación</div>
+                                            <div className="text-xs text-blue-600 font-medium">Incluye: Embalaje, Flete, Movilidad, Viáticos, SCTR</div>
+                                        </td>
+                                        <td className="p-3 text-center text-muted-foreground">-</td>
+                                        <td className="p-3 text-center font-mono">1</td>
+                                        <td className="p-3 text-right font-mono text-muted-foreground">
+                                            {formatCurrency(cotizacion.costo_fijo_instalacion!)}
+                                        </td>
+                                        <td className="p-3 text-right font-bold text-blue-800">
+                                            {formatCurrency(cotizacion.costo_fijo_instalacion!)}
+                                        </td>
+                                        <td className="p-3"></td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </CardContent>

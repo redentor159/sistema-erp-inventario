@@ -68,6 +68,21 @@ export const cotizacionesApi = {
     },
 
     /**
+     * Actualiza la cabecera de la cotización.
+     */
+    updateCotizacion: async (id: string, updates: Partial<any>) => {
+        const { data, error } = await supabase
+            .from('trx_cotizaciones_cabecera')
+            .update(updates)
+            .eq('id_cotizacion', id)
+            .select()
+            .single()
+
+        if (error) throw error
+        return data
+    },
+
+    /**
      * Agrega una linea (Ventana/Ítem) a la cotización.
      */
     addLineItem: async (idCotizacion: string, item: any) => {
@@ -103,6 +118,18 @@ export const cotizacionesApi = {
 
         if (error) throw error
         return true
+    },
+
+    /**
+     * Inserta manualmente un item de desglose (para Servicios o Extras).
+     */
+    addDesgloseItem: async (item: any) => {
+        const { data, error } = await supabase
+            .from('trx_desglose_materiales')
+            .insert(item)
+            .select()
+        if (error) throw error
+        return data
     },
 
     /**
@@ -232,18 +259,6 @@ export const cotizacionesApi = {
             .from('mst_marcas')
             .select('*')
             .order('nombre_marca')
-        if (error) throw error
-        return data
-    },
-
-    updateCotizacion: async (id: string, updates: any) => {
-        const { data, error } = await supabase
-            .from('trx_cotizaciones_cabecera')
-            .update(updates)
-            .eq('id_cotizacion', id)
-            .select()
-            .single()
-
         if (error) throw error
         return data
     }

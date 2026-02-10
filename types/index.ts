@@ -124,12 +124,17 @@ export interface CatProductoVariante {
     cod_proveedor?: string
     nombre_completo: string
     unidad_medida?: string
-    costo_mercado_unit: number
+    costo_mercado_unit?: number
     moneda_reposicion?: string
     fecha_act_precio?: string
     es_templado?: boolean
     espesor_mm?: number
     costo_flete_m2?: number
+    stock_minimo?: number
+    punto_pedido?: number
+    tiempo_reposicion_dias?: number
+    lote_econ_compra?: number
+    demanda_promedio_diaria?: number
 }
 
 // === MÓDULO: MATERIALES Y DESGLOSE ===
