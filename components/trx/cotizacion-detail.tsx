@@ -553,11 +553,7 @@ export function CotizacionDetail({ id }: { id: string }) {
                                             </td>
                                             <td className="p-3 font-mono">{item.cantidad}</td>
                                             <td className="p-3 text-right font-mono text-muted-foreground">
-                                                {formatCurrency(
-                                                    item.cantidad > 0
-                                                        ? item._vc_precio_unit_oferta_calc / item.cantidad
-                                                        : 0
-                                                )}
+                                                {formatCurrency(item._vc_precio_unit_oferta_calc)}
                                             </td>
                                             <td className="p-3 text-right font-bold">
                                                 {formatCurrency(item._vc_subtotal_linea_calc)}
