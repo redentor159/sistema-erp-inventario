@@ -16,7 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Calculator, Save, Plus, Printer, Copy, CheckSquare, Trash2, Pencil } from "lucide-react"
+import { Trash2, Plus, ArrowLeft, Printer, RefreshCw, Save, Loader2, Calculator, Copy, Pencil, FileText } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ClientCombobox } from "./client-combobox"
@@ -571,11 +571,20 @@ export function CotizacionDetail({ id }: { id: string }) {
                                                 <Button size="icon" variant="ghost" title="Duplicar Ítem" onClick={() => handleCloneItem(item.id_linea_cot)}>
                                                     <Copy className="h-4 w-4" />
                                                 </Button>
+                                                <CotizacionDespieceDialog
+                                                    idCotizacion={id}
+                                                    idLineaCot={item.id_linea_cot}
+                                                    trigger={
+                                                        <Button size="icon" variant="ghost" title="Ver Despiece">
+                                                            <FileText className="h-4 w-4 text-blue-600" />
+                                                        </Button>
+                                                    }
+                                                />
                                                 <Button size="icon" variant="ghost" title="Editar Ítem" onClick={() => {
                                                     setEditingItem(item)
                                                     setIsDialogOpen(true)
                                                 }}>
-                                                    <Pencil className="h-4 w-4 text-blue-600" />
+                                                    <Pencil className="h-4 w-4 text-orange-600" />
                                                 </Button>
                                                 <Button size="icon" variant="ghost" title="Eliminar Ítem" onClick={() => handleDeleteItem(item.id_linea_cot)}>
                                                     <Trash2 className="h-4 w-4 text-red-600" />
