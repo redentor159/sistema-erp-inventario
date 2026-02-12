@@ -37,8 +37,16 @@ export function DespiecePreview({ idLinea }: { idLinea: string }) {
                     <ul className="list-disc list-inside text-gray-600 space-y-0.5">
                         {perfiles.map(m => (
                             <li key={m.id_desglose} className="flex justify-between gap-2">
-                                <span>{m.nombre_componente} ({Math.round(m.medida_corte_mm ?? 0)}mm)</span>
-                                <span className="font-mono text-slate-400">{m.sku_real}</span>
+                                <span>
+                                    {m.nombre_componente}
+                                    <span className="text-slate-500 ml-1">
+                                        ({Math.round(m.medida_corte_mm ?? 0)}mm)
+                                    </span>
+                                </span>
+                                <div className="flex gap-2 text-right">
+                                    <span className="font-mono text-xs text-slate-400">{m.sku_real}</span>
+                                    <span className="font-medium min-w-[60px]">{formatCurrency(m.costo_total_item)}</span>
+                                </div>
                             </li>
                         ))}
                     </ul>

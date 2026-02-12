@@ -618,6 +618,7 @@ export function CotizacionDetail({ id }: { id: string }) {
                 idCotizacion={id}
                 itemToEdit={editingItem}
                 onItemAdded={handleItemSaved}
+                triggerButton={null}
             />
         </div>
     )

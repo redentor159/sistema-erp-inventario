@@ -217,14 +217,16 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton,
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                {triggerButton || (
-                    <Button>
-                        <Plus className="mr-2 h-4 w-4" /> Agregar Ítem
-                    </Button>
-                )}
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+            {triggerButton !== null && (
+                <DialogTrigger asChild>
+                    {triggerButton || (
+                        <Button className="w-full sm:w-auto">
+                            <Plus className="mr-2 h-4 w-4" /> Agregar Ítem
+                        </Button>
+                    )}
+                </DialogTrigger>
+            )}
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>{itemToEdit ? "Editar Ítem" : "Agregar Ítem a Cotización"}</DialogTitle>
                     <DialogDescription>
