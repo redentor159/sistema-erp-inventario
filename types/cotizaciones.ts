@@ -90,6 +90,32 @@ export interface TrxDesgloseMateriales {
     precio_venta_item?: number | null
 }
 
+/**
+ * Fila del reporte detallado de ingeniería (vw_reporte_desglose)
+ */
+export interface ReporteDesglose {
+    id_cotizacion: string
+    fecha_emision: string
+    estado: string
+    nombre_proyecto: string
+    cliente: string
+    etiqueta_item: string
+    id_modelo: string
+    ubicacion: string
+    cantidad_items: number
+    tipo_componente: string
+    nombre_componente: string
+    sku_real: string
+    descripcion_sku: string
+    detalle_acabado: string
+    medida_corte_mm: number
+    angulo_corte: number
+    cantidad_insumo_total: number
+    costo_total_item: number
+    unidad_medida: string
+    costo_mercado_unit: number
+}
+
 // ============================================================================
 // TIPOS ENRIQUECIDOS (Vistas con Cálculos)
 // ============================================================================

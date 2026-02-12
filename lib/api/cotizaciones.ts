@@ -183,6 +183,19 @@ export const cotizacionesApi = {
         return data
     },
 
+    /**
+     * Obtiene el reporte detallado de ingeniería para toda la cotización.
+     */
+    getReporteDesglose: async (idCotizacion: string) => {
+        const { data, error } = await supabase
+            .from('vw_reporte_desglose')
+            .select('*')
+            .eq('id_cotizacion', idCotizacion)
+
+        if (error) throw error
+        return data
+    },
+
     // Auxiliares para el Dialogo de Items
     getSistemas: async () => {
         const { data, error } = await supabase

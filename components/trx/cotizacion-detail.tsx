@@ -26,6 +26,8 @@ import { CotizacionDetallada, CotizacionDetalleEnriquecido } from "@/types/cotiz
 import { MstCliente, MstMarca, MstAcabado, CatProductoVariante } from "@/types"
 import { useToast } from "@/components/ui/use-toast"
 
+import { CotizacionDespieceDialog } from "./cotizacion-despiece-dialog"
+
 export function CotizacionDetail({ id }: { id: string }) {
     const router = useRouter()
     const { toast } = useToast()
@@ -362,6 +364,7 @@ export function CotizacionDetail({ id }: { id: string }) {
                     <Button variant="outline" onClick={() => router.push(`/cotizaciones/${id}/print`)}>
                         <Printer className="mr-2 h-4 w-4" /> Imprimir
                     </Button>
+                    <CotizacionDespieceDialog idCotizacion={id} />
                     <Button variant="outline" onClick={() => load()}>Refrescar</Button>
                     <Button onClick={handleSave}>
                         <Save className="mr-2 h-4 w-4" /> Guardar Cambios
