@@ -291,6 +291,20 @@ export const cotizacionesApi = {
 
         if (error) throw error
         return true
+        if (error) throw error
+        return true
+    },
+
+    deleteCotizacion: async (id: string) => {
+        // First delete details (if not cascaded by DB, but usually good practice to be explicit or rely on FK)
+        // Assuming FK has ON DELETE CASCADE, we just delete header.
+        const { error } = await supabase
+            .from('trx_cotizaciones_cabecera')
+            .delete()
+            .eq('id_cotizacion', id)
+
+        if (error) throw error
+        return true
     },
 
     // Master Data

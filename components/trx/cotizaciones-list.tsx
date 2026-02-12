@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { Plus, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { cotizacionesApi } from "@/lib/api/cotizaciones"
 
@@ -65,6 +65,20 @@ export function CotizacionesList() {
         }
     }
 
+    async function handleDelete(e: React.MouseEvent, id: string) {
+        e.stopPropagation() // Prevent row click
+        if (!confirm("¿Estás seguro de que quieres eliminar esta cotización? Esta acción no se puede deshacer.")) return
+
+        try {
+            await cotizacionesApi.deleteCotizacion(id)
+            toast.success("Cotización eliminada")
+            loadData()
+        } catch (error: any) {
+            console.error(error)
+            toast.error("Error al eliminar", error.message)
+        }
+    }
+
     if (loading) return <div>Cargando...</div>
 
     return (
@@ -103,7 +117,15 @@ export function CotizacionesList() {
                                         {formatCurrency(row._vc_precio_final_cliente || 0)}
                                     </td>
                                     <td className="p-3 text-right">
-                                        <Button variant="ghost" size="sm">Ver</Button>
+                                        <div className="flex justify-end gap-2">
+                                            <Button variant="ghost" size="sm" onClick={(e) => {
+                                                e.stopPropagation()
+                                                router.push(`/cotizaciones/${row.id_cotizacion}`)
+                                            }}>Ver</Button>
+                                            <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={(e) => handleDelete(e, row.id_cotizacion)}>
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
