@@ -115,7 +115,7 @@ export function SheetCommercial() {
                                         tickFormatter={(val) => val.substring(0, 15)}
                                     />
                                     <Tooltip
-                                        formatter={(val: number) => `S/ ${val.toLocaleString()}`}
+                                        formatter={(val: number | undefined) => `S/ ${(val || 0).toLocaleString()}`}
                                         labelStyle={{ color: 'black' }}
                                     />
                                     <Bar dataKey="volumen_ventas_pen" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20} />

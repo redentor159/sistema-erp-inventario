@@ -16,14 +16,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Calculator, Save, Plus, Printer, Copy, CheckSquare } from "lucide-react"
+import { ArrowLeft, Calculator, Save, Plus, Printer, Copy, CheckSquare, Trash2, Pencil } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ClientCombobox } from "./client-combobox"
 import { DespiecePreview } from "@/components/trx/despiece-preview"
 import { CotizacionItemDialog } from "./cotizacion-item-dialog"
 import { CotizacionDetallada, CotizacionDetalleEnriquecido } from "@/types/cotizaciones"
-import { MstCliente, MstMarca } from "@/types"
+import { MstCliente, MstMarca, MstAcabado, CatProductoVariante } from "@/types"
 import { useToast } from "@/components/ui/use-toast"
 
 export function CotizacionDetail({ id }: { id: string }) {
@@ -36,6 +36,12 @@ export function CotizacionDetail({ id }: { id: string }) {
     // Header Data
     const [clientes, setClientes] = useState<MstCliente[]>([])
     const [marcas, setMarcas] = useState<MstMarca[]>([])
+    const [acabados, setAcabados] = useState<any[]>([]) // Using any for simplicity or MstAcabado
+    const [vidrios, setVidrios] = useState<any[]>([])
+
+    // Dialog State
+    const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const [editingItem, setEditingItem] = useState<any>(null)
 
     // Bulk Actions & Selection
     const [selectedItems, setSelectedItems] = useState<string[]>([])
@@ -136,6 +142,64 @@ export function CotizacionDetail({ id }: { id: string }) {
 
 
     // Reload function
+    async function handleDeleteItem(idLinea: string) {
+        if (!confirm("¿Seguro que desea eliminar este ítem?")) return
+        try {
+            await cotizacionesApi.deleteLineItem(idLinea)
+            toast({ title: "Eliminado", description: "Ítem eliminado correctamente" })
+            load()
+        } catch (e) {
+            console.error(e)
+            toast({ variant: "destructive", title: "Error", description: "No se pudo eliminar el ítem" })
+        }
+    }
+
+    async function handleItemSaved(itemData: any) {
+        // Distinguish between Create and Update and Service
+        try {
+            if (itemData._type === 'SERVICE_DONE') {
+                // Already handled in dialog
+                load()
+                return
+            }
+
+            if (itemData._isUpdate && editingItem) {
+                // UPDATE PRODUCT
+                // itemData contains all form fields. 
+                // We need to map them to database columns if names match.
+                // Dialog uses: id_modelo, color_perfiles, cantidad, ancho_mm, alto_mm, tipo_vidrio, etiqueta_item, ubicacion...
+
+                await cotizacionesApi.updateLineItems([editingItem.id_linea_cot], {
+                    id_modelo: itemData.id_modelo,
+                    color_perfiles: itemData.color_perfiles,
+                    cantidad: itemData.cantidad,
+                    ancho_mm: itemData.ancho_mm,
+                    alto_mm: itemData.alto_mm,
+                    tipo_vidrio: itemData.tipo_vidrio,
+                    etiqueta_item: itemData.etiqueta_item,
+                    ubicacion: itemData.ubicacion
+                    // tipo_cierre?
+                })
+
+                // Trigger despiece to recalc
+                await cotizacionesApi.triggerDespiece(editingItem.id_linea_cot)
+
+                toast({ title: "Actualizado", description: "Ítem actualizado correctamente" })
+                load()
+
+            } else {
+                // CREATE PRODUCT
+                const newLine = await cotizacionesApi.addLineItem(id, itemData)
+                await cotizacionesApi.triggerDespiece(newLine.id_linea_cot)
+                toast({ title: "Agregado", description: "Ítem agregado correctamente" })
+                load()
+            }
+        } catch (e) {
+            console.error(e)
+            toast({ variant: "destructive", title: "Error", description: "Error al guardar ítem" })
+        }
+    }
+
     // Reload function
     async function load() {
         setLoading(true)
@@ -178,6 +242,16 @@ export function CotizacionDetail({ id }: { id: string }) {
             } catch (err) {
                 console.error("Error fetching brands:", err)
             }
+
+            try {
+                const colorsData = await cotizacionesApi.getAcabados()
+                setAcabados(colorsData || [])
+            } catch (err) { console.error(err) }
+
+            try {
+                const vidriosData = await cotizacionesApi.getVidrios()
+                setVidrios(vidriosData || [])
+            } catch (err) { console.error(err) }
 
         } catch (e: any) {
             console.error("Error General Load:", e)
@@ -300,30 +374,35 @@ export function CotizacionDetail({ id }: { id: string }) {
                 <div className="bg-muted/50 p-2 rounded-md flex items-center gap-2 animate-in fade-in slide-in-from-top-2 flex-wrap">
                     <span className="text-sm font-medium ml-2">{selectedItems.length} seleccionados</span>
                     <Separator orientation="vertical" className="h-6" />
+
+                    <Select onValueChange={(val) => handleBulkUpdate({ color_perfiles: val })}>
+                        <SelectTrigger className="w-[180px] h-8">
+                            <SelectValue placeholder="Cambiar Color" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {acabados.map((a: any) => (
+                                <SelectItem key={a.id_acabado} value={a.id_acabado}>{a.nombre_acabado}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                    <Select onValueChange={(val) => handleBulkUpdate({ tipo_vidrio: val })}>
+                        <SelectTrigger className="w-[200px] h-8">
+                            <SelectValue placeholder="Cambiar Vidrio" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {vidrios.map((v: any) => (
+                                <SelectItem key={v.id_sku} value={v.id_sku}>{v.nombre_completo}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
                     <Button size="sm" variant="secondary" onClick={() => {
-                        const val = prompt("Nuevo Color de Perfil (ej: BLA, CHA, MAD, MAT, NEG):")
-                        if (val) handleBulkUpdate({ color_perfiles: val.toUpperCase() })
-                    }}>
-                        Cambiar Color
-                    </Button>
-                    <Button size="sm" variant="secondary" onClick={() => {
-                        const val = prompt("Nuevo ID de Vidrio (SKU del producto):")
-                        if (val) handleBulkUpdate({ tipo_vidrio: val })
-                    }}>
-                        Cambiar Vidrio
-                    </Button>
-                    <Button size="sm" variant="secondary" onClick={async () => {
-                        const marcasData = await cotizacionesApi.getMarcas()
-                        const marcasList = marcasData?.map((m: any) => `${m.id_marca}: ${m.nombre_marca}`).join('\n')
-                        const val = prompt(`Seleccione ID de Marca:\n\n${marcasList || 'No hay marcas disponibles'}`)
-                        if (val) {
-                            // Update at header level since marca is in cabecera
-                            // For now, show info message
-                            alert("La marca se define a nivel de cotización, no de ítem individual. Use el panel izquierdo para cambiar la marca.")
-                        }
+                        alert("La MARCA se define a nivel global de la cotización (panel izquierdo).\nNo es posible mezclar marcas en una misma cotización por ahora.")
                     }}>
                         Cambiar Marca
                     </Button>
+
                     <div className="flex-1" />
                     <Button size="sm" variant="ghost" onClick={() => setSelectedItems([])}>Cancelar</Button>
                 </div>
@@ -419,19 +498,12 @@ export function CotizacionDetail({ id }: { id: string }) {
                 <Card className="md:col-span-2 flex flex-col h-full overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between py-3">
                         <CardTitle>Ítems de Cotización</CardTitle>
-                        <CotizacionItemDialog
-                            idCotizacion={id}
-                            onItemAdded={async (item) => {
-                                if (item && item._type === 'SERVICE_DONE') {
-                                    // Item already added and costed manually. Just reload.
-                                    load()
-                                    return
-                                }
-                                const newLine = await cotizacionesApi.addLineItem(id, item)
-                                await cotizacionesApi.triggerDespiece(newLine.id_linea_cot)
-                                load()
-                            }}
-                        />
+                        <Button onClick={() => {
+                            setEditingItem(null)
+                            setIsDialogOpen(true)
+                        }}>
+                            <Plus className="mr-2 h-4 w-4" /> Agregar Ítem
+                        </Button>
                     </CardHeader>
                     <CardContent className="flex-1 overflow-auto p-0">
                         <table className="w-full text-sm">
@@ -496,6 +568,15 @@ export function CotizacionDetail({ id }: { id: string }) {
                                                 <Button size="icon" variant="ghost" title="Duplicar Ítem" onClick={() => handleCloneItem(item.id_linea_cot)}>
                                                     <Copy className="h-4 w-4" />
                                                 </Button>
+                                                <Button size="icon" variant="ghost" title="Editar Ítem" onClick={() => {
+                                                    setEditingItem(item)
+                                                    setIsDialogOpen(true)
+                                                }}>
+                                                    <Pencil className="h-4 w-4 text-blue-600" />
+                                                </Button>
+                                                <Button size="icon" variant="ghost" title="Eliminar Ítem" onClick={() => handleDeleteItem(item.id_linea_cot)}>
+                                                    <Trash2 className="h-4 w-4 text-red-600" />
+                                                </Button>
                                             </td>
                                         </tr>
                                         {item.id_modelo !== 'SERVICIO' && (
@@ -531,6 +612,13 @@ export function CotizacionDetail({ id }: { id: string }) {
                     </CardContent>
                 </Card>
             </div>
+            <CotizacionItemDialog
+                open={isDialogOpen}
+                onOpenChange={setIsDialogOpen}
+                idCotizacion={id}
+                itemToEdit={editingItem}
+                onItemAdded={handleItemSaved}
+            />
         </div>
     )
 }

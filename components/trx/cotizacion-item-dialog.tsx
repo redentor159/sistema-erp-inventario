@@ -30,11 +30,26 @@ interface CotizacionItemDialogProps {
     idCotizacion: string
     onItemAdded: (item: any) => Promise<void>
     triggerButton?: React.ReactNode
+    itemToEdit?: any
+    open?: boolean
+    onOpenChange?: (open: boolean) => void
 }
 
-export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton }: CotizacionItemDialogProps) {
+export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton, itemToEdit, open: controlledOpen, onOpenChange }: CotizacionItemDialogProps) {
     const toast = useToastHelper()
-    const [open, setOpen] = useState(false)
+    const [internalOpen, setInternalOpen] = useState(false)
+
+    // Manage open state (controlled vs uncontrolled)
+    const isControlled = controlledOpen !== undefined
+    const open = isControlled ? controlledOpen : internalOpen
+    const setOpen = (newOpen: boolean) => {
+        if (isControlled) {
+            onOpenChange?.(newOpen)
+        } else {
+            setInternalOpen(newOpen)
+        }
+    }
+
     const [loading, setLoading] = useState(false)
     const [activeTab, setActiveTab] = useState("producto")
 
@@ -65,17 +80,72 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton 
         precio_unitario: 0
     })
 
+    // Initialize form when itemToEdit changes or dialog opens
+    useEffect(() => {
+        if (open && itemToEdit) {
+            if (itemToEdit.id_modelo === 'SERVICIO') {
+                setActiveTab("servicio")
+                // Need to fetch desglose to get price? Or is it passed in itemToEdit?
+                // itemToEdit here is likely the enriched detail from the grid.
+                // We need to approximation or pass more data.
+                // For now assuming we can't easily edit services without fetching more data or simplifying.
+                // Let's populate what we have from the view.
+                setServicio({
+                    descripcion: itemToEdit.etiqueta_item || "",
+                    cantidad: itemToEdit.cantidad || 1,
+                    precio_unitario: (itemToEdit._vc_price_unit_oferta_calc || 0) // Approximation
+                })
+            } else {
+                setActiveTab("producto")
+                // We need to find the system for the model if not present.
+                // itemToEdit might not have id_sistema directly if it comes from view `vw_cotizaciones_detalladas`
+                // But we can try to find it from allModelos if loaded.
+
+                const foundModel = allModelos?.find((m: any) => m.id_modelo === itemToEdit.id_modelo)
+                const sysId = foundModel?.id_sistema || ""
+
+                setItem({
+                    id_sistema: sysId,
+                    id_modelo: itemToEdit.id_modelo || "",
+                    color_perfiles: itemToEdit.color_perfiles || "",
+                    cantidad: itemToEdit.cantidad || 1,
+                    ancho_mm: itemToEdit.ancho_mm || 1000,
+                    alto_mm: itemToEdit.alto_mm || 1000,
+                    tipo_vidrio: itemToEdit.tipo_vidrio || "",
+                    tipo_cierre: itemToEdit.tipo_cierre || "Centro",
+                    etiqueta_item: itemToEdit.etiqueta_item || "",
+                    ubicacion: itemToEdit.ubicacion || "",
+                    costo_fijo_instalacion: 0
+                })
+            }
+        } else if (open && !itemToEdit) {
+            // Reset to defaults for New Item
+            setItem({
+                id_sistema: "",
+                id_modelo: "",
+                color_perfiles: "",
+                cantidad: 1,
+                ancho_mm: 1000,
+                alto_mm: 1000,
+                tipo_vidrio: "",
+                tipo_cierre: "Centro",
+                etiqueta_item: "V-01",
+                ubicacion: "Ambiente",
+                costo_fijo_instalacion: 0
+            })
+            setServicio({ descripcion: "", cantidad: 1, precio_unitario: 0 })
+            setActiveTab("producto")
+        }
+    }, [open, itemToEdit, allModelos])
+
     // Filtrar modelos según sistema seleccionado
     const filteredModelos = item.id_sistema
         ? allModelos?.filter((m: any) => m.id_sistema === item.id_sistema)
         : allModelos
 
-    // Reset modelo cuando cambia el sistema
-    useEffect(() => {
-        if (item.id_sistema) {
-            setItem(prev => ({ ...prev, id_modelo: "" }))
-        }
-    }, [item.id_sistema])
+    // Reset modelo cuando cambia el sistema (only if user interacts, not initial load)
+    // Removed automatic reset to avoid clearing `id_modelo` when setting initial state from `itemToEdit`
+    // We can handle this by checking if the current model belongs to the new system, if not, clear.
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -90,7 +160,7 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton 
                     return
                 }
 
-                await onItemAdded(item)
+                await onItemAdded({ ...item, _isUpdate: !!itemToEdit })
             } else {
                 // Lógica Servicio
                 if (!servicio.descripcion || servicio.precio_unitario <= 0) {
@@ -99,65 +169,39 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton 
                     return
                 }
 
-                // 1. Crear Linea de Cotización Dummy
-                const linea = await cotizacionesApi.addLineItem(idCotizacion, {
-                    id_modelo: "SERVICIO",
-                    etiqueta_item: servicio.descripcion,
-                    cantidad: servicio.cantidad,
-                    ancho_mm: 0,
-                    alto_mm: 0,
-                    color_perfiles: "GEN", // Default
-                    tipo_vidrio: null
-                    // Otros campos null
-                })
+                if (itemToEdit) {
+                    // Update Service Logic
+                    toast.warning("Edición de servicios aún no implementada completamente", "Por favor elimine y vuelva a crear si necesita cambiar precios.")
+                    // Implementing basic update (qty, desc) could be done here if needed.
+                } else {
+                    // 1. Crear Linea de Cotización Dummy
+                    const linea = await cotizacionesApi.addLineItem(idCotizacion, {
+                        id_modelo: "SERVICIO",
+                        etiqueta_item: servicio.descripcion,
+                        cantidad: servicio.cantidad,
+                        ancho_mm: 0,
+                        alto_mm: 0,
+                        color_perfiles: "GEN", // Default
+                        tipo_vidrio: null
+                        // Otros campos null
+                    })
 
-                // 2. Insertar Costo Manual en Desglose
-                await cotizacionesApi.addDesgloseItem({
-                    id_linea_cot: linea.id_linea_cot,
-                    tipo_componente: "Servicio",
-                    nombre_componente: servicio.descripcion,
-                    cantidad_calculada: servicio.cantidad,
-                    costo_total_item: servicio.precio_unitario * servicio.cantidad, // Costo TOTAL de la linea
-                    sku_real: "SERV-MANUAL"
-                })
+                    // 2. Insertar Costo Manual en Desglose
+                    await cotizacionesApi.addDesgloseItem({
+                        id_linea_cot: linea.id_linea_cot,
+                        tipo_componente: "Servicio",
+                        nombre_componente: servicio.descripcion,
+                        cantidad_calculada: servicio.cantidad,
+                        costo_total_item: servicio.precio_unitario * servicio.cantidad, // Costo TOTAL de la linea
+                        sku_real: "SERV-MANUAL"
+                    })
 
-                // Notify parent (refresh)
-                // We call onItemAdded with null or verify if parent reloads
-                // The parent expects 'item' but mainly triggers reload.
-                // We can pass the linea or just trigger reload.
-                // onItemAdded implementation in parent: adds item -> triggers despiece -> loads.
-                // For service we ALREADY added and "despieced".
-                // So we might need to modify parent or just call load() via parent if exposed?
-                // Parent passes: 
-                // onItemAdded={async (item) => {
-                //    const newLine = await cotizacionesApi.addLineItem(id, item)
-                //    await cotizacionesApi.triggerDespiece(newLine.id_linea_cot)
-                //    load()
-                // }}
-
-                // ISSUE: Parent will try to addLineItem AGAIN and triggerDespiece.
-                // WE MUST NOT USE onItemAdded for Service if parent logic is hardcoded for Products.
-                // We should expose a 'onRefresh' prop or change how onItemAdded works.
-
-                // Let's assume we can change the parent logic or pass a special flag.
-                // If I modify the parent in previous file, we can handle it.
-                // OR we can make `onItemAdded` flexible.
-                // Let's modify this component to handle the FULL logic for service, and tell parent to just RELOAD.
-                // But `onItemAdded` is the only prop.
-
-                // REVISION: I will update the parent `CotizacionDetail` to accept `onRefresh` or similar, 
-                // OR simpler: `onItemAdded` is actually `handleItemAdded`.
-
-                // I'll emit a special event or just throw? 
-                // Better: I will use `window.location.reload()`? No.
-
-                // I will modify `CotizacionDetail` to pass `onSuccess` instead of `onItemAdded` which does eveything.
-                // For now, I'll pass a custom object to onItemAdded that tells it "I'm already done, just reload".
-
-                await onItemAdded({ _type: "SERVICE_DONE" })
+                    await onItemAdded({ _type: "SERVICE_DONE" })
+                }
             }
 
-            toast.success("Ítem agregado", "El ítem se agregó correctamente")
+            if (!itemToEdit) toast.success("Ítem agregado", "El ítem se agregó correctamente")
+
             setOpen(false)
 
             // Reset forms
@@ -165,7 +209,7 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton 
             // Reset item...
         } catch (error: any) {
             console.error(error)
-            toast.error("Error", "No se pudo agregar el ítem")
+            toast.error("Error", "No se pudo procesar el ítem")
         } finally {
             setLoading(false)
         }
@@ -182,16 +226,16 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton 
             </DialogTrigger>
             <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Agregar Ítem a Cotización</DialogTitle>
+                    <DialogTitle>{itemToEdit ? "Editar Ítem" : "Agregar Ítem a Cotización"}</DialogTitle>
                     <DialogDescription>
-                        Seleccione el tipo de ítem que desea agregar.
+                        {itemToEdit ? "Modifique los datos del ítem." : "Seleccione el tipo de ítem que desea agregar."}
                     </DialogDescription>
                 </DialogHeader>
 
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="producto">Producto (Ventana/Puerta)</TabsTrigger>
-                        <TabsTrigger value="servicio">Servicio / Extra</TabsTrigger>
+                        <TabsTrigger value="producto" disabled={!!itemToEdit && itemToEdit.id_modelo === 'SERVICIO'}>Producto (Ventana/Puerta)</TabsTrigger>
+                        <TabsTrigger value="servicio" disabled={!!itemToEdit && itemToEdit.id_modelo !== 'SERVICIO'}>Servicio / Extra</TabsTrigger>
                     </TabsList>
 
                     <form onSubmit={handleSubmit}>
@@ -203,7 +247,9 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton 
                                         <Label>Sistema / Serie *</Label>
                                         <Select
                                             value={item.id_sistema}
-                                            onValueChange={(v) => setItem({ ...item, id_sistema: v, id_modelo: "" })}
+                                            onValueChange={(v) => {
+                                                setItem({ ...item, id_sistema: v, id_modelo: "" })
+                                            }}
                                         >
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Seleccionar Sistema" />
@@ -310,13 +356,14 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton 
                                     <div className="grid gap-2">
                                         <Label>Tipo Vidrio</Label>
                                         <Select
-                                            value={item.tipo_vidrio}
-                                            onValueChange={(v) => setItem({ ...item, tipo_vidrio: v })}
+                                            value={item.tipo_vidrio || "SIN_VIDRIO"} // Handle null/empty
+                                            onValueChange={(v) => setItem({ ...item, tipo_vidrio: v === "SIN_VIDRIO" ? "" : v })}
                                         >
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Seleccionar Vidrio" />
                                             </SelectTrigger>
                                             <SelectContent>
+                                                <SelectItem value="SIN_VIDRIO">Sin Vidrio / No Aplica</SelectItem>
                                                 {vidrios?.map((v: any) => (
                                                     <SelectItem key={v.id_sku} value={v.id_sku}>
                                                         {v.nombre_completo}
@@ -361,7 +408,9 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton 
                                                 min={0}
                                                 value={servicio.precio_unitario}
                                                 onChange={(e) => setServicio({ ...servicio, precio_unitario: Number(e.target.value) })}
+                                                disabled={!!itemToEdit}
                                             />
+                                            {itemToEdit && <p className="text-xs text-red-500">Para cambiar precio, elimine y cree de nuevo.</p>}
                                             <p className="text-xs text-muted-foreground">El Markup se aplicará sobre este precio.</p>
                                         </div>
                                     </div>
@@ -374,7 +423,7 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton 
                                 Cancelar
                             </Button>
                             <Button type="submit" disabled={loading}>
-                                {loading ? "Procesando..." : "Agregar a Cotización"}
+                                {loading ? "Procesando..." : (itemToEdit ? "Guardar Cambios" : "Agregar a Cotización")}
                             </Button>
                         </DialogFooter>
                     </form>

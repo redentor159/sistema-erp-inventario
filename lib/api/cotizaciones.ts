@@ -270,6 +270,16 @@ export const cotizacionesApi = {
         return data
     },
 
+    deleteLineItem: async (id: string) => {
+        const { error } = await supabase
+            .from('trx_cotizaciones_detalle')
+            .delete()
+            .eq('id_linea_cot', id)
+
+        if (error) throw error
+        return true
+    },
+
     // Master Data
     getAcabados: async () => {
         // Solo retornar colores/acabados que aplican a perfiles de aluminio

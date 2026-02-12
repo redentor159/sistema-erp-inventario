@@ -255,7 +255,7 @@ export function SalidaFormCmp({ onSuccess }: SalidaFormProps) {
                                     onCheckedChange={(checked) => setIncluirIgv(checked as boolean)}
                                 />
                                 <label
-                                    href="igv"
+                                    htmlFor="igv"
                                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                 >
                                     Incluir IGV (18%)
