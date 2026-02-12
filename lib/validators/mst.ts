@@ -29,6 +29,12 @@ export const configGeneralSchema = z.object({
     cuenta_bcp_dolares: z.string().optional(),
     cci_soles: z.string().optional(),
     cci_dolares: z.string().optional(),
+
+    cuenta_bbva_soles: z.string().optional(),
+    cuenta_bbva_dolares: z.string().optional(),
+    cci_bbva_soles: z.string().optional(),
+    cci_bbva_dolares: z.string().optional(),
+
     nombre_titular_cuenta: z.string().optional(),
 
     // === TEXTOS ===

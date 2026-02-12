@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { LayoutDashboard, Settings, User, Box, Users, ShoppingCart, FileText, Trello, ChevronLeft, ChevronRight } from "lucide-react"
+import { LayoutDashboard, Settings, User, Box, Users, ShoppingCart, FileText, Trello, ChevronLeft, ChevronRight, FileSpreadsheet } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -51,6 +51,13 @@ export function AppSidebar() {
                 <NavItem href="/clients" icon={Users} label="Clientes" collapsed={collapsed} active={pathname === '/clients'} />
                 <NavItem href="/suppliers" icon={ShoppingCart} label="Proveedores" collapsed={collapsed} active={pathname === '/suppliers'} />
                 <NavItem href="/audit/recetas" icon={FileText} label="🔍 Auditoría Recetas" collapsed={collapsed} active={pathname?.startsWith('/audit')} />
+
+                <div className={cn("pt-4 pb-2", collapsed && "hidden")}>
+                    <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Reportes</p>
+                </div>
+                {collapsed && <div className="h-4" />}
+
+                <NavItem href="/export" icon={FileSpreadsheet} label="Exportar Datos" collapsed={collapsed} active={pathname === '/export'} />
             </nav>
         </aside>
     )

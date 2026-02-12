@@ -21,7 +21,8 @@ export const entradaDetalleSchema = z.object({
     cantidad: z.coerce.number().positive("Cantidad debe ser mayor a 0"),
     costo_unitario: z.coerce.number().min(0, "Costo no puede ser negativo"),
     descuento: z.coerce.number().min(0).optional().default(0),
-    total_linea: z.coerce.number().optional() // Calculated
+    total_linea: z.coerce.number().optional(), // Calculated
+    producto: z.any().optional() // For UI logic (price calculation)
 })
 
 export const entradaCabeceraSchema = z.object({
@@ -49,7 +50,8 @@ export const salidaDetalleSchema = z.object({
     id_sku: z.string().min(1, "SKU es requerido"),
     cantidad: z.coerce.number().positive("Cantidad debe ser mayor a 0"),
     precio_unitario: z.coerce.number().min(0),
-    subtotal: z.coerce.number().optional()
+    subtotal: z.coerce.number().optional(),
+    producto: z.any().optional() // For UI logic
 })
 
 export const salidaCabeceraSchema = z.object({

@@ -14,6 +14,8 @@ import type { MstCliente, MstMarca } from './index'
 // TIPOS BASE (Tablas)
 // ============================================================================
 
+export type EstadoCotizacion = 'Borrador' | 'Aprobada' | 'Rechazada' | 'Anulada'
+
 /**
  * Cabecera de cotización (tabla base)
  */
@@ -40,6 +42,14 @@ export interface TrxCotizacionCabecera {
     link_pdf?: string | null
     terminos_personalizados?: string | null
     titulo_documento?: string | null
+    // Audit Fields (State Management)
+    fecha_aprobacion?: string | null
+    fecha_rechazo?: string | null
+    motivo_rechazo?: string | null
+
+    // Delivery Logic
+    fecha_prometida?: string | null
+    fecha_entrega_real?: string | null
 }
 
 /**

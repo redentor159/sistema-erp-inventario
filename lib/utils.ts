@@ -5,12 +5,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatCurrency(amount: number | string | null | undefined): string {
+export function formatCurrency(amount: number | string | null | undefined, currency: "PEN" | "USD" = "PEN"): string {
   const value = typeof amount === 'string' ? parseFloat(amount) : amount
-  if (value === undefined || value === null || isNaN(value)) return "S/ 0.00"
+  if (value === undefined || value === null || isNaN(value)) return currency === "USD" ? "$ 0.00" : "S/ 0.00"
 
-  return new Intl.NumberFormat("es-PE", {
+  return new Intl.NumberFormat(currency === "USD" ? "en-US" : "es-PE", {
     style: "currency",
-    currency: "PEN",
+    currency: currency,
   }).format(value)
 }

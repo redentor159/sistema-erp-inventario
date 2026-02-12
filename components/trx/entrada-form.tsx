@@ -26,7 +26,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { ProductCombobox } from "./product-combobox"
+import { ServerProductCombobox } from "@/components/trx/server-product-combobox"
 import {
     Table,
     TableBody,
@@ -50,11 +50,9 @@ export function EntradaFormCmp({ onSuccess }: EntradaFormProps) {
 
     // Data fetching
     const { data: proveedores } = useQuery({ queryKey: ["mstProveedores"], queryFn: () => mstApi.getProveedores() })
-    const { data: productos } = useQuery({
-        queryKey: ["catProductos"],
-        queryFn: () => catApi.getProductos({ pageSize: 1000 }),
-        select: (data) => data.data
-    })
+
+    // REMOVED BULK FETCHING OF PRODUCTS
+    // const { data: productos } = useQuery(...)
 
     const form = useForm<EntradaForm>({
         resolver: zodResolver(entradaCabeceraSchema) as any,
@@ -214,19 +212,21 @@ export function EntradaFormCmp({ onSuccess }: EntradaFormProps) {
                         )}
                     />
 
-                    <FormField
-                        control={form.control}
-                        name="tipo_cambio"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Tipo Cambio</FormLabel>
-                                <FormControl>
-                                    <Input type="number" step="0.001" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    {form.watch("moneda") !== "PEN" && (
+                        <FormField
+                            control={form.control}
+                            name="tipo_cambio"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Tipo Cambio</FormLabel>
+                                    <FormControl>
+                                        <Input type="number" step="0.001" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    )}
 
                     <FormField
                         control={form.control}
@@ -274,15 +274,16 @@ export function EntradaFormCmp({ onSuccess }: EntradaFormProps) {
                                                 name={`detalles.${index}.id_sku`}
                                                 render={({ field }) => (
                                                     <FormControl>
-                                                        <ProductCombobox
+                                                        <ServerProductCombobox
                                                             value={field.value}
                                                             onChange={(val, product) => {
                                                                 field.onChange(val)
-                                                                if (product?.costo_unitario) {
-                                                                    form.setValue(`detalles.${index}.costo_unitario`, Number(product.costo_unitario))
+                                                                // Auto-fill cost
+                                                                if (product) {
+                                                                    const currentCost = product.costo_estandar || 0
+                                                                    form.setValue(`detalles.${index}.costo_unitario`, currentCost)
                                                                 }
                                                             }}
-                                                            productos={productos || []}
                                                         />
                                                     </FormControl>
                                                 )}

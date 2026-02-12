@@ -85,27 +85,56 @@ export const catApi = {
             .from('vw_stock_realtime')
             .select('*', { count: 'exact' })
 
+        // Apply filters
         if (search) {
             query = query.or(`id_sku.ilike.%${search}%,nombre_completo.ilike.%${search}%`)
         }
-
         if (familia !== 'ALL') query = query.eq('nombre_familia', familia)
         if (marca !== 'ALL') query = query.eq('nombre_marca', marca)
         if (material !== 'ALL') query = query.eq('nombre_material', material)
         if (sistema !== 'ALL') query = query.eq('id_sistema', sistema)
         if (acabado !== 'ALL') query = query.eq('nombre_acabado', acabado)
 
+        // Always apply sorting
         query = query
             .order('orden_prioridad', { ascending: true })
             .order('id_sku', { ascending: true })
 
-        const from = page * pageSize
-        const to = from + pageSize - 1
+        // ─────────────────────────────────────────────────────────────
+        // PAGINATION LOGIC (Loop to bypass 1000 row limit)
+        // ─────────────────────────────────────────────────────────────
 
-        const { data, error, count } = await query.range(from, to)
+        let allData: any[] = []
+        let totalCount = 0
+        const CHUNK_SIZE = 1000 // Supabase API limit
+        let currentFrom = page * pageSize
+        const endTarget = currentFrom + pageSize - 1
 
-        if (error) throw error
-        return { data, count }
+        while (currentFrom <= endTarget) {
+            // Calculate range for this chunk
+            // We want to fetch up to CHUNK_SIZE items, but not exceed the overall 'to' target
+            const currentTo = Math.min(currentFrom + CHUNK_SIZE - 1, endTarget)
+
+            const { data, error, count } = await query.range(currentFrom, currentTo)
+
+            if (error) throw error
+
+            if (data) {
+                allData = [...allData, ...data]
+            }
+
+            if (count !== null) totalCount = count
+
+            // Stop if we received fewer items than requested (end of data)
+            if (!data || data.length < (currentTo - currentFrom + 1)) {
+                break
+            }
+
+            // Move to next chunk
+            currentFrom += CHUNK_SIZE
+        }
+
+        return { data: allData, count: totalCount }
     },
 
     /**

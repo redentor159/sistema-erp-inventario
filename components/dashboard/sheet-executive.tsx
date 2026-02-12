@@ -9,11 +9,12 @@ import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { DollarSign, Percent, TrendingUp, AlertCircle, CheckCircle2 } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { SimpleTooltip } from "@/components/ui/simple-tooltip"
 
 export function SheetExecutive() {
     const { data: valuation, isLoading: loadingVal } = useQuery({
         queryKey: ["dashValuation"],
-        queryFn: dashboardApi.getValuation
+        queryFn: dashboardApi.getValorizacion
     })
 
     const { data: otifData, isLoading: loadingOtif } = useQuery({
@@ -61,7 +62,10 @@ export function SheetExecutive() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Valor Total Inventario</CardTitle>
+                        <CardTitle className="text-sm font-medium flex items-center">
+                            Valor Total Inventario
+                            <SimpleTooltip text="Suma total del valor de tu stock actual, calculado usando el Precio Medio Ponderado (PMP) de cada material." />
+                        </CardTitle>
                         <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -76,7 +80,10 @@ export function SheetExecutive() {
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Nivel de Servicio (OTIF)</CardTitle>
+                        <CardTitle className="text-sm font-medium flex items-center">
+                            Nivel de Servicio (OTIF)
+                            <SimpleTooltip text="On-Time In-Full. Porcentaje de pedidos entregados A TIEMPO y COMPLETOS según la Fecha Prometida." />
+                        </CardTitle>
                         <CheckCircle2 className={`h-4 w-4 ${otifPct >= 95 ? "text-green-500" : "text-yellow-500"}`} />
                     </CardHeader>
                     <CardContent>
@@ -89,7 +96,10 @@ export function SheetExecutive() {
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Materiales Críticos</CardTitle>
+                        <CardTitle className="text-sm font-medium flex items-center">
+                            Materiales Críticos
+                            <SimpleTooltip text="SKUs cuyo stock actual está por debajo del 'Stock Mínimo' definido. Riesgo alto de parar producción." />
+                        </CardTitle>
                         <AlertCircle className="h-4 w-4 text-red-500" />
                     </CardHeader>
                     <CardContent>
@@ -119,7 +129,10 @@ export function SheetExecutive() {
                 {/* OTIF History Chart */}
                 <Card className="col-span-4">
                     <CardHeader>
-                        <CardTitle>Histórico de Cumplimiento (OTIF)</CardTitle>
+                        <CardTitle className="flex items-center">
+                            Histórico de Cumplimiento (OTIF)
+                            <SimpleTooltip text="Evolución mensual de tu puntualidad. Cada barra representa un mes. Altura = % de pedidos a tiempo. Verde = >90%, Amarillo = <90%." />
+                        </CardTitle>
                         <CardDescription>Evolución del nivel de servicio últimos 6 meses</CardDescription>
                     </CardHeader>
                     <CardContent className="pl-2">

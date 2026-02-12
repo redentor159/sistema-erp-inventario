@@ -60,6 +60,11 @@ export function ConfigGeneralFormCmp() {
             cuenta_bcp_dolares: config.cuenta_bcp_dolares || "",
             cci_soles: config.cci_soles || "",
             cci_dolares: config.cci_dolares || "",
+            // BBVA
+            cuenta_bbva_soles: config.cuenta_bbva_soles || "",
+            cuenta_bbva_dolares: config.cuenta_bbva_dolares || "",
+            cci_bbva_soles: config.cci_bbva_soles || "",
+            cci_bbva_dolares: config.cci_bbva_dolares || "",
             nombre_titular_cuenta: config.nombre_titular_cuenta || "",
             texto_condiciones_base: config.texto_condiciones_base || "",
             texto_garantia: config.texto_garantia || "",
@@ -538,6 +543,39 @@ export function ConfigGeneralFormCmp() {
                                                 </FormItem>
                                             )}
                                         />
+                                        <div className="pt-4 mt-4 border-t border-slate-200/60">
+                                            <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                                                <Landmark className="h-3 w-3" /> BBVA Soles
+                                            </h4>
+                                            <div className="space-y-3">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="cuenta_bbva_soles"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Cuenta BBVA Soles</FormLabel>
+                                                            <FormControl>
+                                                                <Input placeholder="0011-..." {...field} value={field.value || ""} />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={form.control}
+                                                    name="cci_bbva_soles"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>CCI BBVA Soles</FormLabel>
+                                                            <FormControl>
+                                                                <Input placeholder="0011-..." {...field} value={field.value || ""} />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div className="space-y-4 p-4 border rounded-lg">
@@ -573,6 +611,39 @@ export function ConfigGeneralFormCmp() {
                                                 </FormItem>
                                             )}
                                         />
+                                        <div className="pt-4 mt-4 border-t border-slate-200/60">
+                                            <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                                                <Landmark className="h-3 w-3" /> BBVA Dólares
+                                            </h4>
+                                            <div className="space-y-3">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="cuenta_bbva_dolares"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Cuenta BBVA USD</FormLabel>
+                                                            <FormControl>
+                                                                <Input placeholder="0011-..." {...field} value={field.value || ""} />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={form.control}
+                                                    name="cci_bbva_dolares"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>CCI BBVA Dólares</FormLabel>
+                                                            <FormControl>
+                                                                <Input placeholder="0011-..." {...field} value={field.value || ""} />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </CardContent>
@@ -779,6 +850,6 @@ export function ConfigGeneralFormCmp() {
                     </Button>
                 </div>
             </form>
-        </Form>
+        </Form >
     )
 }

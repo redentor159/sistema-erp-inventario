@@ -21,6 +21,11 @@ export interface MstConfigGeneral {
     cuenta_bcp_dolares?: string
     cci_soles?: string
     cci_dolares?: string
+    // BBVA
+    cuenta_bbva_soles?: string
+    cuenta_bbva_dolares?: string
+    cci_bbva_soles?: string
+    cci_bbva_dolares?: string
     nombre_titular_cuenta?: string
 
     // Texts

@@ -83,6 +83,44 @@ export const cotizacionesApi = {
     },
 
     /**
+     * Actualiza el estado de la cotización (Aprobar/Rechazar/Anular).
+     */
+    updateEstado: async (id: string, nuevoEstado: string, motivoRechazo?: string) => {
+        const updates: any = {
+            estado: nuevoEstado,
+        }
+
+        const now = new Date().toISOString()
+
+        if (nuevoEstado === 'Aprobada') {
+            updates.fecha_aprobacion = now
+            updates.fecha_rechazo = null
+            updates.motivo_rechazo = null
+        } else if (nuevoEstado === 'Rechazada') {
+            updates.fecha_rechazo = now
+            updates.motivo_rechazo = motivoRechazo
+            updates.fecha_aprobacion = null
+        } else if (nuevoEstado === 'Finalizada') {
+            updates.fecha_entrega_real = now
+        } else if (nuevoEstado === 'Borrador') {
+            // Reset audit if going back to draft (optional, depending on business logic)
+            updates.fecha_aprobacion = null
+            updates.fecha_rechazo = null
+            updates.motivo_rechazo = null
+        }
+
+        const { data, error } = await supabase
+            .from('trx_cotizaciones_cabecera')
+            .update(updates)
+            .eq('id_cotizacion', id)
+            .select()
+            .single()
+
+        if (error) throw error
+        return data
+    },
+
+    /**
      * Agrega una linea (Ventana/Ítem) a la cotización.
      */
     addLineItem: async (idCotizacion: string, item: any) => {

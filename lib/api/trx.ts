@@ -4,12 +4,12 @@ import { EntradaForm, SalidaForm } from "@/lib/validators/trx"
 
 export const trxApi = {
     // --- KARDEX (MOVIMIENTOS) ---
-    getMovimientos: async (filters?: { search?: string, tipo?: string, from?: Date, to?: Date }) => {
+    getMovimientos: async (filters?: { search?: string, tipo?: string, from?: Date, to?: Date, limit?: number, offset?: number }) => {
         let query = supabase
             .from('vw_kardex_reporte')
-            .select('*')
+            .select('*', { count: 'exact' }) // Request count for pagination
             .order('fecha_hora', { ascending: false })
-            .limit(100)
+            .range(filters?.offset || 0, (filters?.offset || 0) + (filters?.limit || 100) - 1)
 
         if (filters?.tipo && filters.tipo !== 'TODOS') {
             query = query.eq('tipo_movimiento', filters.tipo)
@@ -20,10 +20,10 @@ export const trxApi = {
             query = query.or(`id_sku.ilike.%${s}%,producto_nombre.ilike.%${s}%,entidad_nombre.ilike.%${s}%,nro_documento.ilike.%${s}%,comentarios.ilike.%${s}%`)
         }
 
-        const { data, error } = await query
+        const { data, error, count } = await query
 
         if (error) throw error
-        return data
+        return { data, count } // Return object with data and count
     },
 
     // Get current stock (simple aggregation)

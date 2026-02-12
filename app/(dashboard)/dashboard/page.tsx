@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { LayoutDashboard, BarChart3, Factory, AlertTriangle } from "lucide-react"
+import { LayoutDashboard, BarChart3, TrendingUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -9,17 +9,15 @@ import { Separator } from "@/components/ui/separator"
 // Components (We will create these next)
 import { SheetExecutive } from "@/components/dashboard/sheet-executive"
 import { SheetAnalytics } from "@/components/dashboard/sheet-analytics"
-import { SheetOperations } from "@/components/dashboard/sheet-operations"
-import { SheetRisk } from "@/components/dashboard/sheet-risk"
+import { SheetCommercial } from "@/components/dashboard/sheet-commercial"
 
 export default function DashboardPage() {
-    const [activeView, setActiveView] = useState<"executive" | "analytics" | "operations" | "risk">("executive")
+    const [activeView, setActiveView] = useState<"executive" | "analytics" | "commercial">("executive")
 
     const navItems = [
         { id: "executive", label: "Vista Ejecutiva", icon: LayoutDashboard, description: "Valorización & KPIs" },
+        { id: "commercial", label: "Inteligencia Comercial", icon: TrendingUp, description: "Ventas & Márgenes" },
         { id: "analytics", label: "Analítica Inventarios", icon: BarChart3, description: "Quiebres & Pareto" },
-        { id: "operations", label: "Control Planta", icon: Factory, description: "WIP & Cuellos de Botella" },
-        { id: "risk", label: "Gestión Riesgos", icon: AlertTriangle, description: "Simulación & EOQ" },
     ] as const
 
     return (
@@ -57,9 +55,8 @@ export default function DashboardPage() {
                 {/* Main Content Area */}
                 <main className="flex-1 overflow-y-auto pr-2">
                     {activeView === "executive" && <SheetExecutive />}
+                    {activeView === "commercial" && <SheetCommercial />}
                     {activeView === "analytics" && <SheetAnalytics />}
-                    {activeView === "operations" && <SheetOperations />}
-                    {activeView === "risk" && <SheetRisk />}
                 </main>
             </div>
         </div>

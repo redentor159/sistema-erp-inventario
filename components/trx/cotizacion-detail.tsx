@@ -199,7 +199,8 @@ export function CotizacionDetail({ id }: { id: string }) {
                 id_cliente: cotizacion.id_cliente,
                 id_marca: cotizacion.id_marca,
                 costo_fijo_instalacion: cotizacion.costo_fijo_instalacion || 0,
-                incluye_igv: cotizacion.incluye_igv
+                incluye_igv: cotizacion.incluye_igv,
+                fecha_prometida: cotizacion.fecha_prometida
                 // Add validation validity, currency here if needed
             })
             toast({
@@ -241,12 +242,46 @@ export function CotizacionDetail({ id }: { id: string }) {
                         <h2 className="text-2xl font-bold">{cotizacion.nombre_proyecto}</h2>
                         <div className="flex gap-2 text-sm text-muted-foreground">
                             <span>{cotizacion.id_cotizacion}</span>
-                            <span>•</span>
-                            <span className="font-semibold text-primary">{cotizacion.estado}</span>
                         </div>
+
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
+                    <Select
+                        value={cotizacion.estado}
+                        onValueChange={async (newVal) => {
+                            let confirmMsg = `¿Cambiar estado a ${newVal}?`
+                            if (newVal === 'Finalizada') confirmMsg = "¿Confirmar ENTREGA FINAL y registrar fecha de hoy?"
+
+                            if (!confirm(confirmMsg)) return
+
+                            let motivo = undefined
+                            if (newVal === 'Rechazada') {
+                                motivo = prompt("Motivo del rechazo (Opcional):") || undefined
+                            }
+
+                            try {
+                                await cotizacionesApi.updateEstado(id, newVal, motivo)
+                                toast({ title: "Estado Actualizado", description: `La cotización ahora está ${newVal}` })
+                                load()
+                            } catch (e: any) {
+                                console.error(e)
+                                toast({ variant: "destructive", title: "Error", description: "No se pudo cambiar el estado" })
+                            }
+                        }}
+                    >
+                        <SelectTrigger className="w-[140px] h-9 bg-background border-input text-foreground font-medium">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Borrador">Borrador</SelectItem>
+                            <SelectItem value="Aprobada">Aprobada</SelectItem>
+                            <SelectItem value="Rechazada">Rechazada</SelectItem>
+                            <SelectItem value="Finalizada">Finalizada (Entregada)</SelectItem>
+                            <SelectItem value="Anulada">Anulada</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Separator orientation="vertical" className="h-6 mx-1" />
                     <Button variant="outline" onClick={handleCloneCotizacion}>
                         <Copy className="mr-2 h-4 w-4" /> Duplicar Cotización
                     </Button>
@@ -333,6 +368,14 @@ export function CotizacionDetail({ id }: { id: string }) {
                                     ))}
                                 </SelectContent>
                             </Select>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Fecha Prometida de Entrega</Label>
+                            <Input
+                                type="date"
+                                value={cotizacion.fecha_prometida ? new Date(cotizacion.fecha_prometida).toISOString().split('T')[0] : ''}
+                                onChange={(e) => setCotizacion({ ...cotizacion, fecha_prometida: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                            />
                         </div>
                         <div className="grid gap-2">
                             <Label>Servicios de Instalación (Opcional)</Label>

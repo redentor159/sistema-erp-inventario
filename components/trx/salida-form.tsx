@@ -27,8 +27,8 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ProductCombobox } from "./product-combobox"
 import { Textarea } from "@/components/ui/textarea"
+import { ServerProductCombobox } from "@/components/trx/server-product-combobox"
 
 import {
     Table,
@@ -52,11 +52,8 @@ export function SalidaFormCmp({ onSuccess }: SalidaFormProps) {
     const queryClient = useQueryClient()
 
     const { data: clientes } = useQuery({ queryKey: ["mstClientes"], queryFn: () => mstApi.getClientes() })
-    const { data: productos } = useQuery({
-        queryKey: ["catProductos"],
-        queryFn: () => catApi.getProductos({ pageSize: 1000 }),
-        select: (data) => data.data
-    })
+
+    // REMOVED BULK FETCHING OF PRODUCTS
 
     const form = useForm<SalidaForm>({
         resolver: zodResolver(salidaCabeceraSchema) as any,
@@ -87,26 +84,27 @@ export function SalidaFormCmp({ onSuccess }: SalidaFormProps) {
     // PRECIOS LOGIC
     const { data: config } = useQuery({ queryKey: ["mstConfig"], queryFn: mstApi.getConfiguracion })
 
-    // Effect to update prices when picking a product or changing Output Type
-    // Note: We scan the fields to see if they need price updates (e.g. newly added or changed SKU)
-    // Ideally this would be done at the onItemChange level, but useFieldArray makes it tricky.
-    // Simplifying: we trust the user to manually adjust if needed, BUT we default the price when selecting.
-
-
-    // Auto-recalculate prices when Toggle changes
+    // Auto-recalculate prices when Toggle changes or Type changes
     React.useEffect(() => {
+        // We need to use getValues to access the "producto" field which might not be watched deeply if not used in render
+        // But 'detalles' watcher above should trigger this effect too if we depend on it?
+        // Let's rely on form.getValues() inside the effect to be safe.
         const currentDetails = form.getValues("detalles")
+
         if (currentDetails.length > 0) {
             currentDetails.forEach((item, index) => {
-                const newPrice = calculatePrice(item.id_sku, tipoSalida)
-                form.setValue(`detalles.${index}.precio_unitario`, newPrice)
+                // We use the stored product object if available
+                if (item.producto) {
+                    const newPrice = calculatePrice(item.producto, tipoSalida)
+                    // Only update if different to avoid infinite loops? 
+                    // setValue should be fine.
+                    form.setValue(`detalles.${index}.precio_unitario`, newPrice)
+                }
             })
         }
-    }, [incluirIgv, tipoSalida]) // Re-run if IGV toggle or Type changes
+    }, [incluirIgv, tipoSalida, config])
 
-    const calculatePrice = (skuId: string, tipo: string) => {
-        if (!skuId || !productos) return 0
-        const product = productos.find((p: any) => p.id_sku === skuId)
+    const calculatePrice = (product: any, tipo: string) => {
         if (!product) return 0
 
         const pmp = Number(product.costo_promedio) || 0
@@ -138,6 +136,7 @@ export function SalidaFormCmp({ onSuccess }: SalidaFormProps) {
             queryClient.invalidateQueries({ queryKey: ["trxSalidas"] })
             alert("¡Salida registrada correctamente!")
             form.reset()
+            setIncluirIgv(false)
             onSuccess?.()
         },
         onError: (error) => {
@@ -247,6 +246,23 @@ export function SalidaFormCmp({ onSuccess }: SalidaFormProps) {
                 <div className="space-y-4">
                     <div className="flex justify-between items-center">
                         <h3 className="text-lg font-medium">Items de Salida</h3>
+
+                        {tipoSalida === 'VENTA' && (
+                            <div className="flex items-center space-x-2">
+                                <Checkbox
+                                    id="igv"
+                                    checked={incluirIgv}
+                                    onCheckedChange={(checked) => setIncluirIgv(checked as boolean)}
+                                />
+                                <label
+                                    href="igv"
+                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                >
+                                    Incluir IGV (18%)
+                                </label>
+                            </div>
+                        )}
+
                         <Button type="button" variant="outline" size="sm" onClick={() => append({ id_sku: "", cantidad: 1, precio_unitario: 0 })}>
                             <Plus className="mr-2 h-4 w-4" />
                             Agregar Item
@@ -276,12 +292,15 @@ export function SalidaFormCmp({ onSuccess }: SalidaFormProps) {
                                                 render={({ field }) => (
                                                     <FormItem className="flex flex-col">
                                                         <FormControl>
-                                                            <ProductCombobox
+                                                            <ServerProductCombobox
                                                                 value={field.value}
-                                                                productos={productos || []}
+                                                                initialProduct={field.value && (form.getValues(`detalles.${index}.producto`) as any)}
                                                                 onChange={(newSku, product) => {
                                                                     field.onChange(newSku)
-                                                                    const price = calculatePrice(newSku, tipoSalida)
+                                                                    // Store product for future recalculations
+                                                                    form.setValue(`detalles.${index}.producto`, product)
+
+                                                                    const price = calculatePrice(product, tipoSalida)
                                                                     form.setValue(`detalles.${index}.precio_unitario`, price)
                                                                 }}
                                                             />
