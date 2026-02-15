@@ -17,7 +17,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { Trash2, Plus, ArrowLeft, Printer, RefreshCw, Save, Loader2, Calculator, Copy, Pencil, FileText } from "lucide-react"
+import { Trash2, Plus, ArrowLeft, Printer, RefreshCw, Save, Loader2, Calculator, Copy, Pencil, FileText, ChevronRight, ChevronDown } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ClientCombobox } from "./client-combobox"
@@ -47,6 +47,13 @@ export function CotizacionDetail({ id }: { id: string }) {
     // Dialog State
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [editingItem, setEditingItem] = useState<any>(null)
+
+    // Row Expansion State
+    const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
+
+    const toggleRow = (id: string) => {
+        setExpandedItems(prev => ({ ...prev, [id]: !prev[id] }))
+    }
 
     // Bulk Actions & Selection
     const [selectedItems, setSelectedItems] = useState<string[]>([])
@@ -609,36 +616,54 @@ export function CotizacionDetail({ id }: { id: string }) {
                                                 />
                                             </td>
                                             <td className="p-3">
-                                                <div className="font-bold">{item.etiqueta_item}</div>
-                                                {item.id_modelo !== 'SERVICIO' && (
-                                                    <>
-                                                        <div className="text-xs text-muted-foreground">{item.id_modelo}</div>
-                                                        <div className="text-xs text-muted-foreground">Color: {item.color_perfiles}</div>
+                                                <div className="flex items-start gap-2">
+                                                    {item.id_modelo !== 'SERVICIO' && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-6 w-6 mt-0.5 shrink-0"
+                                                            onClick={() => toggleRow(item.id_linea_cot)}
+                                                        >
+                                                            {expandedItems[item.id_linea_cot] ? (
+                                                                <ChevronDown className="h-4 w-4 text-slate-500" />
+                                                            ) : (
+                                                                <ChevronRight className="h-4 w-4 text-slate-500" />
+                                                            )}
+                                                        </Button>
+                                                    )}
+                                                    <div>
+                                                        <div className="font-bold">{item.etiqueta_item}</div>
+                                                        {item.id_modelo !== 'SERVICIO' && (
+                                                            <>
+                                                                <div className="text-xs text-muted-foreground">{item.id_modelo}</div>
+                                                                <div className="text-xs text-muted-foreground">Color: {item.color_perfiles}</div>
 
-                                                        {/* Dynamic Options Render (Mini) - FIXED */}
-                                                        {(() => {
-                                                            const itemOptions = recipesOptionsByModel[item.id_modelo || ""]
-                                                            if (!itemOptions) return null
-                                                            return Object.entries(itemOptions).map(([grupo, opts]) => {
-                                                                const currentVal = (item.opciones_seleccionadas as any)?.[grupo] || ""
+                                                                {/* Dynamic Options Render (Mini) - FIXED */}
+                                                                {(() => {
+                                                                    const itemOptions = recipesOptionsByModel[item.id_modelo || ""]
+                                                                    if (!itemOptions) return null
+                                                                    return Object.entries(itemOptions).map(([grupo, opts]) => {
+                                                                        const currentVal = (item.opciones_seleccionadas as any)?.[grupo] || ""
 
-                                                                if (currentVal) {
-                                                                    return <div key={grupo} className="text-xs text-blue-600 font-medium mt-1">
-                                                                        {grupo}: <span className="font-mono text-slate-700">{currentVal}</span>
-                                                                    </div>
-                                                                }
+                                                                        if (currentVal) {
+                                                                            return <div key={grupo} className="text-xs text-blue-600 font-medium mt-1">
+                                                                                {grupo}: <span className="font-mono text-slate-700">{currentVal}</span>
+                                                                            </div>
+                                                                        }
 
-                                                                // If required but missing
-                                                                return <div key={grupo} className="text-xs text-orange-600 font-bold mt-1">
-                                                                    ⚠️ Falta {grupo}
-                                                                </div>
-                                                            })
-                                                        })()}
-                                                    </>
-                                                )}
-                                                {item.id_modelo === 'SERVICIO' && (
-                                                    <div className="text-xs text-blue-600 font-medium">Servicio / Extra</div>
-                                                )}
+                                                                        // If required but missing
+                                                                        return <div key={grupo} className="text-xs text-orange-600 font-bold mt-1">
+                                                                            ⚠️ Falta {grupo}
+                                                                        </div>
+                                                                    })
+                                                                })()}
+                                                            </>
+                                                        )}
+                                                        {item.id_modelo === 'SERVICIO' && (
+                                                            <div className="text-xs text-blue-600 font-medium">Servicio / Extra</div>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td className="p-3">
                                                 {item.id_modelo === 'SERVICIO' ? '-' : `${item.ancho_mm} x ${item.alto_mm}`}
@@ -679,33 +704,35 @@ export function CotizacionDetail({ id }: { id: string }) {
                                                 </Button>
                                             </td>
                                         </tr>
-                                        {item.id_modelo !== 'SERVICIO' && (
-                                            <tr className="bg-slate-50 border-b">
+                                        {item.id_modelo !== 'SERVICIO' && expandedItems[item.id_linea_cot] && (
+                                            <tr className="bg-slate-50 border-b animate-in fade-in zoom-in-95 duration-200">
                                                 <td colSpan={7} className="p-2 pl-12 text-xs">
-                                                    {/* Render Selectors Here */}
-                                                    <div className="mb-2 grid grid-cols-2 gap-4 max-w-2xl bg-white p-2 rounded border border-blue-100">
-                                                        {(() => {
-                                                            const itemOptions = recipesOptionsByModel[item.id_modelo || ""]
-                                                            if (!itemOptions) return <div className="text-muted-foreground italic">Sin opciones configurables.</div>
+                                                    {/* Render Selectors Here - ONLY IF OPTIONS EXIST */}
+                                                    {(() => {
+                                                        const itemOptions = recipesOptionsByModel[item.id_modelo || ""]
+                                                        if (!itemOptions) return null
 
-                                                            return Object.entries(itemOptions).map(([grupo, opts]) => {
-                                                                const currentVal = (item.opciones_seleccionadas as any)?.[grupo] || ""
+                                                        return (
+                                                            <div className="mb-2 grid grid-cols-2 gap-4 max-w-2xl bg-white p-2 rounded border border-blue-100">
+                                                                {Object.entries(itemOptions).map(([grupo, opts]) => {
+                                                                    const currentVal = (item.opciones_seleccionadas as any)?.[grupo] || ""
 
-                                                                return (
-                                                                    <div key={grupo} className="grid gap-1">
-                                                                        <Label className="text-xs font-semibold text-muted-foreground">
-                                                                            {grupo === 'TIPO_BRAZO' ? 'Tipo de Brazo' : grupo}
-                                                                        </Label>
-                                                                        <CatalogSkuSelector
-                                                                            value={currentVal}
-                                                                            onChange={(sku) => handleOptionChange(item, grupo, sku)}
-                                                                            placeholder={`Seleccionar ${grupo}`}
-                                                                        />
-                                                                    </div>
-                                                                )
-                                                            })
-                                                        })()}
-                                                    </div>
+                                                                    return (
+                                                                        <div key={grupo} className="grid gap-1">
+                                                                            <Label className="text-xs font-semibold text-muted-foreground">
+                                                                                {grupo === 'TIPO_BRAZO' ? 'Tipo de Brazo' : grupo}
+                                                                            </Label>
+                                                                            <CatalogSkuSelector
+                                                                                value={currentVal}
+                                                                                onChange={(sku) => handleOptionChange(item, grupo, sku)}
+                                                                                placeholder={`Seleccionar ${grupo}`}
+                                                                            />
+                                                                        </div>
+                                                                    )
+                                                                })}
+                                                            </div>
+                                                        )
+                                                    })()}
 
                                                     <DespiecePreview idLinea={item.id_linea_cot} />
                                                 </td>

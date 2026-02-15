@@ -48,10 +48,10 @@ export function AppSidebar() {
                 {collapsed && <div className="h-4" />}
 
                 <NavItem href="/configuracion" icon={Settings} label="Configuración" collapsed={collapsed} active={pathname === '/configuracion'} />
-                <NavItem href="/recetas" icon={FileText} label="📐 Recetas" collapsed={collapsed} active={pathname?.startsWith('/recetas')} />
+                <NavItem href="/recetas" icon={FileText} label="Recetas" collapsed={collapsed} active={pathname?.startsWith('/recetas')} />
                 <NavItem href="/clients" icon={Users} label="Clientes" collapsed={collapsed} active={pathname === '/clients'} />
                 <NavItem href="/suppliers" icon={ShoppingCart} label="Proveedores" collapsed={collapsed} active={pathname === '/suppliers'} />
-                <NavItem href="/audit/recetas" icon={FileText} label="🔍 Auditoría Recetas" collapsed={collapsed} active={pathname?.startsWith('/audit')} />
+                <NavItem href="/audit/recetas" icon={FileText} label="Auditoría Recetas" collapsed={collapsed} active={pathname?.startsWith('/audit')} />
 
                 <div className={cn("pt-4 pb-2", collapsed && "hidden")}>
                     <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Reportes</p>
