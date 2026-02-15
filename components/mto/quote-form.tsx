@@ -2,6 +2,7 @@
 "use client"
 
 import { useForm, useFieldArray } from "react-hook-form"
+import { useMemo } from "react" // Added useMemo
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Loader2, Plus, Trash2, Calculator } from "lucide-react"
@@ -41,7 +42,9 @@ import { cotizacionCabeceraSchema, CotizacionForm } from "@/lib/validators/mto"
 import { mtoApi } from "@/lib/api/mto"
 import { mstApi } from "@/lib/api/mst"
 import { catApi } from "@/lib/api/cat"
+import { recetasApi } from "@/lib/api/recetas" // Added recetasApi
 import { cotizacionesApi } from "@/lib/api/cotizaciones"
+import { CatalogSkuSelector } from "@/components/mto/catalog-sku-selector"
 
 interface QuoteFormProps {
     onSuccess?: () => void
@@ -56,6 +59,24 @@ export function QuoteFormCmp({ onSuccess }: QuoteFormProps) {
     // FIXED: Use Engineering Recipes IDs instead of Product Templates
     // const { data: plantillas } = useQuery({ queryKey: ["catPlantillas"], queryFn: catApi.getPlantillas })
     const { data: recetas } = useQuery({ queryKey: ["mstRecetasIds"], queryFn: cotizacionesApi.getRecetasIDs })
+
+    // Options for dynamic selectors (e.g. Brazos)
+    const { data: recetasOptions } = useQuery({
+        queryKey: ["recetasOptions"],
+        queryFn: recetasApi.getRecetasOptions
+    })
+
+    const recipesOptionsByModel = useMemo(() => {
+        if (!recetasOptions) return {}
+        const grouped: Record<string, Record<string, any[]>> = {}
+
+        recetasOptions.forEach((r: any) => {
+            if (!grouped[r.id_modelo]) grouped[r.id_modelo] = {}
+            if (!grouped[r.id_modelo][r.grupo_opcion]) grouped[r.id_modelo][r.grupo_opcion] = []
+            grouped[r.id_modelo][r.grupo_opcion].push(r)
+        })
+        return grouped
+    }, [recetasOptions])
 
     const form = useForm<CotizacionForm>({
         resolver: zodResolver(cotizacionCabeceraSchema) as any,
@@ -284,6 +305,65 @@ export function QuoteFormCmp({ onSuccess }: QuoteFormProps) {
                                             </FormItem>
                                         )}
                                     />
+
+                                    {/* Dynamic Options Selector (e.g. Brazos) */}
+                                    {(() => {
+                                        const currentModelId = form.watch(`detalles.${index}.id_modelo`);
+                                        if (!currentModelId || !recetasOptions) return null;
+
+                                        const itemOptions = recipesOptionsByModel[currentModelId];
+                                        if (!itemOptions) return null;
+
+                                        return Object.entries(itemOptions).map(([grupo, items]: [string, any[]]) => {
+                                            // 1. GENERIC SELECTION (Catalog Search)
+                                            // If group is 'TIPO_BRAZO', show Catalog Selector
+                                            if (grupo === 'TIPO_BRAZO') {
+                                                return (
+                                                    <div key={grupo} className="col-span-2 bg-blue-50 p-2 rounded border border-blue-100">
+                                                        <FormLabel className="text-xs font-semibold text-blue-700 block mb-1">
+                                                            {grupo === 'TIPO_BRAZO' ? 'Tipo de Brazo' : grupo}
+                                                        </FormLabel>
+                                                        <CatalogSkuSelector
+                                                            value={form.watch(`detalles.${index}.opciones_seleccionadas.${grupo}`)}
+                                                            initialSearch="Brazo"
+                                                            placeholder="Buscar Brazo (Ej. 30cm)..."
+                                                            onChange={(sku: string, product: any) => {
+                                                                const current = form.getValues(`detalles.${index}.opciones_seleccionadas`) || {};
+                                                                form.setValue(`detalles.${index}.opciones_seleccionadas`, { ...current, [grupo]: sku }, { shouldDirty: true });
+                                                            }}
+                                                        />
+                                                    </div>
+                                                );
+                                            }
+
+                                            // 2. PRE-DEFINED RECIPE SELECTION (Standard Select)
+                                            return (
+                                                <div key={grupo} className="col-span-2 bg-blue-50 p-2 rounded border border-blue-100">
+                                                    <FormLabel className="text-xs font-semibold text-blue-700 block mb-1">
+                                                        {grupo === 'TIPO_BRAZO' ? 'Tipo de Brazo' : grupo}
+                                                    </FormLabel>
+                                                    <Select
+                                                        value={form.watch(`detalles.${index}.opciones_seleccionadas.${grupo}`)}
+                                                        onValueChange={(val) => {
+                                                            const current = form.getValues(`detalles.${index}.opciones_seleccionadas`) || {};
+                                                            form.setValue(`detalles.${index}.opciones_seleccionadas`, { ...current, [grupo]: val }, { shouldDirty: true });
+                                                        }}
+                                                    >
+                                                        <SelectTrigger className="h-8 bg-white">
+                                                            <SelectValue placeholder="Seleccionar opción..." />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {items.map((opt: any) => (
+                                                                <SelectItem key={opt.id_receta} value={opt.id_sku_catalogo || opt.id_plantilla}>
+                                                                    {opt.nombre_componente || opt.id_plantilla}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            );
+                                        });
+                                    })()}
 
                                     <FormField
                                         control={form.control}

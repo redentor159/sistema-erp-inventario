@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { cotizacionesApi } from "@/lib/api/cotizaciones"
+import { recetasApi } from "@/lib/api/recetas"
+import { CatalogSkuSelector } from "@/components/mto/catalog-sku-selector"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -58,6 +60,15 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton,
     const { data: allModelos } = useQuery({ queryKey: [" mstRecetasIDs"], queryFn: cotizacionesApi.getRecetasIDs })
     const { data: vidrios } = useQuery({ queryKey: ["catVidrios"], queryFn: cotizacionesApi.getVidrios })
     const { data: acabados } = useQuery({ queryKey: ["mstAcabados"], queryFn: cotizacionesApi.getAcabados })
+    const { data: recetasOptions } = useQuery({ queryKey: ["recetasOptions"], queryFn: recetasApi.getRecetasOptions })
+
+    // Compute options by model map
+    const recipesOptionsByModel = recetasOptions?.reduce((acc: any, r: any) => {
+        if (!acc[r.id_modelo]) acc[r.id_modelo] = {}
+        if (!acc[r.id_modelo][r.grupo_opcion]) acc[r.id_modelo][r.grupo_opcion] = []
+        acc[r.id_modelo][r.grupo_opcion].push(r)
+        return acc
+    }, {}) || {}
 
     // Form States
     const [item, setItem] = useState({
@@ -71,7 +82,8 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton,
         tipo_cierre: "Centro",
         etiqueta_item: "V-01",
         ubicacion: "Ambiente",
-        costo_fijo_instalacion: 0
+        costo_fijo_instalacion: 0,
+        opciones_seleccionadas: {} as Record<string, string>
     })
 
     const [servicio, setServicio] = useState({
@@ -115,7 +127,8 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton,
                     tipo_cierre: itemToEdit.tipo_cierre || "Centro",
                     etiqueta_item: itemToEdit.etiqueta_item || "",
                     ubicacion: itemToEdit.ubicacion || "",
-                    costo_fijo_instalacion: 0
+                    costo_fijo_instalacion: 0,
+                    opciones_seleccionadas: itemToEdit.opciones_seleccionadas || {}
                 })
             }
         } else if (open && !itemToEdit) {
@@ -131,7 +144,8 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton,
                 tipo_cierre: "Centro",
                 etiqueta_item: "V-01",
                 ubicacion: "Ambiente",
-                costo_fijo_instalacion: 0
+                costo_fijo_instalacion: 0,
+                opciones_seleccionadas: {}
             })
             setServicio({ descripcion: "", cantidad: 1, precio_unitario: 0 })
             setActiveTab("producto")
@@ -160,6 +174,24 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton,
                     return
                 }
 
+                // Validación de Opciones Mandatorias (Brazo Proyectante para S42/S3831)
+                const currentModelOptions = recipesOptionsByModel[item.id_modelo]
+                if (currentModelOptions) {
+                    for (const [grupo, opts] of Object.entries(currentModelOptions)) {
+                        // Check if ANY option in this group is mandatory (condicion='BASE') 
+                        // Logic from DB: all in this group share condicion.
+                        const isMandatory = (opts as any[])[0]?.condicion === 'BASE'
+
+                        if (isMandatory) {
+                            if (!item.opciones_seleccionadas[grupo]) {
+                                toast.warning("Falta Opción", `Debe seleccionar: ${grupo}`)
+                                setLoading(false)
+                                return
+                            }
+                        }
+                    }
+                }
+
                 await onItemAdded({ ...item, _isUpdate: !!itemToEdit })
             } else {
                 // Lógica Servicio
@@ -172,7 +204,6 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton,
                 if (itemToEdit) {
                     // Update Service Logic
                     toast.warning("Edición de servicios aún no implementada completamente", "Por favor elimine y vuelva a crear si necesita cambiar precios.")
-                    // Implementing basic update (qty, desc) could be done here if needed.
                 } else {
                     // 1. Crear Linea de Cotización Dummy
                     const linea = await cotizacionesApi.addLineItem(idCotizacion, {
@@ -181,9 +212,9 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton,
                         cantidad: servicio.cantidad,
                         ancho_mm: 0,
                         alto_mm: 0,
-                        color_perfiles: "GEN", // Default
-                        tipo_vidrio: null
-                        // Otros campos null
+                        color_perfiles: "GEN", // Default,
+                        tipo_vidrio: null,
+                        opciones_seleccionadas: {}
                     })
 
                     // 2. Insertar Costo Manual en Desglose
@@ -192,7 +223,7 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton,
                         tipo_componente: "Servicio",
                         nombre_componente: servicio.descripcion,
                         cantidad_calculada: servicio.cantidad,
-                        costo_total_item: servicio.precio_unitario * servicio.cantidad, // Costo TOTAL de la linea
+                        costo_total_item: servicio.precio_unitario * servicio.cantidad, // Costo TOTAL
                         sku_real: "SERV-MANUAL"
                     })
 
@@ -206,7 +237,7 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton,
 
             // Reset forms
             setServicio({ descripcion: "", cantidad: 1, precio_unitario: 0 })
-            // Reset item...
+            // Reset item defaults handled by logic or not needed immediately
         } catch (error: any) {
             console.error(error)
             toast.error("Error", "No se pudo procesar el ítem")
@@ -375,6 +406,34 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton,
                                         </Select>
                                     </div>
                                 </div>
+
+                                {/* Dynamic Options (Brazos, etc) */}
+                                {item.id_modelo && recipesOptionsByModel[item.id_modelo] && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
+                                        {Object.entries(recipesOptionsByModel[item.id_modelo]).map(([grupo, opts]) => {
+                                            const isMandatory = (opts as any[])[0]?.condicion === 'BASE'
+                                            return (
+                                                <div key={grupo} className="grid gap-2">
+                                                    <Label>{grupo} {isMandatory && "*"}</Label>
+                                                    <CatalogSkuSelector
+                                                        value={item.opciones_seleccionadas[grupo] || ""}
+                                                        onChange={(sku) => {
+                                                            setItem(prev => ({
+                                                                ...prev,
+                                                                opciones_seleccionadas: {
+                                                                    ...prev.opciones_seleccionadas,
+                                                                    [grupo]: sku
+                                                                }
+                                                            }))
+                                                        }}
+                                                        placeholder={`Seleccionar ${grupo}`}
+                                                    />
+                                                    {isMandatory && <p className="text-[10px] text-orange-600 font-medium">Requerido para ingeniería</p>}
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                )}
                             </div>
                         </TabsContent>
 

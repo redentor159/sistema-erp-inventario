@@ -12,6 +12,8 @@ export const cotizacionDetalleSchema = z.object({
     ubicacion: z.string().optional(), // e.g. "Dormitorio Principal"
     tipo_cierre: z.string().optional(),
     tipo_vidrio: z.string().optional(),
+    grupo_opcion: z.string().optional(), // Deprecated or for backward compat
+    opciones_seleccionadas: z.record(z.string(), z.any()).optional(), // JSONB { "TIPO_BRAZO": "BRA30F" }
     costo_base_ref: z.coerce.number().optional(),
     subtotal_linea: z.coerce.number().optional()
 })

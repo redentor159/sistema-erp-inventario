@@ -20,6 +20,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
+import { CatalogSkuSelector } from "@/components/mto/catalog-sku-selector"
 import {
     Popover,
     PopoverContent,
@@ -628,7 +629,6 @@ function AccesorioRow({ line: r, pvars, variantes, onSave, onSaveMulti, onUpdate
             <td className="py-1 px-3">
                 <CatalogSkuSelector
                     value={currentSku || ""}
-                    variantes={variantes}
                     onChange={handleSkuSelect}
                 />
             </td>
@@ -674,145 +674,7 @@ function AccesorioRow({ line: r, pvars, variantes, onSave, onSaveMulti, onUpdate
 // Shows: nombre_completo, SKU, stock (identical to ServerProductCombobox)
 // ═══════════════════════════════════════════════════════════════════
 
-function CatalogSkuSelector({ value, variantes, onChange }: {
-    value: string, variantes: any[],
-    onChange: (sku: string, producto: any) => void
-}) {
-    const [open, setOpen] = useState(false)
-    const [search, setSearch] = useState("")
-    const [loading, setLoading] = useState(false)
-    const [results, setResults] = useState<any[]>([])
-    const [selectedObject, setSelectedObject] = useState<any>(null)
 
-    // Load selected product name on mount from server
-    useEffect(() => {
-        if (value && !selectedObject) {
-            recetasApi.getProductoPorSku(value).then(product => {
-                if (product) setSelectedObject(product)
-            }).catch(console.error)
-        }
-    }, [value])
-
-    // Initial fetch when opening
-    useEffect(() => {
-        if (open && results.length === 0) {
-            setLoading(true)
-            recetasApi.buscarProductosCatalogo('', 50)
-                .then(data => setResults(data))
-                .catch(console.error)
-                .finally(() => setLoading(false))
-        }
-    }, [open])
-
-    const handleSearch = async () => {
-        if (!search.trim()) return
-        setLoading(true)
-        try {
-            const data = await recetasApi.buscarProductosCatalogo(search, 50)
-            setResults(data)
-        } catch (err) {
-            console.error(err)
-            setResults([])
-        } finally { setLoading(false) }
-    }
-
-    const onKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            e.preventDefault()
-            e.stopPropagation()
-            handleSearch()
-        }
-    }
-
-    return (
-        <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-                <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={open}
-                    className={cn(
-                        "w-full justify-between pl-3 text-left font-normal h-8 text-xs",
-                        !value && "text-muted-foreground",
-                        value && "font-medium text-foreground border-primary/50"
-                    )}
-                >
-                    <span className="truncate font-mono">
-                        {value ? value : "Buscar producto (Enter)..."}
-                    </span>
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[400px] p-0" align="start">
-                <Command shouldFilter={false} className="overflow-visible">
-                    <CommandInput
-                        placeholder="Escribe y presiona ENTER..."
-                        value={search}
-                        onValueChange={setSearch}
-                        onKeyDown={onKeyDown}
-                    />
-
-                    {loading && (
-                        <div className="flex items-center justify-center py-4">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span className="ml-2 text-sm text-muted-foreground">Buscando...</span>
-                        </div>
-                    )}
-
-                    <CommandList className="max-h-[300px] overflow-y-auto overflow-x-hidden pointer-events-auto">
-                        {!loading && results.length === 0 && (
-                            <div className="py-6 text-center text-sm text-muted-foreground">
-                                {search ? "Sin resultados. Presiona Enter." : "Escribe para buscar..."}
-                            </div>
-                        )}
-
-                        <CommandGroup>
-                            {results.map((product: any) => (
-                                <CommandItem
-                                    key={product.id_sku}
-                                    value={product.id_sku + " " + product.nombre_completo}
-                                    onSelect={() => {
-                                        setSelectedObject(product)
-                                        onChange(product.id_sku, product)
-                                        setOpen(false)
-                                    }}
-                                    onMouseDown={(e) => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                        setSelectedObject(product)
-                                        onChange(product.id_sku, product)
-                                        setOpen(false)
-                                    }}
-                                    className={cn(
-                                        "cursor-pointer pointer-events-auto",
-                                        "data-[selected=true]:bg-primary/20 data-[selected=true]:text-primary font-medium",
-                                        value === product.id_sku && "bg-primary/20 font-bold"
-                                    )}
-                                >
-                                    <Check className={cn(
-                                        "mr-2 h-4 w-4 text-primary",
-                                        value === product.id_sku ? "opacity-100" : "opacity-0"
-                                    )} />
-                                    <div className="flex flex-col w-full">
-                                        <span className="font-medium">{product.nombre_completo}</span>
-                                        <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                                            <span>SKU: {product.id_sku}</span>
-                                            <span className={cn(
-                                                Number(product.stock_actual) > 0 ? "text-green-600 font-medium" : "text-red-500"
-                                            )}>
-                                                Stock: {Number(product.stock_actual || 0).toLocaleString()}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </CommandItem>
-                            ))}
-                        </CommandGroup>
-                    </CommandList>
-                </Command>
-            </PopoverContent>
-        </Popover>
-    )
-}
 
 // ═══════════════════════════════════════════════════════════════════
 // INPUTS INLINE — Fórmulas naturales con paréntesis
@@ -1011,7 +873,6 @@ function AddDialog({ open, seccion, mode, modelId, modelo, plantillas, variantes
                                 <label className="text-[11px] font-medium">SKU del Catálogo *</label>
                                 <CatalogSkuSelector
                                     value={form.sku}
-                                    variantes={variantes}
                                     onChange={(sku, producto) => {
                                         up('sku', sku)
                                         if (producto) {

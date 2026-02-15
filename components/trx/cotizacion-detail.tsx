@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { cotizacionesApi } from "@/lib/api/cotizaciones"
+import { useQuery } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -22,6 +23,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { ClientCombobox } from "./client-combobox"
 import { DespiecePreview } from "@/components/trx/despiece-preview"
 import { CotizacionItemDialog } from "./cotizacion-item-dialog"
+import { CatalogSkuSelector } from "@/components/mto/catalog-sku-selector"
+import { recetasApi } from "@/lib/api/recetas"
 import { CotizacionDetallada, CotizacionDetalleEnriquecido } from "@/types/cotizaciones"
 import { MstCliente, MstMarca, MstAcabado, CatProductoVariante } from "@/types"
 import { useToast } from "@/components/ui/use-toast"
@@ -124,6 +127,9 @@ export function CotizacionDetail({ id }: { id: string }) {
                 selectedItems.map(id => cotizacionesApi.triggerDespiece(id))
             )
 
+            // Wait for DB propagation
+            await new Promise(r => setTimeout(r, 800))
+
             await load()
             setSelectedItems([])
             toast({
@@ -179,12 +185,16 @@ export function CotizacionDetail({ id }: { id: string }) {
                     alto_mm: itemData.alto_mm,
                     tipo_vidrio: itemData.tipo_vidrio,
                     etiqueta_item: itemData.etiqueta_item,
-                    ubicacion: itemData.ubicacion
-                    // tipo_cierre?
+                    ubicacion: itemData.ubicacion,
+                    tipo_cierre: itemData.tipo_cierre,
+                    opciones_seleccionadas: itemData.opciones_seleccionadas
                 })
 
                 // Trigger despiece to recalc
                 await cotizacionesApi.triggerDespiece(editingItem.id_linea_cot)
+
+                // Brief delay to ensure DB propagation before fetch
+                await new Promise(r => setTimeout(r, 800))
 
                 toast({ title: "Actualizado", description: "Ítem actualizado correctamente" })
                 load()
@@ -193,6 +203,10 @@ export function CotizacionDetail({ id }: { id: string }) {
                 // CREATE PRODUCT
                 const newLine = await cotizacionesApi.addLineItem(id, itemData)
                 await cotizacionesApi.triggerDespiece(newLine.id_linea_cot)
+
+                // Brief delay to ensure DB propagation
+                await new Promise(r => setTimeout(r, 800))
+
                 toast({ title: "Agregado", description: "Ítem agregado correctamente" })
                 load()
             }
@@ -270,14 +284,19 @@ export function CotizacionDetail({ id }: { id: string }) {
     async function handleSave() {
         if (!cotizacion) return
         try {
+            // Fetch latest global markup to update this quota on save
+            const globalConfig = await cotizacionesApi.getGlobalConfig()
+            const currentGlobalMarkup = globalConfig?.markup_cotizaciones_default
+
             await cotizacionesApi.updateCotizacion(id, {
                 nombre_proyecto: cotizacion.nombre_proyecto,
                 id_cliente: cotizacion.id_cliente,
                 id_marca: cotizacion.id_marca,
                 costo_fijo_instalacion: cotizacion.costo_fijo_instalacion || 0,
                 incluye_igv: cotizacion.incluye_igv,
-                fecha_prometida: cotizacion.fecha_prometida
-                // Add validation validity, currency here if needed
+                fecha_prometida: cotizacion.fecha_prometida,
+                // Validar si existe markup global, si no mantener el actual o 0.35
+                markup_aplicado: currentGlobalMarkup ?? cotizacion.markup_aplicado ?? 0.35
             })
             toast({
                 title: "Guardado",
@@ -296,11 +315,64 @@ export function CotizacionDetail({ id }: { id: string }) {
 
     useEffect(() => {
         load()
+        load()
     }, [id])
 
+    // --- Dynamic Options Logic (Brazo, etc) ---
+    const { data: recetasOptions } = useQuery({
+        queryKey: ["recetasOptions"],
+        queryFn: recetasApi.getRecetasOptions
+    })
+
+    const recipesOptionsByModel = React.useMemo(() => {
+        if (!recetasOptions) return {}
+        const grouped: Record<string, Record<string, any[]>> = {}
+
+        recetasOptions.forEach((r: any) => {
+            if (!grouped[r.id_modelo]) grouped[r.id_modelo] = {}
+            if (!grouped[r.id_modelo][r.grupo_opcion]) grouped[r.id_modelo][r.grupo_opcion] = []
+            grouped[r.id_modelo][r.grupo_opcion].push(r)
+        })
+        return grouped
+    }, [recetasOptions])
+
+    const handleOptionChange = async (item: CotizacionDetalleEnriquecido, grupo: string, sku: string) => {
+        try {
+            const currentOptions = item.opciones_seleccionadas || {}
+            const newOptions = { ...currentOptions, [grupo]: sku }
+
+            // Optimistic update (optional, but load() refreshes anyway)
+            // await cotizacionesApi.updateLineItemOption(item.id_linea_cot, newOptions) // Hypothetical
+
+            await cotizacionesApi.updateLineItems([item.id_linea_cot], {
+                opciones_seleccionadas: newOptions
+            })
+
+            toast({ title: "Opción Actualizada", description: "Se guardó la selección correctamente." })
+
+            // Trigger despiece recalculation logic if needed? 
+            // Usually options imply price change if they map to SKUs.
+            // But despiece needs to know about it. 
+            // The Despiece logic reads opciones_seleccionadas JSONB.
+
+            await cotizacionesApi.triggerDespiece(item.id_linea_cot)
+            load()
+
+        } catch (e) {
+            console.error(e)
+            toast({ variant: "destructive", title: "Error", description: "No se pudo guardar la opción" })
+        }
+    }
+
     async function handleRefreshCalculations(idLinea: string) {
+        toast({ title: "Recalculando...", description: "Actualizando ingeniería del ítem." })
         await cotizacionesApi.triggerDespiece(idLinea)
-        load()
+
+        // Wait for DB propagation
+        await new Promise(r => setTimeout(r, 800))
+
+        await load()
+        toast({ title: "Actualizado", description: "Precios actualizados." })
     }
 
     if (loading) return <div>Cargando detalle...</div>
@@ -542,6 +614,26 @@ export function CotizacionDetail({ id }: { id: string }) {
                                                     <>
                                                         <div className="text-xs text-muted-foreground">{item.id_modelo}</div>
                                                         <div className="text-xs text-muted-foreground">Color: {item.color_perfiles}</div>
+
+                                                        {/* Dynamic Options Render (Mini) - FIXED */}
+                                                        {(() => {
+                                                            const itemOptions = recipesOptionsByModel[item.id_modelo || ""]
+                                                            if (!itemOptions) return null
+                                                            return Object.entries(itemOptions).map(([grupo, opts]) => {
+                                                                const currentVal = (item.opciones_seleccionadas as any)?.[grupo] || ""
+
+                                                                if (currentVal) {
+                                                                    return <div key={grupo} className="text-xs text-blue-600 font-medium mt-1">
+                                                                        {grupo}: <span className="font-mono text-slate-700">{currentVal}</span>
+                                                                    </div>
+                                                                }
+
+                                                                // If required but missing
+                                                                return <div key={grupo} className="text-xs text-orange-600 font-bold mt-1">
+                                                                    ⚠️ Falta {grupo}
+                                                                </div>
+                                                            })
+                                                        })()}
                                                     </>
                                                 )}
                                                 {item.id_modelo === 'SERVICIO' && (
@@ -551,9 +643,9 @@ export function CotizacionDetail({ id }: { id: string }) {
                                             <td className="p-3">
                                                 {item.id_modelo === 'SERVICIO' ? '-' : `${item.ancho_mm} x ${item.alto_mm}`}
                                             </td>
-                                            <td className="p-3 font-mono">{item.cantidad}</td>
+                                            <td className="p-3 text-center font-mono">{item.cantidad}</td>
                                             <td className="p-3 text-right font-mono text-muted-foreground">
-                                                {formatCurrency(item._vc_precio_unit_oferta_calc)}
+                                                {formatCurrency(item._vc_subtotal_linea_calc / (item.cantidad || 1))}
                                             </td>
                                             <td className="p-3 text-right font-bold">
                                                 {formatCurrency(item._vc_subtotal_linea_calc)}
@@ -590,6 +682,31 @@ export function CotizacionDetail({ id }: { id: string }) {
                                         {item.id_modelo !== 'SERVICIO' && (
                                             <tr className="bg-slate-50 border-b">
                                                 <td colSpan={7} className="p-2 pl-12 text-xs">
+                                                    {/* Render Selectors Here */}
+                                                    <div className="mb-2 grid grid-cols-2 gap-4 max-w-2xl bg-white p-2 rounded border border-blue-100">
+                                                        {(() => {
+                                                            const itemOptions = recipesOptionsByModel[item.id_modelo || ""]
+                                                            if (!itemOptions) return <div className="text-muted-foreground italic">Sin opciones configurables.</div>
+
+                                                            return Object.entries(itemOptions).map(([grupo, opts]) => {
+                                                                const currentVal = (item.opciones_seleccionadas as any)?.[grupo] || ""
+
+                                                                return (
+                                                                    <div key={grupo} className="grid gap-1">
+                                                                        <Label className="text-xs font-semibold text-muted-foreground">
+                                                                            {grupo === 'TIPO_BRAZO' ? 'Tipo de Brazo' : grupo}
+                                                                        </Label>
+                                                                        <CatalogSkuSelector
+                                                                            value={currentVal}
+                                                                            onChange={(sku) => handleOptionChange(item, grupo, sku)}
+                                                                            placeholder={`Seleccionar ${grupo}`}
+                                                                        />
+                                                                    </div>
+                                                                )
+                                                            })
+                                                        })()}
+                                                    </div>
+
                                                     <DespiecePreview idLinea={item.id_linea_cot} />
                                                 </td>
                                             </tr>

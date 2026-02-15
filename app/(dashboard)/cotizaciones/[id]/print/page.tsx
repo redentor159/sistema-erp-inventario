@@ -372,6 +372,7 @@ export default function CotizacionPrintPage({ params }: { params: Promise<{ id: 
                                     <div className="text-right font-serif text-sm">
                                         <p className="font-bold">N°: {cotizacion.id_cotizacion}</p>
                                         <p>Fecha: {processText('{{FECHA}}')}</p>
+                                        <p>Entrega: {cotizacion.fecha_prometida ? new Date(cotizacion.fecha_prometida).toLocaleDateString() : 'A coordinar'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -412,6 +413,7 @@ export default function CotizacionPrintPage({ params }: { params: Promise<{ id: 
                                     <p className="text-lg font-mono font-bold text-slate-700">{cotizacion.id_cotizacion}</p>
                                     <div className="mt-3 text-sm space-y-1">
                                         <p><strong>Fecha:</strong> {processText('{{FECHA}}')}</p>
+                                        <p><strong>Entrega:</strong> {cotizacion.fecha_prometida ? new Date(cotizacion.fecha_prometida).toLocaleDateString() : 'A coordinar'}</p>
                                         <p><strong>Validez:</strong> {processText('{{VALIDEZ}}')} días</p>
                                         <p><strong>Moneda:</strong> {cotizacion.moneda}</p>
                                     </div>

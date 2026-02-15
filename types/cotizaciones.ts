@@ -70,6 +70,7 @@ export interface TrxCotizacionDetalle {
     grupo_opcion?: string | null
     costo_base_ref?: number | null
     subtotal_linea?: number | null
+    opciones_seleccionadas?: Record<string, string> | null
 }
 
 /**
@@ -114,6 +115,11 @@ export interface ReporteDesglose {
     costo_total_item: number
     unidad_medida: string
     costo_mercado_unit: number
+    // Campos nuevos de vista 015 (Global vs Unitario)
+    cantidad_unitaria?: number
+    costo_unitario?: number
+    cantidad_item?: number
+    id_linea_cot?: string // Para filtrar en frontend
 }
 
 // ============================================================================

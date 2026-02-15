@@ -384,5 +384,22 @@ export const recetasApi = {
         if (error) throw error
         return data
     },
+
+    // ─── OPTIONS (COTIZADOR) ───
+
+    /**
+     * Get all recipe lines that are configurable (have grupo_opcion).
+     * Used by QuoteForm to show dynamic selectors (e.g. "Tipo de Brazo").
+     */
+    getRecetasOptions: async () => {
+        const { data, error } = await supabase
+            .from('mst_recetas_ingenieria')
+            .select('*')
+            .not('grupo_opcion', 'is', null)
+            .order('orden_visual')
+
+        if (error) throw error
+        return data || []
+    },
 }
 

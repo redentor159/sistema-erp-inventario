@@ -47,6 +47,15 @@ export const cotizacionesApi = {
      * Crea la cabecera de la cotización.
      */
     createCotizacion: async (data: Partial<CotizacionForm>) => {
+        // 1. Fetch Default Markup from Config
+        const { data: configData } = await supabase
+            .from('mst_config_general')
+            .select('markup_cotizaciones_default')
+            .single()
+
+        const defaultMarkup = configData?.markup_cotizaciones_default || 0.35
+
+        // 2. Create Header with Snapshot of Markup
         const { data: newRow, error } = await supabase
             .from('trx_cotizaciones_cabecera')
             .insert({
@@ -56,7 +65,8 @@ export const cotizacionesApi = {
                 estado: 'Borrador',
                 moneda: data.moneda || 'PEN',
                 validez_dias: 15,
-                incluye_igv: true
+                incluye_igv: true,
+                markup_aplicado: defaultMarkup // Freeze current config value
             })
             .select()
             .single()
@@ -136,7 +146,8 @@ export const cotizacionesApi = {
                 tipo_vidrio: item.tipo_vidrio,
                 tipo_cierre: item.tipo_cierre,
                 etiqueta_item: item.etiqueta_item,
-                ubicacion: item.ubicacion
+                ubicacion: item.ubicacion,
+                opciones_seleccionadas: item.opciones_seleccionadas || {}
             })
             .select()
             .single()
@@ -207,39 +218,41 @@ export const cotizacionesApi = {
     },
 
     // Fetching Engineering Recipes with system info for filtering
+    // Obtener IDs de recetas (OPTIMIZED) - Used by Item Dialog
     getRecetasIDs: async () => {
         const { data, error } = await supabase
-            .from('mst_recetas_ingenieria')
+            .from('mst_recetas_modelos')
             .select('id_modelo, id_sistema')
+            .eq('activo', true)
+            .order('id_modelo')
 
         if (error) throw error
-
-        // De-duplicate by id_modelo, keeping id_sistema
-        const uniqueMap = new Map<string, { id_modelo: string, id_sistema: string | null }>()
-        data.forEach(d => {
-            if (!uniqueMap.has(d.id_modelo)) {
-                uniqueMap.set(d.id_modelo, { id_modelo: d.id_modelo, id_sistema: d.id_sistema })
-            }
-        })
-        return Array.from(uniqueMap.values()).sort((a, b) => a.id_modelo.localeCompare(b.id_modelo))
+        return data
     },
 
-    // Filtrar modelos por sistema seleccionado
+    // Filtrar modelos por sistema seleccionado (OPTIMIZED)
     getModelosBySistema: async (idSistema: string) => {
+        // Query mst_recetas_modelos directly instead of scanning engineering table
         const { data, error } = await supabase
-            .from('mst_recetas_ingenieria')
-            .select('id_modelo')
+            .from('mst_recetas_modelos')
+            .select('id_modelo, nombre_comercial, descripcion')
             .eq('id_sistema', idSistema)
+            .eq('activo', true)
+            .order('id_modelo')
 
         if (error) throw error
-
-        // De-duplicate
-        const unique = Array.from(new Set(data.map(d => d.id_modelo))).map(id => ({ id_modelo: id }))
-        return unique.sort((a, b) => a.id_modelo.localeCompare(b.id_modelo))
+        return data
     },
 
     getModelos: async () => {
-        return cotizacionesApi.getRecetasIDs()
+        const { data, error } = await supabase
+            .from('mst_recetas_modelos')
+            .select('id_modelo')
+            .eq('activo', true)
+            .order('id_modelo')
+
+        if (error) throw error
+        return data
     },
 
     getVidrios: async () => {
@@ -334,6 +347,15 @@ export const cotizacionesApi = {
             .from('mst_marcas')
             .select('*')
             .order('nombre_marca')
+        if (error) throw error
+        return data
+    },
+
+    getGlobalConfig: async () => {
+        const { data, error } = await supabase
+            .from('mst_config_general')
+            .select('*')
+            .single()
         if (error) throw error
         return data
     }
