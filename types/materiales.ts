@@ -16,6 +16,7 @@ export interface TrxDesgloseMateriales {
     medida_corte_mm?: number
     costo_unit_mercado: number
     costo_total_item: number
+    detalle_formula?: string // Formula usada para cálculo
     created_at?: string
 }
 

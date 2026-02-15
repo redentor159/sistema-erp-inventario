@@ -5,10 +5,12 @@ import { useQuery } from "@tanstack/react-query"
 import { cotizacionesApi } from "@/lib/api/cotizaciones"
 import { formatCurrency } from "@/lib/utils"
 import { TrxDesgloseMateriales } from "@/types/materiales"
-import { ChevronDown, ChevronRight } from "lucide-react"
+import { ChevronDown, ChevronRight, Settings2 } from "lucide-react"
+import { CotizacionIngenieriaManualDialog } from "./cotizacion-ingenieria-manual-dialog"
 
 export function DespiecePreview({ idLinea }: { idLinea: string }) {
     const [isOpen, setIsOpen] = useState(true) // Default expanded for better UX
+    const [isManualDialogOpen, setIsManualDialogOpen] = useState(false)
 
     const { data: materiales, isLoading } = useQuery<TrxDesgloseMateriales[]>({
         queryKey: ['despiece', idLinea],
@@ -23,27 +25,51 @@ export function DespiecePreview({ idLinea }: { idLinea: string }) {
     const perfiles = materiales.filter(m => m.tipo_componente === 'Perfil')
     const otros = materiales.filter(m => m.tipo_componente !== 'Perfil')
 
-    // Calculate total cost for display
-    const totalCosto = materiales.reduce((sum, m) => sum + (Number(m.costo_total_item) || 0), 0)
+    // Calculate total cost for display (Price * Qty)
+    const totalCosto = materiales.reduce((sum, m) => sum + ((Number(m.costo_total_item) || 0) * (m.cantidad_calculada ?? 1)), 0)
 
     return (
         <div className={`flex flex-col rounded-md border border-slate-100 transition-all ${isOpen ? 'gap-2 p-2 bg-slate-50' : 'bg-transparent border-0'}`}>
+            <CotizacionIngenieriaManualDialog
+                idLinea={idLinea}
+                isOpen={isManualDialogOpen}
+                onOpenChange={setIsManualDialogOpen}
+            />
+
             <div
-                className={`flex justify-between items-center cursor-pointer hover:bg-slate-100 p-1 rounded select-none ${!isOpen && 'py-0 h-6'}`}
-                onClick={() => setIsOpen(!isOpen)}
-                title={isOpen ? "Minimizar" : "Expandir detalles"}
+                className={`flex justify-between items-center p-1 rounded select-none ${!isOpen && 'py-0 h-6'}`}
             >
-                <div className="flex items-center gap-2">
+                <div
+                    className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 rounded p-1"
+                    onClick={() => setIsOpen(!isOpen)}
+                    title={isOpen ? "Minimizar" : "Expandir detalles"}
+                >
                     {isOpen ? <ChevronDown className="h-4 w-4 text-slate-500" /> : <ChevronRight className="h-4 w-4 text-slate-500" />}
                     <h4 className={`font-bold text-xs ${isOpen ? 'text-slate-700' : 'text-slate-500'}`}>
                         Desglose de Materiales (Ingeniería)
                     </h4>
                 </div>
 
-                {/* Always show total, bit smaller when collapsed */}
-                <span className={`text-xs font-bold px-2 py-0.5 rounded ${isOpen ? 'text-slate-900 bg-slate-200' : 'text-slate-600 bg-transparent'}`}>
-                    {isOpen && "Costo Total: "} {formatCurrency(totalCosto)}
-                </span>
+                <div className="flex items-center gap-2">
+                    {isOpen && (
+                        <button
+                            onClick={() => setIsManualDialogOpen(true)}
+                            className="text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-0.5 rounded flex items-center gap-1 transition-colors"
+                            title="Editar manualmente ingeniería"
+                        >
+                            <Settings2 className="h-3 w-3" />
+                            Editar
+                        </button>
+                    )}
+
+                    {/* Always show total, bit smaller when collapsed */}
+                    <span
+                        className={`text-xs font-bold px-2 py-0.5 rounded cursor-pointer ${isOpen ? 'text-slate-900 bg-slate-200' : 'text-slate-600 bg-transparent'}`}
+                        onClick={() => setIsOpen(!isOpen)}
+                    >
+                        {isOpen && "Costo Total: "} {formatCurrency(totalCosto)}
+                    </span>
+                </div>
             </div>
 
             {isOpen && (
@@ -61,7 +87,7 @@ export function DespiecePreview({ idLinea }: { idLinea: string }) {
                                     </span>
                                     <div className="flex gap-2 text-right">
                                         <span className="font-mono text-xs text-slate-400">{m.sku_real}</span>
-                                        <span className="font-medium min-w-[60px]">{formatCurrency(m.costo_total_item)}</span>
+                                        <span className="font-medium min-w-[60px]">{formatCurrency((m.costo_total_item || 0) * (m.cantidad_calculada ?? 1))}</span>
                                     </div>
                                 </li>
                             ))}
@@ -72,8 +98,11 @@ export function DespiecePreview({ idLinea }: { idLinea: string }) {
                         <ul className="list-disc list-inside text-gray-600 space-y-0.5">
                             {otros.map(m => (
                                 <li key={m.id_desglose} className="flex justify-between gap-2">
-                                    <span>{m.nombre_componente} {(m.tipo_componente === 'Servicio' || m.tipo_componente === 'Vidrio') && typeof m.cantidad_calculada === 'number' ? `(${m.cantidad_calculada.toFixed(2)} m²)` : ''}</span>
-                                    <span className="font-medium">{formatCurrency(m.costo_total_item)}</span>
+                                    <span>
+                                        {m.cantidad_calculada && m.cantidad_calculada > 0 && <span className="font-bold text-slate-700 mr-1">{m.cantidad_calculada} x</span>}
+                                        {m.nombre_componente}
+                                    </span>
+                                    <span className="font-medium">{formatCurrency((m.costo_total_item || 0) * (m.cantidad_calculada ?? 1))}</span>
                                 </li>
                             ))}
                         </ul>

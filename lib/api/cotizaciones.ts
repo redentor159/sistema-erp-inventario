@@ -181,6 +181,43 @@ export const cotizacionesApi = {
         return data
     },
 
+    updateDesgloseItem: async (id: string, updates: any) => {
+        // Ensure new fields are passed
+        const { data, error } = await supabase
+            .from('trx_desglose_materiales')
+            .update({
+                nombre_componente: updates.nombre_componente,
+                sku_real: updates.sku_real,
+                cantidad_calculada: updates.cantidad_calculada,
+                costo_total_item: updates.costo_total_item,
+                tipo_componente: updates.tipo_componente,
+                medida_corte_mm: updates.medida_corte_mm,
+                detalle_formula: updates.detalle_formula
+            })
+            .eq('id_desglose', id)
+            .select()
+        if (error) throw error
+        return data
+    },
+
+    deleteDesgloseItem: async (id: string) => {
+        const { error } = await supabase
+            .from('trx_desglose_materiales')
+            .delete()
+            .eq('id_desglose', id)
+        if (error) throw error
+        return true
+    },
+
+    setManualFlag: async (idLineaCot: string, isManual: boolean) => {
+        const { error } = await supabase
+            .from('trx_cotizaciones_detalle')
+            .update({ es_despiece_manual: isManual })
+            .eq('id_linea_cot', idLineaCot)
+        if (error) throw error
+        return true
+    },
+
     /**
      * Obtiene el desglose de materiales para visualización.
      */
