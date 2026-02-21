@@ -1,17 +1,22 @@
-# Arquitectura del Sistema de Recetas de Cotizaciones
+# 08 — Arquitectura del Motor de Recetas y Cotizaciones
 
-## Tabla de Contenidos
-1. [Modelo de Datos](#modelo-de-datos)
-2. [Flujo del Despiece Automático](#flujo-del-despiece-automatico)
-3. [Fórmulas de SKU Dinámico](#formulas-de-sku-dinamico)
-4. [Cálculos de Cantidades y Medidas](#calculos-de-cantidades-y-medidas)
-5. [Cálculos de Costos](#calculos-de-costos)
-6. [Servicios Especiales](#servicios-especiales)
-7. [Vistas y Columnas Virtuales](#vistas-y-columnas-virtuales)
+> **Documento técnico del corazón del ERP:** el motor de despiece automático (BOM Engine)  
+> que convierte dimensiones de ventanas en listas de materiales con costos.  
+> **Última actualización:** 2026-02-21
+
+## Documentos Relacionados
+
+| Documento | Enlace |
+|-----------|--------|
+| Esquema de Base de Datos | [02_ESQUEMA_BASE_DATOS.md](./02_ESQUEMA_BASE_DATOS.md) |
+| Módulos y Funcionalidades | [03_MODULOS_Y_FUNCIONALIDADES.md](./03_MODULOS_Y_FUNCIONALIDADES.md) |
+| API de Cotizaciones | [04_API_REFERENCIA.md](./04_API_REFERENCIA.md) |
+| Diccionario de Datos | [09_DICCIONARIO_DATOS.md](./09_DICCIONARIO_DATOS.md) |
+| Flujos de Negocio | [10_FLUJOS_DE_NEGOCIO.md](./10_FLUJOS_DE_NEGOCIO.md) |
 
 ---
 
-## 1. Modelo de Datos
+## 1. Modelo de Datos del Motor de Recetas
 
 ```mermaid
 erDiagram
@@ -31,14 +36,14 @@ erDiagram
     CAT_PRODUCTOS_VARIANTES }|--|| CAT_PLANTILLAS : "instancia de"
     
     MST_SERIES_EQUIVALENCIAS {
-        TEXT id_sistema PK "SYS_20, SYS_25, SYS_80..."
-        TEXT nombre_comercial "S20, S25, S80..."
+        TEXT id_sistema PK "SYS_20, SYS_25, SYS_80"
+        TEXT nombre_comercial "S20, S25, S80"
     }
     
     CAT_PLANTILLAS {
-        TEXT id_plantilla PK "2001, 2501, CI25F..."
-        TEXT nombre_generico "Riel Sup, Cierre..."
-        TEXT id_familia FK "AL, VID, ACC..."
+        TEXT id_plantilla PK "2001, 2501, CI25F"
+        TEXT nombre_generico "Riel Sup, Cierre"
+        TEXT id_familia FK "AL, VID, ACC"
         TEXT id_sistema FK
     }
     
@@ -54,7 +59,7 @@ erDiagram
     
     MST_RECETAS_INGENIERIA {
         TEXT id_receta PK
-        TEXT id_modelo "S20_2H, S25_4H_FCCF..."
+        TEXT id_modelo "S20_2H, S25_4H_FCCF"
         TEXT id_sistema FK
         TEXT id_plantilla FK
         TEXT tipo "Perfil, Accesorio, Servicio"
@@ -67,16 +72,16 @@ erDiagram
     
     TRX_COTIZACIONES_CABECERA {
         UUID id_cotizacion PK
-        TEXT id_marca FK "FURUKAWA, HPD..."
+        TEXT id_marca FK "FURUKAWA, HPD"
         NUMERIC markup_aplicado "0.35"
         NUMERIC costo_mano_obra_m2
-        NUMERIC costo_fijo_instalacion "Nuevo: a nivel proyecto"
+        NUMERIC costo_fijo_instalacion
     }
     
     TRX_COTIZACIONES_DETALLE {
         UUID id_linea_cot PK
         TEXT id_modelo "S20_2H"
-        TEXT color_perfiles "BLA, CHA, MAD..."
+        TEXT color_perfiles "BLA, CHA, MAD"
         NUMERIC ancho_mm
         NUMERIC alto_mm
         TEXT tipo_vidrio FK
@@ -105,7 +110,7 @@ sequenceDiagram
     
     U->>UI: Selecciona Sistema (SYS_20)
     UI->>API: getModelosBySistema("SYS_20")
-    API->>DB: SELECT DISTINCT id_modelo FROM mst_recetas WHERE id_sistema = 'SYS_20'
+    API->>DB: SELECT DISTINCT id_modelo FROM mst_recetas WHERE id_sistema
     DB-->>UI: [S20_2H, S20_4H_FCCF...]
     
     U->>UI: Selecciona Modelo, Color, Dimensiones
@@ -121,17 +126,17 @@ sequenceDiagram
     FN->>DB: DELETE FROM trx_desglose_materiales WHERE id_linea_cot = uuid
     
     Note over FN: PASO 2: Loop sobre recetas del modelo
-    FN->>DB: SELECT * FROM mst_recetas WHERE id_modelo = 'S20_2H' AND condicion IN ('BASE', tipo_cierre)
+    FN->>DB: SELECT * FROM mst_recetas WHERE id_modelo AND condicion IN (BASE, tipo_cierre)
     
     loop Por cada receta
         Note over FN: PASO 3: Calcular SKU dinámico
         FN->>FN: fn_calcular_sku_real(tipo, plantilla, color, marca)
         
         Note over FN: PASO 4: Buscar costo del SKU
-        FN->>DB: SELECT costo_mercado_unit FROM cat_productos_variantes WHERE id_sku = sku_calculado
+        FN->>DB: SELECT costo_mercado_unit FROM cat_productos_variantes WHERE id_sku
         
         Note over FN: PASO 5: Calcular medida y cantidad
-        FN->>FN: medida = (ancho * factor_ancho) + (alto * factor_alto) + constante
+        FN->>FN: medida = ancho * factor_ancho + alto * factor_alto + constante
         FN->>FN: cantidad = cantidad_base * cantidad_item
         
         Note over FN: PASO 6: Insertar desglose
@@ -165,16 +170,14 @@ SKU = "AL-" + id_plantilla + "-" + color_perfiles + "-" + id_marca_cotizacion
 ```
 
 **Ejemplo:**
-- Plantilla: `2001` (Riel Superior)
-- Color seleccionado: `BLA` (Blanco)
-- Marca de cotización: `FURUKAWA`
+| Variable | Valor | Origen |
+|----------|-------|--------|
+| Plantilla | `2001` (Riel Superior) | Receta |
+| Color | `BLA` (Blanco) | Selección del usuario en ítem |
+| Marca | `FURUKAWA` | Cabecera de cotización |
+| **SKU resultante** | **`AL-2001-BLA-FURUKAWA`** | Calculado |
 
-**Resultado:** `AL-2001-BLA-FURUKAWA`
-
-> [!IMPORTANT]
-> Las variables dinámicas son:
-> - **Color**: Viene del usuario al crear el ítem (`color_perfiles`)
-> - **Marca**: Viene de la cabecera de cotización (`id_marca`)
+> **Clave:** Las variables dinámicas son **color** (del ítem) y **marca** (de la cabecera). La plantilla viene de la receta.
 
 ### 3.2 Para ACCESORIOS
 
@@ -183,27 +186,27 @@ SKU = id_material_receta + "-" + id_plantilla + "-" + id_acabado_receta + "-" + 
 ```
 
 **Ejemplo:**
-- Material: `GEN` (Genérico, no aplica material específico)
-- Plantilla: `CI25F` (Cierre tipo F)
-- Acabado: `GEN`
-- Marca: `GEN`
+| Variable | Valor | Origen |
+|----------|-------|--------|
+| Material | `GEN` | Fijo en la receta |
+| Plantilla | `CI25F` (Cierre tipo F) | Receta |
+| Acabado | `GEN` | Fijo en la receta |
+| Marca | `GEN` | Fijo en la receta |
+| **SKU resultante** | **`GEN-CI25F-GEN-GEN`** | Calculado |
 
-**Resultado:** `GEN-CI25F-GEN-GEN`
+> **Nota:** Los accesorios usan valores **fijos** de la receta porque no cambian con el proyecto. Solo los perfiles varían por marca y color del cliente.
 
-> [!NOTE]
-> Los accesorios usan valores fijos de la receta (`id_acabado_receta`, `id_marca_receta`) porque no cambian con el proyecto. Solo los perfiles varían por marca y color.
-
-### 3.3 Implementación en PostgreSQL
+### 3.3 Implementación SQL
 
 ```sql
 CREATE OR REPLACE FUNCTION fn_calcular_sku_real(
     p_tipo TEXT,              -- 'Perfil' o 'Accesorio'
     p_id_plantilla TEXT,      -- '2001', 'CI25F', etc.
-    p_color_perfiles TEXT,    -- 'BLA', 'CHA', etc. (del usuario)
+    p_color_perfiles TEXT,    -- 'BLA', 'CHA' (del usuario)
     p_id_marca_cot TEXT,      -- 'FURUKAWA', 'HPD' (de la cabecera)
     p_id_material_receta TEXT,-- 'AL', 'GEN' (de la receta)
-    p_id_acabado_receta TEXT, -- 'GEN' o NULL (de la receta)
-    p_id_marca_receta TEXT    -- 'GEN' o NULL (de la receta)
+    p_id_acabado_receta TEXT, -- 'GEN' o NULL
+    p_id_marca_receta TEXT    -- 'GEN' o NULL
 ) RETURNS TEXT AS $$
 BEGIN
     IF p_tipo = 'Perfil' THEN
@@ -230,63 +233,60 @@ $$ LANGUAGE plpgsql IMMUTABLE;
 Medida_Corte_mm = (Ancho × factor_corte_ancho) + (Alto × factor_corte_alto) + constante_corte_mm
 ```
 
-**Ejemplos de tu data:**
+**Tabla de factores reales del sistema:**
 
-| Componente | Factor Ancho | Factor Alto | Constante | Fórmula |
-|------------|--------------|-------------|-----------|---------|
-| Riel Sup (2001) | 1 | 0 | -12 | `Ancho - 12` |
-| Jamba (2009) | 0 | 1 | 0 | `Alto` |
-| Zocalo Sup (2004) | 0.5 | 0 | -4 | `(Ancho / 2) - 4` |
-| Traslapo (2010) | 0 | 1 | -28 | `Alto - 28` |
-| Marco 45° (80501) | 1 | 0 | 0 | `Ancho` (corte a 45°) |
+| Componente | Plantilla | F. Ancho | F. Alto | Constante | Fórmula Resultante |
+|------------|-----------|:---:|:---:|:---:|---|
+| Riel Superior | `2001` | 1 | 0 | -12 | `Ancho - 12` |
+| Jamba | `2009` | 0 | 1 | 0 | `Alto` |
+| Zócalo Superior | `2004` | 0.5 | 0 | -4 | `(Ancho / 2) - 4` |
+| Traslapo | `2010` | 0 | 1 | -28 | `Alto - 28` |
+| Marco 45° | `80501` | 1 | 0 | 0 | `Ancho` (corte a 45°) |
 
 ### 4.2 Cantidad Calculada
 
+**Fórmula base:**
 ```
 Cantidad = cantidad_base × cantidad_item_usuario
 ```
 
-**Casos especiales (por área):**
-
+**Fórmula avanzada (por área/perímetro):**
 ```
 Cantidad = (factor_cantidad_ancho × Ancho) + (factor_cantidad_alto × Alto) + (factor_cantidad_area × Área)
 ```
 
 | Componente | Base | F. Ancho | F. Alto | F. Área | Interpretación |
-|------------|------|----------|---------|---------|----------------|
-| Felpa (FESYB) | 0 | 0.004 | 0.006 | 0 | Metros lineales por perímetro |
-| Silicona (S25) | 0 | 0.002 | 0.004 | 0 | Consumo proporcional |
-| Acc. por m² (ACCM2) | 0 | 0 | 0 | 0.000001 | Proporcional al área |
+|------------|:---:|:---:|:---:|:---:|---|
+| Felpa (`FESYB`) | 0 | 0.004 | 0.006 | 0 | Metros lineales por perímetro |
+| Silicona (`S25`) | 0 | 0.002 | 0.004 | 0 | Consumo proporcional |
+| Acc. por m² | 0 | 0 | 0 | 0.000001 | Proporcional al área |
 
 ---
 
-## 5. Cálculos de Costos
+## 5. Cálculos de Costos (Pipeline Completo)
 
-### 5.1 Costo por Componente
-
-```
-Costo_Total_Item = Cantidad_Calculada × Costo_Unitario_SKU
-```
-
-Donde `Costo_Unitario_SKU` viene de `cat_productos_variantes.costo_mercado_unit`.
-
-### 5.2 Costo Total de la Línea
-
-```sql
-SELECT SUM(costo_total_item) FROM trx_desglose_materiales WHERE id_linea_cot = ?
+```mermaid
+flowchart TD
+    A["Ventana 2000×1500mm"] --> B["Motor de Despiece"]
+    B --> C["Por cada componente:<br/>Cantidad × Costo_SKU"]
+    C --> D["SUM total = Costo Materiales"]
+    D --> E["+ Mano de Obra (área × costo/m²)"]
+    E --> F["= Costo Directo por ítem"]
+    F --> G["× (1 + Markup %)<br/>= Precio Venta"]
+    G --> H["+ Costo Fijo Instalación<br/>(a nivel cotización)"]
+    H --> I["× (1 + IGV 18%)<br/>= Precio Final Cliente"]
 ```
 
-### 5.3 Precio de Venta (con Markup)
+### Fórmulas Detalladas
 
-```
-Precio_Venta_Linea = Costo_Total_Materiales × (1 + Markup)
-```
-
-### 5.4 Total con IGV
-
-```
-Total_Final = Subtotal_Venta × (1 + IGV)
-```
+| Cálculo | Fórmula |
+|---------|---------|
+| **Costo componente** | `Cantidad_Calculada × costo_mercado_unit` |
+| **Costo materiales línea** | `SUM(costo_total_item) WHERE id_linea_cot` |
+| **Precio venta línea** | `Costo_Materiales × (1 + markup_aplicado)` |
+| **Subtotal venta** | `SUM(precio_venta_lineas) + costo_fijo_instalacion` |
+| **IGV** | `Subtotal_Venta × 0.18` |
+| **Precio final** | `Subtotal_Venta × 1.18` |
 
 ---
 
@@ -294,34 +294,37 @@ Total_Final = Subtotal_Venta × (1 + IGV)
 
 ### 6.1 Vidrio
 
-- **Tipo**: `Vidrio`
-- **Cantidad**: `(Ancho × Alto) / 1,000,000` (metros cuadrados)
-- **SKU**: El usuario selecciona directamente de `cat_productos_variantes` filtrado por familia VID
-- **Costo**: `Área_m2 × Costo_Unitario_Vidrio`
+| Propiedad | Valor |
+|-----------|-------|
+| **Tipo componente** | `Vidrio` |
+| **Cantidad** | `(Ancho × Alto) / 1,000,000` (metros cuadrados) |
+| **SKU** | Seleccionado por el usuario (filtrado por familia `VID`) |
+| **Costo** | `Área_m² × costo_mercado_unit` |
 
 ### 6.2 Flete de Templado (Condicional)
 
-- **Condición**: Solo si el vidrio tiene `es_templado = TRUE`
-- **SKU Dinámico**:
-  - Espesor ≤ 6mm → `SER-FLETE-06MM`
-  - Espesor ≤ 8mm → `SER-FLETE-08MM`
-  - Espesor > 8mm → `SER-FLETE-10MM`
-- **Costo**: `Área_m2 × Costo_Flete_SKU`
+| Condición | SKU Asignado |
+|-----------|-------------|
+| `es_templado = TRUE` Y espesor ≤ 6mm | `SER-FLETE-06MM` |
+| `es_templado = TRUE` Y espesor ≤ 8mm | `SER-FLETE-08MM` |
+| `es_templado = TRUE` Y espesor > 8mm | `SER-FLETE-10MM` |
 
-### 6.3 Mano de Obra (por m²)
+**Costo:** `Área_m² × costo_flete_SKU`
 
-- **Condición**: `costo_mano_obra_m2 > 0` en la cabecera
-- **Costo**: `Área_m2 × costo_mano_obra_m2`
+### 6.3 Mano de Obra
 
-### 6.4 Servicios de Instalación (Fijo por Proyecto)
+- **Condición:** `costo_mano_obra_m2 > 0` en la cabecera
+- **Costo:** `Área_m² × costo_mano_obra_m2`
 
-- **Ubicación**: Campo en `trx_cotizaciones_cabecera`
-- **Descripción**: "Embalaje, Flete a obra, Movilidad, Viáticos"
-- **Costo**: Monto fijo definido manualmente por el usuario PARA TODA LA COTIZACIÓN (no por ítem)
+### 6.4 Instalación (Fijo por Proyecto)
+
+- **Ubicación:** Campo `costo_fijo_instalacion` en `trx_cotizaciones_cabecera`
+- **Descripción:** Embalaje, Flete a obra, Movilidad, Viáticos, SCTR
+- **Costo:** Monto **fijo** por cotización, ingresado manualmente
 
 ---
 
-## 7. Vistas y Columnas Virtuales
+## 7. Vistas SQL de Cálculo
 
 ### 7.1 Vista de Detalle (`vw_cotizaciones_detalladas`)
 
@@ -329,7 +332,9 @@ Total_Final = Subtotal_Venta × (1 + IGV)
 SELECT 
     d.*,
     -- Costo de materiales (suma del desglose)
-    (SELECT SUM(costo_total_item) FROM trx_desglose_materiales WHERE id_linea_cot = d.id_linea_cot) as _costo_materiales,
+    (SELECT SUM(costo_total_item) 
+     FROM trx_desglose_materiales 
+     WHERE id_linea_cot = d.id_linea_cot) as _costo_materiales,
     
     -- Precio unitario con markup
     _costo_materiales * (1 + c.markup_aplicado) as _vc_precio_unit_oferta,
@@ -345,16 +350,9 @@ JOIN trx_cotizaciones_cabecera c ON d.id_cotizacion = c.id_cotizacion;
 ```sql
 SELECT 
     c.*,
-    -- Suma de costos directos
     SUM(_costo_materiales) as _vc_total_costo_materiales,
-    
-    -- Subtotal venta (suma de líneas)
     SUM(_vc_subtotal_linea) + COALESCE(c.costo_fijo_instalacion, 0) as _vc_subtotal_venta,
-    
-    -- IGV
     _vc_subtotal_venta * (SELECT igv FROM mst_config_general) as _vc_monto_igv,
-    
-    -- Total final
     _vc_subtotal_venta * (1 + igv) as _vc_precio_final_cliente
 FROM trx_cotizaciones_cabecera c
 JOIN vw_cotizaciones_detalladas d ON c.id_cotizacion = d.id_cotizacion
@@ -363,24 +361,24 @@ GROUP BY c.id_cotizacion;
 
 ---
 
-## 8. Lo que Falta por Hacer
+## 8. Editor de Recetas (UI)
 
-### 8.1 Cambios de Base de Datos
+El editor visual de recetas se encuentra en `components/mto/recipe-editor.tsx` (~47KB) y permite:
 
-1. **Mover `costo_fijo_instalacion`** de `trx_cotizaciones_detalle` a `trx_cotizaciones_cabecera`
-2. **Agregar columna `id_sistema`** a `mst_recetas_ingenieria` (ya hecho en sprint3)
-3. **Insertar nuevas recetas** con los datos proporcionados
-4. **Actualizar las vistas** para incluir el costo fijo en los totales
+- **Ver** todas las líneas de una receta agrupadas por sección
+- **Agregar** nuevos componentes con fórmulas de corte
+- **Editar** fórmulas dinámicas (`formula_cantidad`, `formula_perfil`)
+- **Vincular** SKUs reales del catálogo
+- **Auditar** masivamente todas las recetas (ver [03_MODULOS_Y_FUNCIONALIDADES.md](./03_MODULOS_Y_FUNCIONALIDADES.md#7--motor-de-recetas-de-ingeniería))
 
-### 8.2 Datos Maestros Requeridos
+### APIs Involucradas
 
-1. **CAT_PLANTILLAS**: Verificar que existan todas las plantillas referenciadas (2001, 2002, 2501, CI25F, FESYB, etc.)
-2. **CAT_PRODUCTOS_VARIANTES**: Crear SKUs para todas las combinaciones:
-   - Para cada plantilla de perfil × cada color × cada marca
-   - Para cada accesorio genérico
-3. **MST_SERIES_EQUIVALENCIAS**: Verificar que existan los sistemas (SYS_20, SYS_25, SYS_3825, SYS_42, SYS_62, SYS_80, SYS_GEN)
+| Operación | API | Método |
+|-----------|-----|--------|
+| Listar modelos | `recetasApi` | `getModelos()` |
+| Ver líneas de un modelo | `recetasApi` | `getRecetasByModelo(id)` |
+| Agregar componente | `recetasApi` | `createRecetaLinea(data)` |
+| Clonar modelo completo | `recetasApi` | `clonarModelo(id, nuevo_id, nombre)` |
+| Auditoría masiva | `recetasApi` | `getAllRecetasConCatalogInfo()` |
 
-### 8.3 Cambios de UI
-
-1. **cotizacion-item-dialog.tsx**: El campo de costo fijo de instalación NO debe estar aquí
-2. **cotizacion-detail.tsx**: Agregar campo de costo fijo de instalación en el panel de cabecera (información general)
+> Para la referencia completa de la API, ver [04_API_REFERENCIA.md](./04_API_REFERENCIA.md#4-recetasapi--recetas-de-ingeniería).

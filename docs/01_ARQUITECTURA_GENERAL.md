@@ -15,6 +15,8 @@
 | Blindaje Arquitectónico | [06_BLINDAJE_ARQUITECTONICO.md](./06_BLINDAJE_ARQUITECTONICO.md) |
 | Contingencia Supabase | [../CONTINGENCIA_SUPABASE.md](../CONTINGENCIA_SUPABASE.md) |
 | Handoff Maestro | [../HANDOFF_MAESTRO.md](../HANDOFF_MAESTRO.md) |
+| Guía de Despliegue Estático | [07_GUIA_DESPLIEGUE_ESTATICO.md](./07_GUIA_DESPLIEGUE_ESTATICO.md) |
+| Arquitectura de Recetas | [08_ARQUITECTURA_RECETAS.md](./08_ARQUITECTURA_RECETAS.md) |
 | Diccionario de Datos | [09_DICCIONARIO_DATOS.md](./09_DICCIONARIO_DATOS.md) |
 | Flujos de Negocio | [10_FLUJOS_DE_NEGOCIO.md](./10_FLUJOS_DE_NEGOCIO.md) |
 
