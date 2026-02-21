@@ -95,7 +95,7 @@ export function RecipeMassAudit({ onNavigate }: { onNavigate: (modelId: string) 
                     Auditar Sistema ({errors.length || '?'})
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-5xl h-[85vh] flex flex-col p-4">
+            <DialogContent className="sm:max-w-[90vw] w-full h-[85vh] flex flex-col p-4">
                 <DialogHeader className="flex flex-row items-center justify-between pb-2 shrink-0 border-b">
                     <div>
                         <DialogTitle className="text-xl flex items-center gap-2">
