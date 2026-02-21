@@ -1,51 +1,5 @@
-
-import { NextRequest, NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
 import ExcelJS from "exceljs"
-
-// Initialize Supabase Admin Client (server-side only)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! // Or Service Role if needed for admin export
-const supabase = createClient(supabaseUrl, supabaseKey)
-
-export async function POST(req: NextRequest) {
-    try {
-        const { type, startDate, endDate } = await req.json()
-        const workbook = new ExcelJS.Workbook()
-        workbook.creator = "Sistema ERP"
-        workbook.created = new Date()
-
-        if (type === 'commercial') {
-            await generateCommercialExcel(workbook, startDate, endDate)
-        } else if (type === 'inventory') {
-            await generateInventoryExcel(workbook)
-        } else if (type === 'movements') {
-            await generateMovementsExcel(workbook, startDate, endDate)
-        } else if (type === 'master_data') {
-            await generateMasterDataExcel(workbook)
-        } else {
-            return NextResponse.json({ error: "Invalid type" }, { status: 400 })
-        }
-
-        // Buffer the file
-        const buffer = await workbook.xlsx.writeBuffer()
-
-        // Return the file
-        return new NextResponse(buffer, {
-            headers: {
-                'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition': `attachment; filename="export_${type}.xlsx"`
-            }
-        })
-
-    } catch (error: any) {
-        console.error("API Export Error:", error)
-        return NextResponse.json({
-            error: error.message || "Internal Server Error",
-            details: error.toString()
-        }, { status: 500 })
-    }
-}
+import { supabase } from "@/lib/supabase/client"
 
 // Helper to bypass Supabase 1000 row limit
 async function fetchAllRows(queryBuilder: any, limitPerPage = 1000) {
@@ -72,10 +26,29 @@ async function fetchAllRows(queryBuilder: any, limitPerPage = 1000) {
     return allData;
 }
 
+export async function exportDataToExcelType(type: string, startDate?: string, endDate?: string) {
+    const workbook = new ExcelJS.Workbook()
+    workbook.creator = "Sistema ERP"
+    workbook.created = new Date()
+
+    if (type === 'commercial') {
+        await generateCommercialExcel(workbook, startDate, endDate)
+    } else if (type === 'inventory') {
+        await generateInventoryExcel(workbook)
+    } else if (type === 'movements') {
+        await generateMovementsExcel(workbook, startDate, endDate)
+    } else if (type === 'master_data') {
+        await generateMasterDataExcel(workbook)
+    } else {
+        throw new Error("Invalid type")
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer()
+    return new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+}
+
 // --- 1. COMMERCIAL EXPORT ---
 async function generateCommercialExcel(workbook: ExcelJS.Workbook, startDate?: string, endDate?: string) {
-    // We export flat facts and dimensions for Commercial
-
     // SHEET 1: CABECERAS (vw_cotizaciones_totales)
     const sheetHeaders = workbook.addWorksheet("Fact_Cotizaciones_Cabecera")
     sheetHeaders.columns = [

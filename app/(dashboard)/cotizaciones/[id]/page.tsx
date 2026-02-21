@@ -1,6 +1,10 @@
 import { Suspense } from "react"
 import { CotizacionDetail } from "@/components/trx/cotizacion-detail"
 
+export async function generateStaticParams() {
+    return [{ id: '1' }];
+}
+
 interface PageProps {
     params: {
         id: string

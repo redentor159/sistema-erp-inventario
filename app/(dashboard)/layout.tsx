@@ -4,8 +4,6 @@ import Link from "next/link" // Import Link
 import { LayoutDashboard, Settings, User, Box, Users, ShoppingCart, FileText, Trello } from "lucide-react"
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 
-export const dynamic = 'force-dynamic'
-
 export default function DashboardLayout({
     children,
 }: {

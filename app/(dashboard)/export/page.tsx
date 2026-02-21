@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
 import { Download, FileSpreadsheet, History, Package, ShoppingCart, Database, Filter } from "lucide-react"
 
+import { exportDataToExcelType } from "@/lib/export/excel-export"
+
 export default function ExportPage() {
     // Default to last 30 days
     const defaultStart = new Date()
@@ -22,24 +24,10 @@ export default function ExportPage() {
         try {
             setLoading(type)
 
-            const payload = {
-                type,
-                startDate: useDateFilter ? `${startDate}T00:00:00.000Z` : undefined,
-                endDate: useDateFilter ? `${endDate}T23:59:59.999Z` : undefined
-            }
+            const startQuery = useDateFilter ? `${startDate}T00:00:00.000Z` : undefined
+            const endQuery = useDateFilter ? `${endDate}T23:59:59.999Z` : undefined
 
-            const response = await fetch('/api/export', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}))
-                throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`)
-            }
-
-            const blob = await response.blob()
+            const blob = await exportDataToExcelType(type, startQuery, endQuery)
             const filename = `Export_${type.toUpperCase()}_${format(new Date(), 'yyyyMMdd_HHmm')}.xlsx`
 
             // Dynamic import for client-side only

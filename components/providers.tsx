@@ -7,7 +7,14 @@ import { useState } from "react"
 // Just in case, I will uncomment Toaster once I add it. For now let's just do QueryClient.
 
 export function Providers({ children }: { children: React.ReactNode }) {
-    const [queryClient] = useState(() => new QueryClient())
+    const [queryClient] = useState(() => new QueryClient({
+        defaultOptions: {
+            queries: {
+                staleTime: 0,
+                refetchOnWindowFocus: true,
+            },
+        },
+    }))
 
     return (
         <QueryClientProvider client={queryClient}>
