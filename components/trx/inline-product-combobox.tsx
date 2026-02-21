@@ -1,14 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { Check, ChevronsUpDown, Loader2 } from "lucide-react"
+import { Check, ChevronsUpDown, Loader2, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
     Command,
-    CommandEmpty,
     CommandGroup,
-    CommandInput,
     CommandItem,
     CommandList,
 } from "@/components/ui/command"
@@ -25,50 +23,53 @@ interface InlineProductComboboxProps {
     disabled?: boolean
 }
 
-// Cache global: evita re-fetches cuando hay múltiples filas en el formulario
-let _cachedProducts: any[] | null = null
-
 export function InlineProductCombobox({ value, onChange, disabled }: InlineProductComboboxProps) {
     const [open, setOpen] = React.useState(false)
-    const [search, setSearch] = React.useState("")
+    const [query, setQuery] = React.useState("")
     const [loading, setLoading] = React.useState(false)
-    const [productos, setProductos] = React.useState<any[]>(_cachedProducts || [])
+    const [results, setResults] = React.useState<any[]>([])
+    const [selectedName, setSelectedName] = React.useState("")
+    const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
-    // Carga todos los productos al abrir el popover (solo la primera vez)
-    const handleOpenChange = async (isOpen: boolean) => {
-        setOpen(isOpen)
-        if (!isOpen) return
-        if (_cachedProducts) {
-            setProductos(_cachedProducts)
+    const handleSearch = async (text: string) => {
+        if (!text.trim()) {
+            setResults([])
             return
         }
-
         setLoading(true)
         try {
-            // catApi.getProductos ya maneja la paginación interna para bypasear el límite de 1000
-            const { data } = await catApi.getProductos({ pageSize: 10000 })
-            _cachedProducts = data || []
-            setProductos(_cachedProducts)
+            const { data } = await catApi.getProductos({ search: text, pageSize: 50 })
+            setResults(data || [])
         } catch (err) {
-            console.error("Error cargando productos:", err)
+            console.error("Error buscando:", err)
+            setResults([])
         } finally {
             setLoading(false)
         }
     }
 
-    // Filtrado en memoria — instantáneo, sin llamadas al servidor
-    const filtered = React.useMemo(() => {
-        if (!search) return productos.slice(0, 300)
-        const q = search.toLowerCase()
-        return productos
-            .filter(p =>
-                p.nombre_completo?.toLowerCase().includes(q) ||
-                p.id_sku?.toLowerCase().includes(q)
-            )
-            .slice(0, 300)
-    }, [productos, search])
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const text = e.target.value
+        setQuery(text)
+        if (debounceRef.current) clearTimeout(debounceRef.current)
+        debounceRef.current = setTimeout(() => handleSearch(text), 300)
+    }
 
-    const selected = productos.find(p => p.id_sku === value)
+    const handleSelect = (product: any) => {
+        setSelectedName(product.nombre_completo)
+        onChange(product.id_sku, product)
+        setOpen(false)
+        setQuery("")
+        setResults([])
+    }
+
+    const handleOpenChange = (isOpen: boolean) => {
+        setOpen(isOpen)
+        if (!isOpen) {
+            setQuery("")
+            setResults([])
+        }
+    }
 
     return (
         <Popover open={open} onOpenChange={handleOpenChange}>
@@ -85,60 +86,57 @@ export function InlineProductCombobox({ value, onChange, disabled }: InlineProdu
                     )}
                 >
                     <span className="truncate">
-                        {selected ? selected.nombre_completo : "Buscar SKU o nombre..."}
+                        {selectedName || (value ? value : "Buscar SKU o nombre...")}
                     </span>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[420px] p-0" align="start">
-                <Command shouldFilter={false}>
-                    <CommandInput
-                        placeholder="Buscar SKU o nombre..."
-                        value={search}
-                        onValueChange={setSearch}
+            <PopoverContent className="w-[420px] p-0" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+                {/* Input propio para que no tenga el comportamiento de Command */}
+                <div className="flex items-center gap-2 px-3 py-2 border-b">
+                    <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <input
+                        autoFocus
+                        value={query}
+                        onChange={handleInputChange}
+                        placeholder="Escribe SKU o nombre del producto..."
+                        className="flex-1 text-sm bg-transparent outline-none placeholder:text-muted-foreground"
                     />
+                    {loading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground shrink-0" />}
+                </div>
+
+                <Command shouldFilter={false}>
                     <CommandList className="max-h-[300px] overflow-y-auto overflow-x-hidden">
-                        {loading && (
-                            <div className="flex items-center justify-center py-6 gap-2 text-sm text-muted-foreground">
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                Cargando catálogo...
+                        {!loading && query && results.length === 0 && (
+                            <div className="py-6 text-center text-sm text-muted-foreground">
+                                Sin resultados para &quot;{query}&quot;.
                             </div>
                         )}
-                        {!loading && filtered.length === 0 && search && (
-                            <CommandEmpty>No se encontraron productos para &quot;{search}&quot;.</CommandEmpty>
-                        )}
-                        {!loading && filtered.length === 0 && !search && productos.length === 0 && (
-                            <CommandEmpty>No hay productos en el catálogo.</CommandEmpty>
+                        {!loading && !query && (
+                            <div className="py-6 text-center text-sm text-muted-foreground">
+                                Escribe para buscar productos
+                            </div>
                         )}
                         <CommandGroup>
-                            {!loading && filtered.map((product) => (
+                            {results.map((product) => (
                                 <CommandItem
                                     key={product.id_sku}
                                     value={product.id_sku}
-                                    onSelect={() => {
-                                        onChange(product.id_sku, product)
-                                        setOpen(false)
-                                        setSearch("")
-                                    }}
+                                    onSelect={() => handleSelect(product)}
                                     onMouseDown={(e) => {
-                                        // Prevent Popover from closing before selection registers
                                         e.preventDefault()
                                         e.stopPropagation()
-                                        onChange(product.id_sku, product)
-                                        setOpen(false)
-                                        setSearch("")
+                                        handleSelect(product)
                                     }}
                                     className={cn(
                                         "cursor-pointer pointer-events-auto",
                                         value === product.id_sku && "bg-primary/20 font-bold"
                                     )}
                                 >
-                                    <Check
-                                        className={cn(
-                                            "mr-2 h-4 w-4 text-primary shrink-0",
-                                            value === product.id_sku ? "opacity-100" : "opacity-0"
-                                        )}
-                                    />
+                                    <Check className={cn(
+                                        "mr-2 h-4 w-4 text-primary shrink-0",
+                                        value === product.id_sku ? "opacity-100" : "opacity-0"
+                                    )} />
                                     <div className="flex flex-col w-full min-w-0">
                                         <span className="font-medium truncate">{product.nombre_completo}</span>
                                         <div className="flex justify-between text-xs text-muted-foreground mt-0.5">
