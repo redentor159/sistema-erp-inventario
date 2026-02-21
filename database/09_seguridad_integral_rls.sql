@@ -190,7 +190,7 @@ ALTER FUNCTION public.get_abc_analysis_v2(integer) SET search_path = public, pg_
 ALTER FUNCTION public.get_abc_inventory_valuation() SET search_path = public, pg_temp;
 ALTER FUNCTION public.fn_calcular_sku_real(text, text, text, text, text, text, text) SET search_path = public, pg_temp;
 ALTER FUNCTION public.update_costos_mercado_bulk(jsonb) SET search_path = public, pg_temp;
-ALTER FUNCTION public.rename_sku(text, text) SET search_path = public, pg_temp;
+ALTER FUNCTION public.rename_sku(text, text, jsonb) SET search_path = public, pg_temp;
 ALTER FUNCTION public.fn_evaluar_formula(text, numeric, numeric, numeric) SET search_path = public, pg_temp;
 
 -- BLINDAJE EXTRA PARA FUNCIONES MUTATIVAS QUE BYPASEAN RLS
