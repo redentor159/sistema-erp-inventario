@@ -26,7 +26,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { ServerProductCombobox } from "@/components/trx/server-product-combobox"
+import { InlineProductCombobox } from "@/components/trx/inline-product-combobox"
 import {
     Table,
     TableBody,
@@ -274,7 +274,7 @@ export function EntradaFormCmp({ onSuccess }: EntradaFormProps) {
                                                 name={`detalles.${index}.id_sku`}
                                                 render={({ field }) => (
                                                     <FormControl>
-                                                        <ServerProductCombobox
+                                                        <InlineProductCombobox
                                                             value={field.value}
                                                             onChange={(val, product) => {
                                                                 field.onChange(val)

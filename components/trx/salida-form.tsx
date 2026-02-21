@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Textarea } from "@/components/ui/textarea"
-import { ServerProductCombobox } from "@/components/trx/server-product-combobox"
+import { InlineProductCombobox } from "@/components/trx/inline-product-combobox"
 
 import {
     Table,
@@ -292,9 +292,8 @@ export function SalidaFormCmp({ onSuccess }: SalidaFormProps) {
                                                 render={({ field }) => (
                                                     <FormItem className="flex flex-col">
                                                         <FormControl>
-                                                            <ServerProductCombobox
+                                                            <InlineProductCombobox
                                                                 value={field.value}
-                                                                initialProduct={field.value && (form.getValues(`detalles.${index}.producto`) as any)}
                                                                 onChange={(newSku, product) => {
                                                                     field.onChange(newSku)
                                                                     // Store product for future recalculations
