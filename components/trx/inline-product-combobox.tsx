@@ -120,8 +120,16 @@ export function InlineProductCombobox({ value, onChange, disabled }: InlineProdu
                                         setOpen(false)
                                         setSearch("")
                                     }}
+                                    onMouseDown={(e) => {
+                                        // Prevent Popover from closing before selection registers
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        onChange(product.id_sku, product)
+                                        setOpen(false)
+                                        setSearch("")
+                                    }}
                                     className={cn(
-                                        "cursor-pointer",
+                                        "cursor-pointer pointer-events-auto",
                                         value === product.id_sku && "bg-primary/20 font-bold"
                                     )}
                                 >
