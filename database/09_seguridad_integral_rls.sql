@@ -186,12 +186,12 @@ ALTER VIEW public.vw_cotizaciones_detalladas SET (security_invoker = true);
 ALTER VIEW public.vw_kpi_retazos_valorizados SET (security_invoker = true);
 
 -- Blindando el Search Path de todas las funciones RPC del sistema
-ALTER FUNCTION public.get_abc_analysis_v2() SET search_path = public, pg_temp;
+ALTER FUNCTION public.get_abc_analysis_v2(integer) SET search_path = public, pg_temp;
 ALTER FUNCTION public.get_abc_inventory_valuation() SET search_path = public, pg_temp;
-ALTER FUNCTION public.fn_calcular_sku_real() SET search_path = public, pg_temp;
+ALTER FUNCTION public.fn_calcular_sku_real(text, text, text, text, text, text, text) SET search_path = public, pg_temp;
 ALTER FUNCTION public.update_costos_mercado_bulk(jsonb) SET search_path = public, pg_temp;
 ALTER FUNCTION public.rename_sku(text, text) SET search_path = public, pg_temp;
-ALTER FUNCTION public.fn_evaluar_formula(text, record) SET search_path = public, pg_temp;
+ALTER FUNCTION public.fn_evaluar_formula(text, numeric, numeric, numeric) SET search_path = public, pg_temp;
 
 -- BLINDAJE EXTRA PARA FUNCIONES MUTATIVAS QUE BYPASEAN RLS
 -- (Kardex, Clonar, Despiece, Kanban) -> Mantienen SECURITY DEFINER pero con search_path seguro.
