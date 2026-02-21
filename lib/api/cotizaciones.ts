@@ -47,15 +47,16 @@ export const cotizacionesApi = {
      * Crea la cabecera de la cotización.
      */
     createCotizacion: async (data: Partial<CotizacionForm>) => {
-        // 1. Fetch Default Markup from Config
+        // 1. Fetch Default Markup and MO Cost from Config
         const { data: configData } = await supabase
             .from('mst_config_general')
-            .select('markup_cotizaciones_default')
+            .select('markup_cotizaciones_default, costo_mo_m2_default')
             .single()
 
         const defaultMarkup = configData?.markup_cotizaciones_default || 0.35
+        const defaultMoCost = configData?.costo_mo_m2_default || 0
 
-        // 2. Create Header with Snapshot of Markup
+        // 2. Create Header with Snapshot of Config values
         const { data: newRow, error } = await supabase
             .from('trx_cotizaciones_cabecera')
             .insert({
@@ -66,7 +67,8 @@ export const cotizacionesApi = {
                 moneda: data.moneda || 'PEN',
                 validez_dias: 15,
                 incluye_igv: true,
-                markup_aplicado: defaultMarkup // Freeze current config value
+                markup_aplicado: defaultMarkup, // Freeze current config value
+                costo_mano_obra_m2: defaultMoCost // Freeze current labor cost
             })
             .select()
             .single()

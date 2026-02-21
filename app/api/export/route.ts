@@ -4,25 +4,25 @@ import { createClient } from "@supabase/supabase-js"
 import ExcelJS from "exceljs"
 
 // Initialize Supabase Admin Client (server-side only)
-// We use the service role key if available for full access, or the anon key if acting on behalf of user
-// But here we'll use the environment variables directly as in other API routes
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! // Or Service Role if needed for admin export
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 export async function POST(req: NextRequest) {
     try {
-        const { type, date } = await req.json()
+        const { type, startDate, endDate } = await req.json()
         const workbook = new ExcelJS.Workbook()
         workbook.creator = "Sistema ERP"
         workbook.created = new Date()
 
-        if (type === 'sales') {
-            await generateSalesExcel(workbook, date)
+        if (type === 'commercial') {
+            await generateCommercialExcel(workbook, startDate, endDate)
         } else if (type === 'inventory') {
             await generateInventoryExcel(workbook)
         } else if (type === 'movements') {
-            await generateMovementsExcel(workbook, date)
+            await generateMovementsExcel(workbook, startDate, endDate)
+        } else if (type === 'master_data') {
+            await generateMasterDataExcel(workbook)
         } else {
             return NextResponse.json({ error: "Invalid type" }, { status: 400 })
         }
@@ -47,473 +47,312 @@ export async function POST(req: NextRequest) {
     }
 }
 
-async function generateSalesExcel(workbook: ExcelJS.Workbook, dateFilter?: string) {
-    // SHEET 1: RESUMEN VENTAS (Existing Logic)
-    const sheet = workbook.addWorksheet("Resumen Ventas")
+// Helper to bypass Supabase 1000 row limit
+async function fetchAllRows(queryBuilder: any, limitPerPage = 1000) {
+    let allData: any[] = [];
+    let from = 0;
+    let to = limitPerPage - 1;
+    let keepFetching = true;
 
-    // Fetch Data
-    // Filter by Finalizada or Aprobada
-    let query = supabase
-        .from('trx_cotizaciones_cabecera')
-        .select(`
-            id_cotizacion,
-            fecha_emision,
-            estado,
-            moneda,
-            total_precio_venta,
-            nombre_proyecto,
-            validez_dias,
-            plazo_entrega,
-            condicion_pago,
-            markup_aplicado,
-            incluye_igv,
-            aplica_detraccion,
-            costo_mano_obra_m2,
-            costo_global_instalacion,
-            observaciones,
-            fecha_prometida,
-            fecha_entrega_real,
-            terminos_personalizados,
-            motivo_rechazo,
-            mst_clientes (nombre_completo, ruc, telefono, direccion_obra_principal, tipo_cliente),
-            mst_marcas (nombre_marca),
-            trx_cotizaciones_detalle (
-                etiqueta_item,
-                cantidad,
-                subtotal_linea,
-                id_modelo,
-                color_perfiles,
-                ancho_mm,
-                alto_mm,
-                ubicacion,
-                tipo_cierre,
-                tipo_vidrio,
-                grupo_opcion
-            )
-        `)
-        .in('estado', ['Aprobada', 'Finalizada'])
-        .order('fecha_emision', { ascending: false })
-        .range(0, 19999)
+    while (keepFetching) {
+        const { data, error } = await queryBuilder.range(from, to);
+        if (error) throw error;
 
-    if (dateFilter) {
-        const d = new Date(dateFilter)
-        if (!isNaN(d.getTime())) {
-            const startOfMonth = new Date(d.getFullYear(), d.getMonth(), 1).toISOString()
-            const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString()
-            query = query.gte('fecha_emision', startOfMonth).lte('fecha_emision', endOfMonth)
-        }
-    }
-
-    const { data: salesData, error: salesError } = await query
-    if (salesError) throw salesError
-
-    // Define Columns Sheet 1
-    sheet.columns = [
-        { header: "ID Cotización", key: "id", width: 36 },
-        { header: "Fecha Emisión", key: "fecha", width: 15 },
-        { header: "Cliente", key: "cliente", width: 30 },
-        { header: "RUC/DNI", key: "ruc", width: 15 },
-        { header: "Teléfono", key: "telefono", width: 15 },
-        { header: "Dirección Obra", key: "dir_obra", width: 30 },
-        { header: "Tipo Cliente", key: "tipo_cli", width: 10 },
-        { header: "Proyecto", key: "proyecto", width: 25 },
-        { header: "Marca", key: "marca", width: 15 },
-        { header: "Estado", key: "estado", width: 15 },
-        { header: "Moneda", key: "moneda", width: 10 },
-        { header: "Total Venta", key: "total", width: 15 },
-        { header: "Validez (Días)", key: "validez", width: 10 },
-        { header: "Plazo Entrega", key: "plazo", width: 15 },
-        { header: "Cond. Pago", key: "pago", width: 20 },
-        { header: "Markup", key: "markup", width: 10 },
-        { header: "Inc. IGV", key: "igv", width: 10 },
-        { header: "Detracción", key: "detracc", width: 10 },
-        { header: "M.O. / m2", key: "mo_m2", width: 12 },
-        { header: "Inst. Global", key: "inst_global", width: 12 },
-        { header: "Fecha Prometida", key: "f_prometida", width: 15 },
-        { header: "Fecha Entrega Real", key: "f_entrega", width: 15 },
-        { header: "Observaciones", key: "obs", width: 40 },
-        { header: "Motivo Rechazo", key: "rechazo", width: 20 },
-        { header: "Item Etiqueta", key: "item", width: 30 },
-        { header: "Modelo", key: "modelo", width: 15 },
-        { header: "Ubicación", key: "ubic", width: 15 },
-        { header: "Cant", key: "cant", width: 10 },
-        { header: "Ancho (mm)", key: "ancho", width: 10 },
-        { header: "Alto (mm)", key: "alto", width: 10 },
-        { header: "Color", key: "color", width: 15 },
-        { header: "Vidrio", key: "vidrio", width: 20 },
-        { header: "Cierre", key: "cierre", width: 15 },
-        { header: "Opcion", key: "opcion", width: 15 },
-        { header: "Total Línea", key: "total_linea", width: 15 },
-    ]
-
-    salesData.forEach((cot: any) => {
-        const header = {
-            id: cot.id_cotizacion,
-            fecha: new Date(cot.fecha_emision).toLocaleDateString(),
-            cliente: cot.mst_clientes?.nombre_completo || "Desconocido",
-            ruc: cot.mst_clientes?.ruc || "",
-            telefono: cot.mst_clientes?.telefono || "",
-            dir_obra: cot.mst_clientes?.direccion_obra_principal || "",
-            tipo_cli: cot.mst_clientes?.tipo_cliente || "",
-            estado: cot.estado,
-            moneda: cot.moneda,
-            total: cot.moneda === 'PEN' ? `S/ ${cot.total_precio_venta}` : `$ ${cot.total_precio_venta}`,
-            proyecto: cot.nombre_proyecto || "-",
-            marca: cot.mst_marcas?.nombre_marca || "-",
-            validez: cot.validez_dias,
-            plazo: cot.plazo_entrega,
-            pago: cot.condicion_pago,
-            markup: cot.markup_aplicado,
-            igv: cot.incluye_igv ? 'Sí' : 'No',
-            detracc: cot.aplica_detraccion ? 'Sí' : 'No',
-            mo_m2: cot.costo_mano_obra_m2,
-            inst_global: cot.costo_global_instalacion,
-            obs: cot.observaciones,
-            f_prometida: cot.fecha_prometida ? new Date(cot.fecha_prometida).toLocaleDateString() : "-",
-            f_entrega: cot.fecha_entrega_real ? new Date(cot.fecha_entrega_real).toLocaleDateString() : "-",
-            rechazo: cot.motivo_rechazo || "-"
-        }
-
-        if (!cot.trx_cotizaciones_detalle || cot.trx_cotizaciones_detalle.length === 0) {
-            sheet.addRow(header)
+        if (data && data.length > 0) {
+            allData = [...allData, ...data];
+            from += limitPerPage;
+            to += limitPerPage;
+            if (data.length < limitPerPage) {
+                keepFetching = false;
+            }
         } else {
-            cot.trx_cotizaciones_detalle.forEach((det: any) => {
-                sheet.addRow({
-                    ...header,
-                    item: det.etiqueta_item,
-                    cant: det.cantidad,
-                    total_linea: cot.moneda === 'PEN' ? `S/ ${det.subtotal_linea}` : `$ ${det.subtotal_linea}`,
-                    modelo: det.id_modelo,
-                    color: det.color_perfiles,
-                    ancho: det.ancho_mm,
-                    alto: det.alto_mm,
-                    ubic: det.ubicacion,
-                    cierre: det.tipo_cierre,
-                    vidrio: det.tipo_vidrio,
-                    opcion: det.grupo_opcion
-                })
-            })
+            keepFetching = false;
         }
-    })
-    sheet.getRow(1).font = { bold: true }
-    sheet.getRow(1).fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFE0E0E0' }
     }
+    return allData;
+}
 
-    // SHEET 2: EXPLOSION DE INSUMOS (Despiece)
-    const sheetBOM = workbook.addWorksheet("Insumos (Despiece)")
-    sheetBOM.columns = [
-        { header: "ID Cotización", key: "id", width: 36 },
-        { header: "Proyecto", key: "proy", width: 25 },
-        { header: "Item", key: "item", width: 20 },
-        { header: "Modelo", key: "mod", width: 15 },
-        { header: "Cant Item", key: "q_item", width: 10 },
-        { header: "Tipo Insumo", key: "tipo", width: 15 },
-        { header: "Nombre Insumo", key: "nombre", width: 30 },
-        { header: "SKU Real", key: "sku", width: 20 },
-        { header: "Descripción SKU", key: "desc_sku", width: 30 },
-        { header: "Detalle Acabado", key: "acab", width: 15 },
-        { header: "Medida Corte (mm)", key: "corte", width: 15 },
-        { header: "Cantidad Total Insumo", key: "q_total", width: 15 },
-        { header: "Costo Total (Est.)", key: "costo", width: 15 },
+// --- 1. COMMERCIAL EXPORT ---
+async function generateCommercialExcel(workbook: ExcelJS.Workbook, startDate?: string, endDate?: string) {
+    // We export flat facts and dimensions for Commercial
+
+    // SHEET 1: CABECERAS (vw_cotizaciones_totales)
+    const sheetHeaders = workbook.addWorksheet("Fact_Cotizaciones_Cabecera")
+    sheetHeaders.columns = [
+        { header: "id_cotizacion", key: "id_cotizacion", width: 36 },
+        { header: "id_cliente", key: "id_cliente", width: 36 },
+        { header: "id_marca", key: "id_marca", width: 36 },
+        { header: "fecha_emision", key: "fecha_emision", width: 20 },
+        { header: "fecha_prometida", key: "fecha_prometida", width: 20 },
+        { header: "fecha_entrega_real", key: "fecha_entrega_real", width: 20 },
+        { header: "fecha_aprobacion", key: "fecha_aprobacion", width: 20 },
+        { header: "fecha_rechazo", key: "fecha_rechazo", width: 20 },
+        { header: "estado", key: "estado", width: 15 },
+        { header: "moneda", key: "moneda", width: 10 },
+        { header: "condicion_pago", key: "condicion_pago", width: 20 },
+        { header: "aplica_detraccion", key: "aplica_detraccion", width: 15 },
+        { header: "incluye_igv", key: "incluye_igv", width: 15 },
+        { header: "total_costo_directo", key: "total_costo_directo", width: 18 },
+        { header: "total_precio_venta", key: "total_precio_venta", width: 18 },
+        { header: "_vc_total_costo_materiales", key: "_vc_total_costo_materiales", width: 18 },
+        { header: "_vc_subtotal_venta", key: "_vc_base_imponible", width: 18 },
+        { header: "_vc_monto_igv", key: "_vc_monto_igv", width: 15 },
+        { header: "_vc_precio_final_cliente", key: "_vc_precio_final_cliente", width: 18 },
+        { header: "costo_mano_obra_m2", key: "costo_mano_obra_m2", width: 15 },
+        { header: "costo_fijo_instalacion", key: "costo_fijo_instalacion", width: 15 },
+        { header: "costo_global_instalacion", key: "costo_global_instalacion", width: 15 },
+        { header: "nombre_proyecto", key: "nombre_proyecto", width: 30 },
+        { header: "plazo_entrega", key: "plazo_entrega", width: 20 },
+        { header: "validez_dias", key: "validez_dias", width: 10 },
+        { header: "markup_aplicado", key: "markup_aplicado", width: 15 },
+        { header: "motivo_rechazo", key: "motivo_rechazo", width: 30 },
     ]
 
-    // Fetch Desglose Data
-    // Note: We don't filter by date here strictly to keep logic simple, or we can fetch only IDs from above.
-    // For simplicity and robustness, we fetch last 20k rows of breakdown.
-    const { data: bomData, error: bomError } = await supabase
-        .from('vw_reporte_desglose')
-        .select('*')
-        .order('fecha_emision', { ascending: false })
-        .range(0, 19999)
+    let queryHeaders = supabase.from('vw_cotizaciones_totales').select('*').order('fecha_emision', { ascending: false });
+    if (startDate) queryHeaders = queryHeaders.gte('fecha_emision', startDate);
+    if (endDate) queryHeaders = queryHeaders.lte('fecha_emision', endDate);
 
-    if (bomData && !bomError) {
-        bomData.forEach((row: any) => {
-            sheetBOM.addRow({
-                id: row.id_cotizacion,
-                proy: row.nombre_proyecto,
-                item: row.etiqueta_item,
-                mod: row.id_modelo,
-                q_item: row.cantidad_items,
-                tipo: row.tipo_componente,
-                nombre: row.nombre_componente,
-                sku: row.sku_real,
-                desc_sku: row.descripcion_sku,
-                acab: row.detalle_acabado,
-                corte: row.medida_corte_mm,
-                q_total: row.cantidad_insumo_total,
-                costo: `S/ ${(row.costo_total_item || 0).toFixed(2)}`
-            })
-        })
-    }
-    sheetBOM.getRow(1).fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFE0E0E0' }
-    }
+    const headersData = await fetchAllRows(queryHeaders);
+    headersData.forEach((row: any) => sheetHeaders.addRow(row));
 
-    // SHEET 3: PRODUCCIÓN (KANBAN)
-    const sheetProd = workbook.addWorksheet("Producción (Kanban)")
+    // SHEET 2: DETALLES (vw_cotizaciones_detalladas)
+    const sheetDetails = workbook.addWorksheet("Fact_Cotizaciones_Detalle")
+    sheetDetails.columns = [
+        { header: "id_linea_cot", key: "id_linea_cot", width: 36 },
+        { header: "id_cotizacion", key: "id_cotizacion", width: 36 },
+        { header: "id_modelo", key: "id_modelo", width: 36 },
+        { header: "ubicacion", key: "ubicacion", width: 20 },
+        { header: "etiqueta_item", key: "etiqueta_item", width: 30 },
+        { header: "tipo_cierre", key: "tipo_cierre", width: 15 },
+        { header: "color_perfiles", key: "color_perfiles", width: 15 },
+        { header: "tipo_vidrio", key: "tipo_vidrio", width: 20 },
+        { header: "grupo_opcion", key: "grupo_opcion", width: 15 },
+        { header: "cantidad", key: "cantidad", width: 10 },
+        { header: "ancho_mm", key: "ancho_mm", width: 10 },
+        { header: "alto_mm", key: "alto_mm", width: 10 },
+        { header: "costo_base_ref", key: "costo_base_ref", width: 15 },
+        { header: "subtotal_linea", key: "subtotal_linea", width: 15 },
+        { header: "_costo_materiales", key: "_costo_materiales", width: 18 },
+        { header: "_vc_precio_unit_oferta_calc", key: "_vc_precio_unit_oferta_calc", width: 18 },
+        { header: "_vc_subtotal_linea_calc", key: "_vc_subtotal_linea_calc", width: 18 },
+        { header: "es_despiece_manual", key: "es_despiece_manual", width: 15 },
+        { header: "opciones_seleccionadas", key: "opc_str", width: 30 },
+    ]
+
+    const headerIds = headersData.map((h: any) => h.id_cotizacion)
+    let queryDetails = supabase.from('vw_cotizaciones_detalladas').select('*');
+    if ((startDate || endDate) && headerIds.length > 0) {
+        queryDetails = queryDetails.in('id_cotizacion', headerIds)
+    } else if ((startDate || endDate) && headerIds.length === 0) {
+        queryDetails = queryDetails.in('id_cotizacion', ['00000000-0000-0000-0000-000000000000'])
+    }
+    const detailsData = await fetchAllRows(queryDetails);
+    detailsData.forEach((row: any) => sheetDetails.addRow({ ...row, opc_str: row.opciones_seleccionadas ? JSON.stringify(row.opciones_seleccionadas) : '' }));
+
+    // SHEET 3: DESGLOSE INGENIERIA (vw_reporte_desglose)
+    const sheetBom = workbook.addWorksheet("Fact_Desglose_Ingenieria")
+    sheetBom.columns = [
+        { header: "id_linea_cot", key: "id_linea_cot", width: 36 },
+        { header: "id_cotizacion", key: "id_cotizacion", width: 36 },
+        { header: "sku_real", key: "sku_real", width: 25 },
+        { header: "id_modelo", key: "id_modelo", width: 36 },
+        { header: "tipo_componente", key: "tipo_componente", width: 15 },
+        { header: "nombre_componente", key: "nombre_componente", width: 30 },
+        { header: "detalle_acabado", key: "detalle_acabado", width: 15 },
+        { header: "medida_corte_mm", key: "medida_corte_mm", width: 15 },
+        { header: "angulo_corte", key: "angulo_corte", width: 15 },
+        { header: "detalle_formula", key: "detalle_formula", width: 15 },
+        { header: "cantidad_item", key: "cantidad_items", width: 15 },
+        { header: "cantidad_unitaria", key: "cantidad_unitaria", width: 15 },
+        { header: "costo_unitario", key: "costo_unitario", width: 15 },
+        { header: "costo_mercado_unit", key: "costo_mercado_unit", width: 15 },
+    ]
+    let queryBom = supabase.from('vw_reporte_desglose').select('*');
+    if ((startDate || endDate) && headerIds.length > 0) {
+        queryBom = queryBom.in('id_cotizacion', headerIds)
+    } else if ((startDate || endDate) && headerIds.length === 0) {
+        queryBom = queryBom.in('id_cotizacion', ['00000000-0000-0000-0000-000000000000'])
+    }
+    const bomData = await fetchAllRows(queryBom);
+    bomData.forEach((row: any) => sheetBom.addRow(row));
+
+    // SHEET 4: PRODUCCION (vw_reporte_produccion)
+    const sheetProd = workbook.addWorksheet("Fact_Produccion_Kanban")
     sheetProd.columns = [
-        { header: "ID Registro", key: "id", width: 36 },
-        { header: "Origen", key: "origen", width: 15 },
-        { header: "Estado", key: "estado", width: 20 },
-        { header: "Cliente", key: "cli", width: 30 },
-        { header: "Producto", key: "prod", width: 30 },
-        { header: "Marca", key: "marca", width: 15 },
-        { header: "Color", key: "color", width: 15 },
-        { header: "Ancho (mm)", key: "w", width: 10 },
-        { header: "Alto (mm)", key: "h", width: 10 },
-        { header: "Fecha Entrega", key: "delivery", width: 15 },
-        { header: "Fecha Término", key: "end", width: 15 },
+        { header: "id_registro", key: "id_registro", width: 36 },
+        { header: "origen", key: "origen", width: 15 },
+        { header: "client_name", key: "client_name", width: 30 },
+        { header: "product_name", key: "product_name", width: 30 },
+        { header: "brand", key: "brand", width: 15 },
+        { header: "color", key: "color", width: 15 },
+        { header: "crystal_type", key: "crystal_type", width: 20 },
+        { header: "width_mm", key: "width_mm", width: 10 },
+        { header: "height_mm", key: "height_mm", width: 10 },
+        { header: "creation_date", key: "creation_date", width: 20 },
+        { header: "delivery_date", key: "delivery_date", width: 20 },
+        { header: "fecha_termino", key: "fecha_termino", width: 20 },
+        { header: "estado_final", key: "estado_final", width: 20 },
     ]
-
-    const { data: prodData, error: prodError } = await supabase
-        .from('vw_reporte_produccion')
-        .select('*')
-        .limit(5000)
-
-    if (prodData && !prodError) {
-        prodData.forEach((row: any) => {
-            sheetProd.addRow({
-                id: row.id_registro,
-                origen: row.origen,
-                estado: row.estado_final || row.estado_actual,
-                cli: row.client_name,
-                prod: row.product_name,
-                marca: row.brand,
-                color: row.color,
-                w: row.width_mm,
-                h: row.height_mm,
-                delivery: row.delivery_date ? new Date(row.delivery_date).toLocaleDateString() : "-",
-                end: row.fecha_termino ? new Date(row.fecha_termino).toLocaleDateString() : "-"
-            })
-        })
+    const queryProd = supabase.from('vw_reporte_produccion').select('*');
+    const prodData = await fetchAllRows(queryProd);
+    if (prodData && prodData.length > 0) {
+        prodData.forEach((row: any) => sheetProd.addRow(row));
     }
-    sheetProd.getRow(1).font = { bold: true }
-    sheetProd.getRow(1).fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFE0E0E0' }
-    }
+
+    [sheetHeaders, sheetDetails, sheetBom, sheetProd].forEach(s => {
+        s.getRow(1).font = { bold: true };
+        s.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9E1F2' } };
+    });
 }
 
 // --- 2. INVENTORY EXPORT (Stock + Retazos + Zombies) ---
 async function generateInventoryExcel(workbook: ExcelJS.Workbook) {
-    // SHEET 1: STOCK VALORIZADO
-    const sheet = workbook.addWorksheet("Inventario Valorizado")
-
-    // ... Columns Definition (Same as before, keep logic) ...
-    sheet.columns = [
-        { header: "SKU", key: "sku", width: 18 },
-        { header: "Descripción", key: "desc", width: 40 },
-        { header: "Sistema", key: "sis", width: 20 },
-        { header: "Familia", key: "fam", width: 20 },
-        { header: "Marca", key: "marca", width: 15 },
-        { header: "Material", key: "mat", width: 15 },
-        { header: "Acabado", key: "acab", width: 15 },
-        { header: "U.M.", key: "um", width: 10 },
-        { header: "Cód. Prov.", key: "cod_prov", width: 15 },
-        { header: "Moneda Rep.", key: "mon_rep", width: 10 },
-        { header: "Stock Actual", key: "stock", width: 15 },
-        { header: "Costo Prom. (S/)", key: "costo", width: 15 },
-        { header: "Inv. Total (S/)", key: "valor", width: 15 },
-        { header: "Prioridad", key: "prio", width: 10 },
-        { header: "Stock Mínimo", key: "min", width: 12 },
-        { header: "Punto Pedido", key: "pto", width: 12 },
-        { header: "Templado", key: "temp", width: 10 },
-        { header: "Espesor (mm)", key: "esp", width: 10 },
-        { header: "Flete (m2)", key: "flete", width: 10 },
-        { header: "Tiempo Rep. (Días)", key: "time_rep", width: 15 },
-        { header: "Lote Compra", key: "lote", width: 12 },
-        { header: "Demanda Prom.", key: "demanda", width: 12 },
-        { header: "Última Act.", key: "last_update", width: 20 },
+    const sheetStock = workbook.addWorksheet("Snap_Inventario_Valorizado")
+    sheetStock.columns = [
+        { header: "id_sku", key: "id_sku", width: 20 },
+        { header: "id_marca", key: "id_marca", width: 15 },
+        { header: "id_material", key: "id_material", width: 15 },
+        { header: "id_acabado", key: "id_acabado", width: 15 },
+        { header: "id_sistema", key: "id_sistema", width: 20 },
+        { header: "stock_actual", key: "stock_actual", width: 15 },
+        { header: "stock_minimo", key: "stock_minimo", width: 12 },
+        { header: "punto_pedido", key: "punto_pedido", width: 12 },
+        { header: "costo_promedio", key: "costo_promedio", width: 20 },
+        { header: "costo_mercado_unit", key: "costo_mercado_unit", width: 15 },
+        { header: "inversion_total", key: "inversion_total", width: 20 },
+        { header: "clasificacion_abc", key: "clasificacion_abc", width: 10 },
+        { header: "orden_prioridad", key: "orden_prioridad", width: 10 },
+        { header: "estado_abastecimiento", key: "estado_abastecimiento", width: 15 },
+        { header: "ultima_actualizacion", key: "ultima_actualizacion", width: 20 },
+        { header: "largo_estandar_mm", key: "largo_estandar_mm", width: 15 },
+        { header: "peso_teorico_kg", key: "peso_teorico_kg", width: 15 },
     ]
 
-    // Use enriched view vw_stock_realtime
-    const { data, error } = await supabase
-        .from('vw_stock_realtime')
-        .select('*')
-        .order('id_sku', { ascending: true })
-        .range(0, 19999)
+    const queryStock = supabase.from('vw_stock_realtime').select('*').order('id_sku', { ascending: true });
+    const stockData = await fetchAllRows(queryStock);
+    stockData.forEach((row: any) => sheetStock.addRow(row));
 
-    if (error) throw error
-
-    data.forEach((item: any) => {
-        sheet.addRow({
-            sku: item.id_sku,
-            desc: item.nombre_completo,
-            sis: item.sistema_nombre || "-",
-            fam: item.nombre_familia || "-",
-            marca: item.nombre_marca || "-",
-            mat: item.nombre_material || "-",
-            acab: item.nombre_acabado || "-",
-            um: item.unidad_medida,
-            cod_prov: item.cod_proveedor || "-",
-            mon_rep: item.moneda_reposicion || "-",
-            stock: item.stock_actual,
-            costo: `S/ ${(item.costo_promedio || 0).toFixed(2)}`,
-            valor: `S/ ${(item.inversion_total || 0).toFixed(2)}`,
-            prio: item.orden_prioridad === 1 ? 'Negativo' : (item.orden_prioridad === 2 ? 'Positivo' : 'Cero'),
-            min: item.stock_minimo,
-            pto: item.punto_pedido,
-            temp: item.es_templado ? 'Sí' : 'No',
-            esp: item.espesor_mm || "-",
-            flete: item.costo_flete_m2 || "-",
-            time_rep: item.tiempo_reposicion_dias,
-            lote: item.lote_econ_compra,
-            demanda: item.demanda_promedio_diaria,
-            last_update: item.ultima_actualizacion ? new Date(item.ultima_actualizacion).toLocaleDateString() : "-"
-        })
-    })
-    sheet.getRow(1).font = { bold: true }
-    sheet.getRow(1).fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFE0E0E0' }
-    }
-
-    // SHEET 2: RETAZOS DISPONIBLES
-    const sheetOffcuts = workbook.addWorksheet("Retazos Disponibles")
+    const sheetOffcuts = workbook.addWorksheet("Fact_Retazos_Disponibles")
     sheetOffcuts.columns = [
-        { header: "ID Retazo", key: "id", width: 36 },
-        { header: "SKU Padre", key: "sku", width: 15 },
-        { header: "Nombre Perfil", key: "nom", width: 30 },
-        { header: "Longitud (mm)", key: "len", width: 15 },
-        { header: "Ubicación", key: "ubic", width: 15 },
-        { header: "Estado", key: "st", width: 10 },
-        { header: "Orden Trabajo", key: "ot", width: 15 },
-        { header: "Fecha Creación", key: "fecha", width: 15 },
-        { header: "Valor Est. (S/)", key: "val", width: 15 },
+        { header: "id_retazo", key: "id_retazo", width: 36 },
+        { header: "id_sku_padre", key: "id_sku_padre", width: 20 },
+        { header: "orden_trabajo", key: "orden_trabajo", width: 25 },
+        { header: "estado", key: "estado", width: 15 },
+        { header: "ubicacion", key: "ubicacion", width: 15 },
+        { header: "longitud_mm", key: "longitud_mm", width: 15 },
+        { header: "valor_recuperable_estimado", key: "valor_recuperable_estimado", width: 25 },
+        { header: "fecha_creacion", key: "fecha_creacion", width: 20 },
     ]
-
-    const { data: offData, error: offError } = await supabase.from('vw_reporte_retazos').select('*').limit(5000)
-    if (offError) throw offError
-    if (offData) {
-        offData.forEach((r: any) => {
-            sheetOffcuts.addRow({
-                id: r.id_retazo,
-                sku: r.id_sku_padre,
-                nom: r.nombre_perfil,
-                len: r.longitud_mm,
-                ubic: r.ubicacion,
-                st: r.estado,
-                ot: r.orden_trabajo,
-                fecha: new Date(r.fecha_creacion).toLocaleDateString(),
-                val: `S/ ${r.valor_recuperable_estimado}`
-            })
-        })
-    }
-    sheetOffcuts.getRow(1).font = { bold: true }
-    sheetOffcuts.getRow(1).fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFE0E0E0' }
+    const queryOff = supabase.from('vw_reporte_retazos').select('*');
+    const offData = await fetchAllRows(queryOff);
+    if (offData && offData.length > 0) {
+        offData.forEach((row: any) => sheetOffcuts.addRow(row));
     }
 
-    // SHEET 3: STOCK ZOMBIE (Slow Moving)
-    const sheetZombie = workbook.addWorksheet("Stock Zombie (Inmovilizado)")
+    const sheetZombie = workbook.addWorksheet("Stock_Zombie")
     sheetZombie.columns = [
-        { header: "SKU", key: "sku", width: 15 },
-        { header: "Producto", key: "prod", width: 30 },
-        { header: "Stock Actual", key: "st", width: 10 },
-        { header: "Costo Unit (S/)", key: "cost", width: 15 },
-        { header: "Valor Estancado (S/)", key: "val", width: 15 },
-        { header: "Última Salida", key: "last", width: 15 },
+        { header: "id_sku", key: "id_sku", width: 20 },
+        { header: "nombre_completo", key: "nombre_completo", width: 40 },
+        { header: "stock_actual", key: "stock_actual", width: 15 },
+        { header: "costo_unitario", key: "costo_unitario", width: 20 },
+        { header: "valor_estancado", key: "valor_estancado", width: 20 },
+        { header: "ultima_salida_registrada", key: "ultima_salida_registrada", width: 20 },
     ]
-    const { data: zombieData, error: zombieError } = await supabase.from('vw_kpi_stock_zombie').select('*').limit(2000)
-    if (zombieError) throw zombieError
-    if (zombieData) {
-        zombieData.forEach((z: any) => {
-            sheetZombie.addRow({
-                sku: z.id_sku,
-                prod: z.nombre_completo,
-                st: z.stock_actual,
-                cost: `S/ ${(z.costo_unitario || 0).toFixed(2)}`,
-                val: `S/ ${(z.valor_estancado || 0).toFixed(2)}`,
-                last: z.ultima_salida_registrada ? new Date(z.ultima_salida_registrada).toLocaleDateString() : 'NUNCA'
-            })
-        })
+    const queryZombie = supabase.from('vw_kpi_stock_zombie').select('*');
+    const zombieData = await fetchAllRows(queryZombie);
+    if (zombieData && zombieData.length > 0) {
+        zombieData.forEach((row: any) => sheetZombie.addRow(row));
     }
-    sheetZombie.getRow(1).font = { bold: true }
-    sheetZombie.getRow(1).fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFE0E0E0' }
-    }
+
+    [sheetStock, sheetOffcuts, sheetZombie].forEach(s => {
+        s.getRow(1).font = { bold: true };
+        s.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } };
+    });
 }
 
-async function generateMovementsExcel(workbook: ExcelJS.Workbook, dateFilter?: string) {
-    const sheet = workbook.addWorksheet("Kardex de Movimientos")
+// --- 3. MOVEMENTS EXPORT (Kardex) ---
+async function generateMovementsExcel(workbook: ExcelJS.Workbook, startDate?: string, endDate?: string) {
+    const sheet = workbook.addWorksheet("Fact_Kardex_Movimientos")
 
     sheet.columns = [
-        { header: "ID Movimiento", key: "id", width: 36 },
-        { header: "Fecha Hora", key: "fecha", width: 20 },
-        { header: "Tipo", key: "tipo", width: 15 },
-        { header: "SKU", key: "sku", width: 15 },
-        { header: "Producto", key: "desc", width: 40 },
-        { header: "U.M.", key: "um", width: 8 },
-        { header: "Familia", key: "fam", width: 15 },
-        { header: "Marca", key: "marca", width: 15 },
-        { header: "Almacén", key: "alm", width: 10 },
-        { header: "Entidad (Cli/Prov)", key: "entidad", width: 30 },
-        { header: "Doc. Físico", key: "doc_fis", width: 15 },
-        { header: "Cantidad", key: "cant", width: 15 },
-        { header: "Moneda Orig.", key: "mon_orig", width: 10 },
-        { header: "Costo Unit. Doc", key: "costo_doc", width: 15 },
-        { header: "T.C.", key: "tc", width: 10 },
-        { header: "Costo Unit. PEN", key: "costo_u", width: 15 },
-        { header: "Total PEN", key: "total", width: 15 },
-        { header: "Usuario", key: "user", width: 15 },
-        { header: "Motivo Ajuste", key: "motivo", width: 20 },
-        { header: "Comentarios", key: "com", width: 30 },
+        { header: "id_movimiento", key: "id_movimiento", width: 36 },
+        { header: "id_sku", key: "id_sku", width: 20 },
+        { header: "referencia_doc", key: "nro_documento", width: 30 },
+        { header: "fecha_hora", key: "fecha_hora", width: 20 },
+        { header: "tipo_movimiento", key: "tipo_movimiento", width: 15 },
+        { header: "cantidad", key: "cantidad", width: 15 },
+        { header: "costo_unit_doc", key: "costo_unit_doc", width: 18 },
+        { header: "costo_total_pen", key: "costo_total_pen", width: 18 },
+        { header: "moneda_origen", key: "moneda_origen", width: 15 },
+        { header: "entidad_nombre", key: "entidad_nombre", width: 30 },
+        { header: "nro_documento", key: "nro_documento", width: 30 },
     ]
 
-    // Use view vw_kardex_reporte which resolves names
-    let query = supabase
-        .from('vw_kardex_reporte')
-        .select('*')
-        .order('fecha_hora', { ascending: false })
-        .range(0, 19999)
+    let query = supabase.from('vw_kardex_reporte').select('*').order('fecha_hora', { ascending: false });
 
-    if (dateFilter) {
-        const d = new Date(dateFilter)
-        if (!isNaN(d.getTime())) {
-            const startOfMonth = new Date(d.getFullYear(), d.getMonth(), 1).toISOString()
-            const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString()
-            query = query.gte('fecha_hora', startOfMonth).lte('fecha_hora', endOfMonth)
-        }
-    }
+    if (startDate) query = query.gte('fecha_hora', startDate)
+    if (endDate) query = query.lte('fecha_hora', endDate)
 
-    const { data, error } = await query
-    if (error) throw error
+    const data = await fetchAllRows(query);
+    data.forEach((row: any) => sheet.addRow(row));
 
-    data.forEach((mov: any) => {
-        sheet.addRow({
-            id: mov.id_movimiento,
-            fecha: new Date(mov.fecha_hora).toLocaleString(),
-            tipo: mov.tipo_movimiento,
-            sku: mov.id_sku,
-            desc: mov.producto_nombre || "???",
-            um: mov.unidad_medida,
-            fam: mov.nombre_familia || "-",
-            marca: mov.nombre_marca || "-",
-            alm: mov.id_almacen || "PRINCIPAL",
-            entidad: mov.entidad_nombre || "-",
-            doc_fis: mov.nro_documento || "-",
-            cant: mov.cantidad,
-            mon_orig: mov.moneda_origen || "PEN",
-            costo_doc: mov.costo_unit_doc,
-            tc: mov.tipo_cambio,
-            costo_u: (mov.costo_total_pen / (mov.cantidad !== 0 ? mov.cantidad : 1)).toFixed(2), // Derived unit cost PEN
-            total: `S/ ${(mov.costo_total_pen || 0).toFixed(2)}`,
-            user: mov.usuario_reg || "-",
-            motivo: mov.motivo_ajuste || "-",
-            com: mov.comentarios || "-"
-        })
-    })
+    sheet.getRow(1).font = { bold: true };
+    sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFCE4D6' } };
+}
 
-    sheet.getRow(1).font = { bold: true }
+// --- 4. MASTER DATA EXPORT (NEW) ---
+async function generateMasterDataExcel(workbook: ExcelJS.Workbook) {
+    const sheetCat = workbook.addWorksheet("Dim_SKU_Catalogo")
+    sheetCat.columns = [
+        { header: "id_sku", key: "id_sku", width: 20 },
+        { header: "nombre_completo", key: "nombre_completo", width: 40 },
+        { header: "id_marca", key: "id_marca", width: 15 },
+        { header: "id_material", key: "id_material", width: 15 },
+        { header: "id_acabado", key: "id_acabado", width: 15 },
+        { header: "id_sistema", key: "id_sistema", width: 15 },
+        { header: "costo_mercado_unit", key: "costo_mercado_unit", width: 15 },
+        { header: "lote_econ_compra", key: "lote_econ_compra", width: 15 },
+        { header: "tiempo_reposicion_dias", key: "tiempo_reposicion_dias", width: 20 },
+    ]
+    const queryCatData = supabase.from('cat_productos_variantes').select('*');
+    const catData = await fetchAllRows(queryCatData);
+    catData?.forEach((row: any) => sheetCat.addRow(row));
+
+    const sheetClients = workbook.addWorksheet("Dim_Clientes")
+    sheetClients.columns = [
+        { header: "id_cliente", key: "id_cliente", width: 20 },
+        { header: "ruc", key: "ruc", width: 15 },
+        { header: "nombre_completo", key: "nombre_completo", width: 40 },
+        { header: "tipo_cliente", key: "tipo_cliente", width: 15 },
+    ]
+    const queryCData = supabase.from('mst_clientes').select('*');
+    const cData = await fetchAllRows(queryCData);
+    cData?.forEach((row: any) => sheetClients.addRow(row));
+
+    const sheetProv = workbook.addWorksheet("Dim_Proveedores")
+    sheetProv.columns = [
+        { header: "id_proveedor", key: "id_proveedor", width: 20 },
+        { header: "ruc", key: "ruc", width: 15 },
+        { header: "razon_social", key: "razon_social", width: 40 },
+        { header: "dias_credito", key: "dias_credito", width: 15 },
+    ]
+    const queryPData = supabase.from('mst_proveedores').select('*');
+    const pData = await fetchAllRows(queryPData);
+    pData?.forEach((row: any) => sheetProv.addRow(row));
+
+    const sheetPlantillas = workbook.addWorksheet("Dim_Sistemas_Familias")
+    sheetPlantillas.columns = [
+        { header: "id_familia", key: "id_familia", width: 20 },
+        { header: "nombre_familia", key: "nombre_familia", width: 40 },
+        { header: "prefijo", key: "prefijo", width: 15 },
+        { header: "categoria", key: "categoria", width: 15 },
+    ]
+    const queryFamData = supabase.from('mst_familias').select('*');
+    const famData = await fetchAllRows(queryFamData);
+    famData?.forEach((row: any) => sheetPlantillas.addRow(row));
+
+    [sheetClients, sheetProv, sheetCat, sheetPlantillas].forEach(s => {
+        s.getRow(1).font = { bold: true };
+        s.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF2CC' } };
+    });
 }

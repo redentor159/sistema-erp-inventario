@@ -1,26 +1,37 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
-import { Download, FileSpreadsheet, History, Package, ShoppingCart } from "lucide-react"
-import { cn } from "@/lib/utils"
-// import { saveAs } from "file-saver" // Dynamic import to avoid SSR issues
+import { Download, FileSpreadsheet, History, Package, ShoppingCart, Database, Filter } from "lucide-react"
 
 export default function ExportPage() {
-    const [date, setDate] = useState<Date | undefined>(new Date())
+    // Default to last 30 days
+    const defaultStart = new Date()
+    defaultStart.setMonth(defaultStart.getMonth() - 1)
+
+    const [startDate, setStartDate] = useState<string>(format(defaultStart, 'yyyy-MM-dd'))
+    const [endDate, setEndDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'))
+    const [useDateFilter, setUseDateFilter] = useState<boolean>(true)
     const [loading, setLoading] = useState<string | null>(null)
 
     const handleExport = async (type: string) => {
         try {
             setLoading(type)
+
+            const payload = {
+                type,
+                startDate: useDateFilter ? `${startDate}T00:00:00.000Z` : undefined,
+                endDate: useDateFilter ? `${endDate}T23:59:59.999Z` : undefined
+            }
+
             const response = await fetch('/api/export', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type, date: date?.toISOString() })
+                body: JSON.stringify(payload)
             })
 
             if (!response.ok) {
@@ -29,7 +40,7 @@ export default function ExportPage() {
             }
 
             const blob = await response.blob()
-            const filename = `${type}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`
+            const filename = `Export_${type.toUpperCase()}_${format(new Date(), 'yyyyMMdd_HHmm')}.xlsx`
 
             // Dynamic import for client-side only
             const { saveAs } = await import('file-saver')
@@ -44,129 +55,182 @@ export default function ExportPage() {
     }
 
     return (
-        <div className="space-y-6 p-6">
-            <div>
-                <h2 className="text-3xl font-bold tracking-tight">Centro de Exportación</h2>
-                <p className="text-muted-foreground">Descarga de reportes detallados para contabilidad y análisis.</p>
+        <div className="space-y-6 p-6 max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h2 className="text-3xl font-bold tracking-tight text-slate-900">Generador de Reportes</h2>
+                    <p className="text-muted-foreground mt-1">Exportación de datos estructurados multi-hoja, optimizados para Power BI y Excel Avanzado.</p>
+                </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {/* 1. VENTAS / COTIZACIONES */}
-                <Card className="border-blue-200 bg-blue-50/20">
+            {/* Global Filters Panel */}
+            <Card className="border-slate-200 shadow-sm bg-white">
+                <CardHeader className="pb-3 border-b border-slate-100">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <Filter className="w-5 h-5 text-slate-500" />
+                        Parámetros Globales de Exportación
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-5">
+                    <div className="flex flex-col md:flex-row items-center gap-6">
+                        <div className="flex items-center gap-2 w-full md:w-auto">
+                            <input
+                                type="checkbox"
+                                id="useDates"
+                                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600"
+                                checked={useDateFilter}
+                                onChange={(e) => setUseDateFilter(e.target.checked)}
+                            />
+                            <Label htmlFor="useDates" className="font-semibold cursor-pointer">Filtrar por Fecha de Emisión/Movimiento</Label>
+                        </div>
+
+                        {useDateFilter && (
+                            <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto ml-0 md:ml-4 p-3 bg-slate-50 rounded-md border border-slate-100">
+                                <div className="flex flex-col gap-1.5 w-full sm:w-auto">
+                                    <Label htmlFor="start" className="text-xs text-slate-500 uppercase font-semibold">Desde</Label>
+                                    <Input
+                                        type="date"
+                                        id="start"
+                                        value={startDate}
+                                        onChange={(e) => setStartDate(e.target.value)}
+                                        className="w-full sm:w-[160px] cursor-pointer"
+                                    />
+                                </div>
+                                <span className="text-slate-300 hidden sm:inline">—</span>
+                                <div className="flex flex-col gap-1.5 w-full sm:w-auto">
+                                    <Label htmlFor="end" className="text-xs text-slate-500 uppercase font-semibold">Hasta</Label>
+                                    <Input
+                                        type="date"
+                                        id="end"
+                                        value={endDate}
+                                        onChange={(e) => setEndDate(e.target.value)}
+                                        className="w-full sm:w-[160px] cursor-pointer"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                        {!useDateFilter && (
+                            <div className="text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-md border border-amber-200">
+                                ⚠️ <strong>Atención:</strong> Descargar todo el historial ignorando las fechas puede demorar varios minutos o consumir mucha memoria.
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+
+            <div className="grid gap-6 md:grid-cols-2">
+                {/* 1. COMERCIAL */}
+                <Card className="border-blue-200 hover:border-blue-300 transition-colors shadow-sm relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110" />
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-blue-700">
-                            <ShoppingCart className="h-5 w-5" />
-                            Reporte de Ventas
+                        <CardTitle className="flex items-center gap-2 text-blue-800">
+                            <ShoppingCart className="h-6 w-6 text-blue-600" />
+                            Módulo Comercial Completo
                         </CardTitle>
-                        <CardDescription>Cotizaciones Aprobadas y Finalizadas</CardDescription>
+                        <CardDescription>Cotizaciones, Detalles, Desglose y Producción.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                        <p className="text-sm text-muted-foreground">
-                            Incluye detalle de ítems, precios unitarios, clientes y fechas de entrega. Ideal para análisis de ingresos.
+                    <CardContent className="space-y-3">
+                        <p className="text-sm text-slate-600 min-h-[60px]">
+                            Extrae un archivo con 4 hojas planas. Contiene toda la cabecera económica calculada, el detalle granular de ítems, y los cálculos de ingeniería generados. Ideal Análisis de Márgenes.
                         </p>
+                    </CardContent>
+                    <CardFooter>
                         <Button
-                            className="w-full bg-blue-600 hover:bg-blue-700"
-                            onClick={() => handleExport('sales')}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                            onClick={() => handleExport('commercial')}
                             disabled={!!loading}
                         >
-                            {loading === 'sales' ? "Generando..." : (
-                                <>
-                                    <FileSpreadsheet className="mr-2 h-4 w-4" /> Exportar Excel
-                                </>
+                            {loading === 'commercial' ? "Extrayendo Datos..." : (
+                                <><FileSpreadsheet className="mr-2 h-4 w-4" /> Generar Excel Comercial</>
                             )}
                         </Button>
-                    </CardContent>
+                    </CardFooter>
                 </Card>
 
-                {/* 2. INVENTARIO VALORIZADO */}
-                <Card className="border-emerald-200 bg-emerald-50/20">
+                {/* 2. INVENTARIO */}
+                <Card className="border-emerald-200 hover:border-emerald-300 transition-colors shadow-sm relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110" />
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-emerald-700">
-                            <Package className="h-5 w-5" />
-                            Inventario Valorizado
+                        <CardTitle className="flex items-center gap-2 text-emerald-800">
+                            <Package className="h-6 w-6 text-emerald-600" />
+                            Estado de Inventario (Foto Actual)
                         </CardTitle>
-                        <CardDescription>Snapshot de Stock Actual</CardDescription>
+                        <CardDescription>Stock, Retazos e Inmovilizados (Zombies)</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                        <p className="text-sm text-muted-foreground">
-                            Foto completa del almacén hoy. Cantidades, Costo Unitario (PMP) y Valor Total.
+                    <CardContent className="space-y-3">
+                        <p className="text-sm text-slate-600 min-h-[60px]">
+                            Fotografía en tiempo real del almacén. No requiere filtro de fecha (es a "hoy"). Incluye la valorización contable promedio (PMP), prioridades de compra y perfiles muertos.
                         </p>
+                    </CardContent>
+                    <CardFooter>
                         <Button
-                            className="w-full bg-emerald-600 hover:bg-emerald-700"
+                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
                             onClick={() => handleExport('inventory')}
                             disabled={!!loading}
                         >
-                            {loading === 'inventory' ? "Generando..." : (
-                                <>
-                                    <FileSpreadsheet className="mr-2 h-4 w-4" /> Exportar Excel
-                                </>
+                            {loading === 'inventory' ? "Extrayendo Datos..." : (
+                                <><FileSpreadsheet className="mr-2 h-4 w-4" /> Generar Excel Inventario</>
                             )}
                         </Button>
-                    </CardContent>
+                    </CardFooter>
                 </Card>
 
                 {/* 3. KARDEX / MOVIMIENTOS */}
-                <Card className="border-orange-200 bg-orange-50/20">
+                <Card className="border-orange-200 hover:border-orange-300 transition-colors shadow-sm relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-orange-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110" />
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-orange-700">
-                            <History className="h-5 w-5" />
-                            Kardex de Movimientos
+                        <CardTitle className="flex items-center gap-2 text-orange-800">
+                            <History className="h-6 w-6 text-orange-600" />
+                            Kardex de Movimientos Lógicos
                         </CardTitle>
-                        <CardDescription>Historial de Entradas/Salidas</CardDescription>
+                        <CardDescription>Auditoría de Entradas, Salidas y Ajustes</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex flex-col gap-2">
-                            <p className="text-sm text-muted-foreground mb-2">
-                                Auditoría completa de movimientos. Filtra por mes para cierres contables.
-                            </p>
-                            <div className="flex items-center gap-2 mb-2">
-                                <input
-                                    type="checkbox"
-                                    id="allHistory"
-                                    className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-600"
-                                    checked={!date}
-                                    onChange={(e) => {
-                                        if (e.target.checked) {
-                                            setDate(undefined)
-                                        } else {
-                                            setDate(new Date())
-                                        }
-                                    }}
-                                />
-                                <label htmlFor="allHistory" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                    Exportar todo el historial
-                                </label>
-                            </div>
-                            <Input
-                                type="month"
-                                className="w-full"
-                                disabled={!date}
-                                value={date ? format(date, "yyyy-MM") : ""}
-                                onChange={(e) => {
-                                    if (e.target.value) {
-                                        const [y, m] = e.target.value.split('-').map(Number)
-                                        setDate(new Date(y, m - 1, 1))
-                                    } else {
-                                        // Handle clear if needed, though browser clear button does this
-                                        setDate(undefined)
-                                    }
-                                }}
-                            />
-                        </div>
-
+                    <CardContent className="space-y-3">
+                        <p className="text-sm text-slate-600 min-h-[60px]">
+                            Sábana transaccional que documenta paso a paso qué subió y qué bajó en el almacén en el rango de fechas seleccionado. Útil para rastrear mermas o descuadres de stock.
+                        </p>
+                    </CardContent>
+                    <CardFooter>
                         <Button
-                            className="w-full bg-orange-600 hover:bg-orange-700"
+                            className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold"
                             onClick={() => handleExport('movements')}
                             disabled={!!loading}
                         >
-                            {loading === 'movements' ? "Generando..." : (
-                                <>
-                                    <FileSpreadsheet className="mr-2 h-4 w-4" /> Exportar Excel
-                                </>
+                            {loading === 'movements' ? "Procesando Transacciones..." : (
+                                <><FileSpreadsheet className="mr-2 h-4 w-4" /> Generar Excel Kardex</>
                             )}
                         </Button>
-                    </CardContent>
+                    </CardFooter>
                 </Card>
+
+                {/* 4. MASTER DATA */}
+                <Card className="border-purple-200 hover:border-purple-300 transition-colors shadow-sm relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-purple-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110" />
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-purple-800">
+                            <Database className="h-6 w-6 text-purple-600" />
+                            Módulo de Datos Maestros
+                        </CardTitle>
+                        <CardDescription>Dimensiones de Referencia (Clientes, Prov, Catálogo)</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        <p className="text-sm text-slate-600 min-h-[60px]">
+                            Exporta el diccionario de datos (Tablas Dimensionales). Ideal para subir a Power BI como tablas Maestras "Catalogos" y cruzar el ID con las tablas de Ventas o Movimientos. No usa filtro de fechas.
+                        </p>
+                    </CardContent>
+                    <CardFooter>
+                        <Button
+                            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold"
+                            onClick={() => handleExport('master_data')}
+                            disabled={!!loading}
+                        >
+                            {loading === 'master_data' ? "Extrayendo Maestros..." : (
+                                <><FileSpreadsheet className="mr-2 h-4 w-4" /> Descargar Tablas Maestras</>
+                            )}
+                        </Button>
+                    </CardFooter>
+                </Card>
+
             </div>
         </div>
     )

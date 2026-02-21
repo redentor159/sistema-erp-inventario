@@ -26,7 +26,7 @@ export function DespiecePreview({ idLinea }: { idLinea: string }) {
     const otros = materiales.filter(m => m.tipo_componente !== 'Perfil')
 
     // Calculate total cost for display (Price * Qty)
-    const totalCosto = materiales.reduce((sum, m) => sum + ((Number(m.costo_total_item) || 0) * (m.cantidad_calculada ?? 1)), 0)
+    const totalCosto = materiales.reduce((sum, m) => sum + (Number(m.costo_total_item) || 0), 0)
 
     return (
         <div className={`flex flex-col rounded-md border border-slate-100 transition-all ${isOpen ? 'gap-2 p-2 bg-slate-50' : 'bg-transparent border-0'}`}>
@@ -87,7 +87,7 @@ export function DespiecePreview({ idLinea }: { idLinea: string }) {
                                     </span>
                                     <div className="flex gap-2 text-right">
                                         <span className="font-mono text-xs text-slate-400">{m.sku_real}</span>
-                                        <span className="font-medium min-w-[60px]">{formatCurrency((m.costo_total_item || 0) * (m.cantidad_calculada ?? 1))}</span>
+                                        <span className="font-medium min-w-[60px]">{formatCurrency(Number(m.costo_total_item) || 0)}</span>
                                     </div>
                                 </li>
                             ))}
@@ -102,7 +102,7 @@ export function DespiecePreview({ idLinea }: { idLinea: string }) {
                                         {m.cantidad_calculada && m.cantidad_calculada > 0 && <span className="font-bold text-slate-700 mr-1">{m.cantidad_calculada} x</span>}
                                         {m.nombre_componente}
                                     </span>
-                                    <span className="font-medium">{formatCurrency((m.costo_total_item || 0) * (m.cantidad_calculada ?? 1))}</span>
+                                    <span className="font-medium">{formatCurrency(Number(m.costo_total_item) || 0)}</span>
                                 </li>
                             ))}
                         </ul>

@@ -291,20 +291,27 @@ export function CotizacionDetail({ id }: { id: string }) {
     async function handleSave() {
         if (!cotizacion) return
         try {
-            // Fetch latest global markup to update this quota on save
-            const globalConfig = await cotizacionesApi.getGlobalConfig()
-            const currentGlobalMarkup = globalConfig?.markup_cotizaciones_default
-
             await cotizacionesApi.updateCotizacion(id, {
                 nombre_proyecto: cotizacion.nombre_proyecto,
                 id_cliente: cotizacion.id_cliente,
                 id_marca: cotizacion.id_marca,
                 costo_fijo_instalacion: cotizacion.costo_fijo_instalacion || 0,
+                costo_mano_obra_m2: cotizacion.costo_mano_obra_m2 || 0,
                 incluye_igv: cotizacion.incluye_igv,
                 fecha_prometida: cotizacion.fecha_prometida,
-                // Validar si existe markup global, si no mantener el actual o 0.35
-                markup_aplicado: currentGlobalMarkup ?? cotizacion.markup_aplicado ?? 0.35
+                markup_aplicado: cotizacion.markup_aplicado ?? 0.35
             })
+
+            // Al guardar el header, también debemos recalcular el despiece de las líneas para reflejar el nuevo markup
+            if (items && items.length > 0) {
+                toast({ title: "Recalculando...", description: "Actualizando todos los ítems con el nuevo margen" })
+                await Promise.all(
+                    items.map(i => cotizacionesApi.triggerDespiece(i.id_linea_cot))
+                )
+                // Brief delay to ensure DB propagation
+                await new Promise(r => setTimeout(r, 800))
+            }
+
             toast({
                 title: "Guardado",
                 description: "Los cambios se guardaron correctamente"
@@ -386,7 +393,7 @@ export function CotizacionDetail({ id }: { id: string }) {
     if (!cotizacion) return <div>No encontrado</div>
 
     return (
-        <div className="flex flex-col h-full gap-4">
+        <div className="flex flex-col gap-4 pb-12">
             {/* Header Toolbar */}
             <div className="flex items-center justify-between border-b pb-4">
                 <div className="flex items-center gap-4">
@@ -490,7 +497,7 @@ export function CotizacionDetail({ id }: { id: string }) {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Left Panel: General Info */}
                 <Card className="md:col-span-1 h-fit">
                     <CardHeader>
@@ -539,6 +546,18 @@ export function CotizacionDetail({ id }: { id: string }) {
                             />
                         </div>
                         <div className="grid gap-2">
+                            <Label>Costo Mano de Obra (S/ por m²)</Label>
+                            <Input
+                                type="number"
+                                step="1"
+                                min={0}
+                                placeholder="Ej. 50"
+                                value={cotizacion.costo_mano_obra_m2 ?? ""}
+                                onChange={(e) => setCotizacion({ ...cotizacion, costo_mano_obra_m2: Number(e.target.value) || 0 })}
+                            />
+                            <p className="text-xs text-muted-foreground">Costo aplicado por metro cuadrado de cada ítem.</p>
+                        </div>
+                        <div className="grid gap-2">
                             <Label>Servicios de Instalación (Opcional)</Label>
                             <Input
                                 type="number"
@@ -561,9 +580,35 @@ export function CotizacionDetail({ id }: { id: string }) {
                             </div>
                         </div>
                         <Separator />
+
                         <div className="grid gap-2">
-                            <Label>Total Materiales</Label>
-                            <div className="text-xl font-mono">{formatCurrency(cotizacion._vc_total_costo_materiales)}</div>
+                            <Label>Margen de Ganancia (Markup %)</Label>
+                            <div className="relative">
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    value={cotizacion.markup_aplicado ?? 0}
+                                    onChange={(e) => setCotizacion({ ...cotizacion, markup_aplicado: parseFloat(e.target.value) || 0 })}
+                                />
+                                <span className="absolute right-3 top-2 text-muted-foreground text-sm">
+                                    {((cotizacion.markup_aplicado || 0) * 100).toFixed(0)}%
+                                </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground">Margen aplicado a los costos directos</p>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label>Subtotal (PEN)</Label>
+                            <div className="text-xl font-mono text-slate-700">
+                                {formatCurrency(cotizacion._vc_precio_final_cliente / 1.18)}
+                            </div>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>IGV (18%)</Label>
+                            <div className="text-xl font-mono text-slate-700">
+                                {formatCurrency(cotizacion._vc_precio_final_cliente - (cotizacion._vc_precio_final_cliente / 1.18))}
+                            </div>
                         </div>
                         <div className="grid gap-2">
                             <Label>
@@ -577,7 +622,7 @@ export function CotizacionDetail({ id }: { id: string }) {
                 </Card>
 
                 {/* Right Panel: Items & Engineering */}
-                <Card className="md:col-span-2 flex flex-col h-full overflow-hidden">
+                <Card className="md:col-span-2 flex flex-col h-auto">
                     <CardHeader className="flex flex-row items-center justify-between py-3">
                         <CardTitle>Ítems de Cotización</CardTitle>
                         <Button onClick={() => {
@@ -587,7 +632,7 @@ export function CotizacionDetail({ id }: { id: string }) {
                             <Plus className="mr-2 h-4 w-4" /> Agregar Ítem
                         </Button>
                     </CardHeader>
-                    <CardContent className="flex-1 overflow-auto p-0">
+                    <CardContent className="p-0">
                         <table className="w-full text-sm">
                             <thead className="bg-muted sticky top-0 z-10">
                                 <tr className="text-left border-b">

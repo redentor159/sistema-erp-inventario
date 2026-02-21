@@ -549,14 +549,12 @@ export default function CotizacionPrintPage({ params }: { params: Promise<{ id: 
                             <div className="space-y-2 mb-3">
                                 <div className="flex justify-between text-sm text-slate-600">
                                     <span className={isClassic ? "font-serif" : ""}>Subtotal ({quoteCurrency}):</span>
-                                    <span>{formatCurrency(cotizacion.incluye_igv ? totalQuote / 1.18 : totalQuote, quoteCurrency as any)}</span>
+                                    <span>{formatCurrency(totalQuote / 1.18, quoteCurrency as any)}</span>
                                 </div>
-                                {cotizacion.incluye_igv && (
-                                    <div className="flex justify-between text-sm text-slate-600">
-                                        <span className={isClassic ? "font-serif" : ""}>IGV (18%):</span>
-                                        <span>{formatCurrency(totalQuote - (totalQuote / 1.18), quoteCurrency as any)}</span>
-                                    </div>
-                                )}
+                                <div className="flex justify-between text-sm text-slate-600">
+                                    <span className={isClassic ? "font-serif" : ""}>IGV (18%):</span>
+                                    <span>{formatCurrency(totalQuote - (totalQuote / 1.18), quoteCurrency as any)}</span>
+                                </div>
                                 <div className={cn(
                                     "flex justify-between text-xl font-bold text-slate-900 pt-2",
                                     isMinimalist ? "border-t-0" : "border-t border-slate-300",

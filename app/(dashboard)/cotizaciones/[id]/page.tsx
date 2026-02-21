@@ -10,7 +10,7 @@ interface PageProps {
 export default async function CotizacionDetailPage({ params }: PageProps) {
     const { id } = await params
     return (
-        <div className="flex flex-col gap-6 p-6 h-screen overflow-hidden">
+        <div className="flex flex-col gap-6 p-6">
             <CotizacionDetail id={id} />
         </div>
     )

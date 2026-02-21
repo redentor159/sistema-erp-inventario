@@ -150,7 +150,29 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton,
             setServicio({ descripcion: "", cantidad: 1, precio_unitario: 0 })
             setActiveTab("producto")
         }
-    }, [open, itemToEdit, allModelos])
+    }, [open, itemToEdit, allModelos]);
+    useEffect(() => {
+        if (!vidrios || !item.tipo_vidrio) return;
+        const selectedGlass = vidrios.find((v: any) => v.id_sku === item.tipo_vidrio);
+        if (selectedGlass?.es_templado) {
+            const thickness = selectedGlass.espesor_mm || 0;
+            let suggestedFactor = 15;
+            if (thickness > 6 && thickness <= 8) suggestedFactor = 20;
+            else if (thickness > 8) suggestedFactor = 25;
+
+            // Update only if different to avoid infinite loops
+            if (item.opciones_seleccionadas.factor_flete !== suggestedFactor.toString() || item.opciones_seleccionadas.incluir_flete !== 'true') {
+                setItem(prev => ({
+                    ...prev,
+                    opciones_seleccionadas: {
+                        ...prev.opciones_seleccionadas,
+                        incluir_flete: 'true',
+                        factor_flete: suggestedFactor.toString()
+                    }
+                }));
+            }
+        }
+    }, [item.tipo_vidrio, vidrios]);
 
     // Filtrar modelos según sistema seleccionado
     const filteredModelos = item.id_sistema
@@ -434,6 +456,132 @@ export function CotizacionItemDialog({ idCotizacion, onItemAdded, triggerButton,
                                         })}
                                     </div>
                                 )}
+
+                                {/* Costos Adicionales (Flete / Embalaje) */}
+                                {(() => {
+                                    const selectedGlass = vidrios?.find((v: any) => v.id_sku === item.tipo_vidrio);
+                                    const isTemplado = selectedGlass?.es_templado || false;
+                                    const thickness = selectedGlass?.espesor_mm || 0;
+
+                                    let suggestedFactor = 3;
+                                    if (isTemplado) {
+                                        if (thickness <= 6) suggestedFactor = 15;
+                                        else if (thickness <= 8) suggestedFactor = 20;
+                                        else suggestedFactor = 25;
+                                    }
+
+                                    const includeFlete = item.opciones_seleccionadas.incluir_flete === 'true' || isTemplado;
+                                    const currentFactorStr = item.opciones_seleccionadas.factor_flete;
+
+                                    // Auto-set the factor if no current factor is set and we have a suggestion
+                                    if (isTemplado && !currentFactorStr && item.tipo_vidrio) {
+                                        // We can't safely set state during render, but we handles this on submit or effect.
+                                        // For now we just default the input value if empty.
+                                    }
+
+                                    return (
+                                        <div className="mt-4 p-4 border rounded-lg bg-slate-50 border-slate-200">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <Truck className="h-4 w-4 text-slate-500" />
+                                                <h4 className="font-semibold text-slate-800 text-sm">Costo Adicional: Embalaje y Flete del cristal</h4>
+                                            </div>
+
+                                            {isTemplado && (
+                                                <div className="mb-3 p-2 bg-orange-50 border border-orange-200 rounded text-xs text-orange-800">
+                                                    <strong>Flete Recomendado:</strong> El vidrio seleccionado es Templado ({thickness}mm).
+                                                    Se recomienda encarecidamente incluir transporte especializado desde planta externa.
+                                                </div>
+                                            )}
+
+                                            <div className="flex flex-col gap-4">
+                                                <div className="flex items-center space-x-2">
+                                                    <input
+                                                        type="checkbox"
+                                                        id="chk_flete"
+                                                        className="rounded border-slate-300"
+                                                        checked={includeFlete}
+                                                        onChange={(e) => {
+                                                            const checked = e.target.checked;
+                                                            setItem(prev => {
+                                                                const newOptions: Record<string, string> = { ...prev.opciones_seleccionadas };
+                                                                newOptions.incluir_flete = checked ? 'true' : 'false';
+                                                                if (checked && !newOptions.factor_flete) {
+                                                                    newOptions.factor_flete = suggestedFactor.toString();
+                                                                } else if (!checked) {
+                                                                    delete newOptions.factor_flete;
+                                                                    delete newOptions.factor_flete_otro;
+                                                                }
+                                                                return { ...prev, opciones_seleccionadas: newOptions };
+                                                            });
+                                                        }}
+                                                    />
+                                                    <Label htmlFor="chk_flete" className="font-medium cursor-pointer">
+                                                        {isTemplado ? "Incluir Embalaje + Flete Recomendado" : "Incluir Embalaje + Flete"}
+                                                    </Label>
+                                                </div>
+
+                                                {includeFlete && (
+                                                    <div className="grid gap-2 pl-6">
+                                                        <Label>Factor de Peso</Label>
+                                                        <div className="flex items-center gap-2">
+                                                            <Select
+                                                                value={['15', '20', '25'].includes(currentFactorStr) ? currentFactorStr : (currentFactorStr ? 'Otro' : suggestedFactor.toString())}
+                                                                onValueChange={(val) => {
+                                                                    setItem(prev => {
+                                                                        const newOptions: Record<string, string> = { ...prev.opciones_seleccionadas, incluir_flete: 'true' };
+                                                                        if (val === 'Otro') {
+                                                                            newOptions.factor_flete = 'Otro';
+                                                                            newOptions.factor_flete_otro = currentFactorStr !== 'Otro' && currentFactorStr ? currentFactorStr : '';
+                                                                        } else {
+                                                                            newOptions.factor_flete = val;
+                                                                        }
+                                                                        return { ...prev, opciones_seleccionadas: newOptions };
+                                                                    });
+                                                                }}
+                                                            >
+                                                                <SelectTrigger className="w-32">
+                                                                    <SelectValue placeholder="Factor..." />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value="15">Factor 15</SelectItem>
+                                                                    <SelectItem value="20">Factor 20</SelectItem>
+                                                                    <SelectItem value="25">Factor 25</SelectItem>
+                                                                    <SelectItem value="Otro">Otro</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+
+                                                            {currentFactorStr === 'Otro' && (
+                                                                <Input
+                                                                    type="number"
+                                                                    step="0.01"
+                                                                    min="0"
+                                                                    className="w-24"
+                                                                    placeholder="Ej: 18"
+                                                                    value={item.opciones_seleccionadas.factor_flete_otro || ''}
+                                                                    onChange={(e) => {
+                                                                        setItem(prev => ({
+                                                                            ...prev,
+                                                                            opciones_seleccionadas: {
+                                                                                ...prev.opciones_seleccionadas,
+                                                                                factor_flete_otro: e.target.value
+                                                                            }
+                                                                        }));
+                                                                    }}
+                                                                />
+                                                            )}
+                                                            <span className="text-xs text-slate-500">
+                                                                Sugerido para {isTemplado ? `Templado ${thickness}mm` : 'Crudo/Laminado'}: {suggestedFactor}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-[10px] text-muted-foreground mt-1">
+                                                            Fórmula: Cantidad = Área (m²) × Factor. Costo = Cantidad × Precio Base.
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )
+                                })()}
                             </div>
                         </TabsContent>
 
