@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { RecipeModelList } from "./recipe-model-list"
 import { RecipeEditor } from "./recipe-editor"
+import { RecipeMassAudit } from "./recipe-mass-audit"
 
 export function RecipeEditorPage() {
     const [selectedModelId, setSelectedModelId] = useState<string | null>(null)
@@ -17,6 +18,7 @@ export function RecipeEditorPage() {
                         Gestiona las recetas de ingeniería — edita todos los campos, fórmulas y vínculos SKU.
                     </p>
                 </div>
+                <RecipeMassAudit onNavigate={(id) => setSelectedModelId(id || null)} />
             </div>
 
             {/* Two-Panel Layout — full width */}

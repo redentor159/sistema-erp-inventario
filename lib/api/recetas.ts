@@ -248,6 +248,41 @@ export const recetasApi = {
         if (error) throw error
     },
 
+    /**
+     * Gets ALL recipes across the system with model metadata and catalog pricing.
+     * Used for the global Recipe Mass Audit dashboard.
+     */
+    getAllRecetasConCatalogInfo: async (): Promise<any[]> => {
+        // 1. Fetch all recipes with model info and plantillas
+        const { data: recetas, error } = await supabase
+            .from('mst_recetas_ingenieria')
+            .select(`
+                *,
+                mst_recetas_modelos (nombre_comercial, id_sistema, num_hojas, activo),
+                cat_plantillas (nombre_generico)
+            `)
+            .order('id_modelo')
+
+        if (error) throw error
+        if (!recetas || recetas.length === 0) return []
+
+        // 2. Fetch all variants to map prices
+        const { data: variantes, error: varError } = await supabase
+            .from('cat_productos_variantes')
+            .select('id_sku, costo_mercado_unit')
+
+        if (varError) throw varError
+
+        const variantMap = new Map(variantes?.map(v => [v.id_sku, v.costo_mercado_unit]))
+
+        return recetas.map(r => ({
+            ...r,
+            modelo_nombre: r.mst_recetas_modelos?.nombre_comercial,
+            modelo_activo: r.mst_recetas_modelos?.activo,
+            precio_catalogo: r.id_sku_catalogo ? variantMap.get(r.id_sku_catalogo) : null
+        }))
+    },
+
     // ─── PRECIOS ACCESORIOS ───────────────────────────────────────
 
     /**
