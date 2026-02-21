@@ -1,195 +1,138 @@
 # 11 — Autenticación, Usuarios y Roles
 
-> **Sistema de Seguridad de Acceso — ERP Vidriería**  
-> Última actualización: Febrero 2026
+> **Guía Maestra de Seguridad y Control de Accesos**  
+> **Sistema: ERP Vidriería**  
+> **Última actualización:** Febrero 2026
 
 ---
 
-## 1. Arquitectura de Autenticación
+## 1. Conceptos Fundamentales
 
-El sistema usa **Supabase Auth** para gestionar identidades de usuarios y **Row Level Security (RLS)** de PostgreSQL para controlar el acceso a los datos. La autenticación funciona en el cliente mediante el SDK de Supabase.
-
-```
-Usuario ingresa credenciales
-        ↓
-   app/login/page.tsx  (Client Component)
-        ↓
-   supabase.auth.signInWithPassword()
-        ↓
-   Supabase devuelve JWT + Session cookie
-        ↓
-   AuthGuard detecta sesión activa
-        ↓
-   Usuario ve el Dashboard
-```
-
-### Archivos Clave
-
-| Archivo | Rol |
-|---|---|
-| `lib/supabase/client.ts` | Cliente Supabase para el navegador |
-| `lib/supabase/server.ts` | Cliente Supabase para el servidor (SSR) |
-| `components/auth-guard.tsx` | Protege todas las rutas del dashboard |
-| `app/login/page.tsx` | Formulario de inicio de sesión |
-| `app/login/actions.ts` | Funciones de login / signup / logout |
-| `components/dashboard/user-nav.tsx` | Barra de usuario con rol y botón Logout |
+El sistema de seguridad se basa en tres pilares de Supabase:
+1.  **Supabase Auth:** Gestiona el inicio de sesión (correo/contraseña). Almacena los usuarios en el esquema interno `auth`.
+2.  **Public User Roles:** Una tabla personalizada (`public.user_roles`) que vincula el ID del usuario de autenticación con un nivel de permiso específico (ADMIN, SECRETARIA, OPERARIO).
+3.  **RLS (Row Level Security):** Reglas de base de datos que impiden que un usuario vea o modifique datos si su rol no lo permite.
 
 ---
 
-## 2. Roles del Sistema
+## 2. Los 3 Roles del Sistema
 
-El sistema tiene **3 roles** definidos en la tabla `public.user_roles`:
+| Rol | Nivel | Descripción del Alcance de Acceso |
+| :--- | :--- | :--- |
+| **ADMIN** | **Total** | Acceso sin restricciones. Puede insertar, editar y borrar en todos los módulos. Es el único que puede ver y editar la tabla de roles de otros usuarios. |
+| **SECRETARIA** | **Gestión** | Acceso completo a Ventas (Cotizaciones), Clientes y Proveedores. Puede ver pero **no modificar** Recetas, Ingeniería ni el Inventario maestro (Kardex). |
+| **OPERARIO** | **Ejecución** | Acceso completo a Producción (Kanban) y Retazos. Puede ver Catálogo y Cotizaciones pero **no editarlos**. No tiene acceso a Ingeniería ni Configuración. |
 
-| Rol | Permisos |
-|---|---|
-| **ADMIN** | Acceso total. Puede leer y escribir en todas las tablas. Gestiona roles de usuarios. |
-| **SECRETARIA** | Puede gestionar cotizaciones, clientes, proveedores. Solo lectura en inventario y recetas. |
-| **OPERARIO** | Solo lectura en tablas de catálogo y cotizaciones. Acceso completo a Kanban. |
-
-> **Regla Raíz:** Si un usuario no tiene asignado un rol, el sistema le asigna `OPERARIO` por defecto (mínimo privilegio).
+> [!CAUTION]  
+> **Usuario sin Rol:** Si un usuario se registra y no se le asigna un rol en la tabla `user_roles`, el sistema lo tratará automáticamente como **OPERARIO** (acceso mínimo) por seguridad.
 
 ---
 
-## 3. Cómo Crear un Nuevo Usuario
+## 3. Guía Paso a Paso: Crear un Nuevo Usuario
 
-### Paso 1: Crear el usuario en Supabase
+La creación de un usuario es un proceso de dos etapas: **Identidad** y **Permisos**.
 
-1. Ve a tu proyecto en **[supabase.com/dashboard](https://supabase.com/dashboard)**
-2. Menú izquierdo → **Authentication** → **Users**
-3. Haz clic en **"Add user"** → **"Create new user"**
-4. Completa:
-   - **Email:** correo del nuevo usuario
-   - **Password:** contraseña provisional (mínimo 6 caracteres)
-   - ✅ Activa **"Auto confirm user"** para que no necesite verificar correo
-5. Haz clic en **"Create User"**
-6. Copia el **User UID** que aparece en la lista (formato UUID: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
+### Etapa 1: Crear la Identidad (Supabase Auth)
 
-### Paso 2: Asignar rol al usuario
+1.  Ingresa a tu [Dashboard de Supabase](https://supabase.com/dashboard).
+2.  En la barra lateral izquierda, haz clic en el icono de **Authentication** (llave).
+3.  Haz clic en el botón verde **"Add user"** y selecciona **"Create new user"**.
+4.  **Correo Electrónico:** Escribe el email real del trabajador.
+5.  **Contraseña:** Define una contraseña segura (mínimo 6 caracteres).
+6.  ✅ **IMPORTANTE:** Asegúrate de que la casilla **"Auto confirm user"** esté marcada. Esto evita que el usuario tenga que confirmar su email para empezar a trabajar (útil para despliegues rápidos).
+7.  Haz clic en **"Create User"**.
+8.  En la lista de usuarios que aparece, busca el nuevo usuario y haz clic en el botón de **"Copy ID"** (el icono de portapapeles junto a la cadena larga de letras y números). *Lo necesitarás para el siguiente paso.*
 
-Ejecuta este SQL en **Supabase → SQL Editor**:
+---
+
+### Etapa 2: Asignar el Rol (Existen 2 métodos)
+
+Puedes asignar el rol usando la interfaz visual (**Table Editor**) o mediante código (**SQL Editor**).
+
+#### MÉTODO A: Usando el Table Editor (Interfaz Visual - Recomendado)
+
+Este método es el más intuitivo y no requiere escribir código.
+
+1.  En la barra lateral de Supabase, entra a **Table Editor** (icono de rejilla).
+2.  Busca y selecciona la tabla `user_roles` dentro del esquema `public`.
+3.  Haz clic en el botón **"Insert row"** (o en el icono `+` al final de la tabla).
+4.  Llena los campos:
+    *   **user_id:** Pega aquí el UUID que copiaste en la Etapa 1.
+    *   **role:** Haz clic y escribe exactamente en mayúsculas: `ADMIN`, `SECRETARIA` o `OPERARIO`.
+    *   **display_name:** Escribe el nombre real de la persona (ej. "Carlos Torres").
+5.  Haz clic en **"Save"**. ¡Listo! El usuario ya puede entrar con sus permisos activos.
+
+#### MÉTODO B: Usando el SQL Editor (Código)
+
+Ideal si quieres asignar varios roles a la vez o prefieres trabajar con scripts.
+
+1.  Ve a **SQL Editor** en Supabase.
+2.  Pega y adapta el siguiente comando:
 
 ```sql
 INSERT INTO public.user_roles (user_id, role, display_name)
-VALUES 
-  ('PEGA-EL-UUID-AQUI', 'ADMIN', 'Nombre del Administrador');
-  -- O usa 'SECRETARIA' o 'OPERARIO' según corresponda
-```
-
-**Ejemplo real:**
-```sql
-INSERT INTO public.user_roles (user_id, role, display_name)
-VALUES 
-  ('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'SECRETARIA', 'María López');
+VALUES ('PEGA-EL-UUID-AQUI', 'SECRETARIA', 'Nombre de la Secretaria');
 ```
 
 ---
 
-## 4. Cómo Cambiar el Rol de un Usuario Existente
+## 4. Gestión y Mantenimiento
 
-```sql
-UPDATE public.user_roles
-SET role = 'ADMIN'   -- Cambia al rol que necesites
-WHERE user_id = 'UUID-DEL-USUARIO';
-```
+### Cómo cambiar el rol de un usuario
+*   **Vía Table Editor:** En la tabla `user_roles`, haz doble clic sobre el valor de la columna `role` del usuario, cámbialo (ej. de OPERARIO a ADMIN) y presiona Enter o haz clic fuera de la celda para guardar.
+*   **Vía SQL Editor:**
+    ```sql
+    UPDATE public.user_roles 
+    SET role = 'ADMIN' 
+    WHERE user_id = 'UUID-DEL-USUARIO';
+    ```
 
----
+### Cómo desactivar el acceso de un empleado
+Si un usuario ya no labora en la empresa, tienes dos niveles de seguridad:
 
-## 5. Cómo Eliminar el Acceso de un Usuario
-
-### Opción A — Quitar el rol (el usuario queda como OPERARIO por defecto):
-```sql
-DELETE FROM public.user_roles
-WHERE user_id = 'UUID-DEL-USUARIO';
-```
-
-### Opción B — Desactivar completamente la cuenta (recomendado):
-1. Ve a **Supabase → Authentication → Users**
-2. Encuentra el usuario → haz clic en los 3 puntos `...`
-3. Selecciona **"Ban user"** — el usuario no podrá iniciar sesión
+1.  **Nivel Suave (Quitar Rol):** Borra la fila del usuario en la tabla `user_roles`. El usuario seguirá pudiendo entrar al login, pero verá todo vacío o con acceso mínimo de Operario.
+2.  **Nivel Total (Banear Usuario):** 
+    *   Ve a **Authentication** -> **Users**.
+    *   Busca al usuario y haz clic en los tres puntos `...` al final de su fila.
+    *   Selecciona **"Ban user"**. Esto impide que el usuario inicie sesión completamente, incluso si tiene la contraseña correcta.
 
 ---
 
-## 6. Ver Todos los Usuarios y Sus Roles
+## 5. Auditoría de Accesos (Logs)
 
-```sql
--- Ver todos los usuarios con sus datos y roles asignados
-SELECT 
-    u.email,
-    r.display_name AS nombre,
-    r.role AS rol,
-    r.created_at AS fecha_asignacion
-FROM auth.users u
-LEFT JOIN public.user_roles r ON u.id = r.user_id
-ORDER BY r.role, u.email;
-```
+Para saber quién ha entrado al sistema y a qué hora, puedes consultar la tabla `login_logs`.
 
----
-
-## 7. Flujo de Login
-
-```
-1. Usuario abre la app → AuthGuard verifica sesión activa
-2. NO hay sesión → redirige a /login
-3. Usuario ingresa email + contraseña
-4. Supabase valida → genera JWT de sesión
-5. AuthGuard detecta sesión → redirige a /cotizaciones
-6. UserNav (sidebar) muestra email, rol y botón Logout
-7. Al hacer Logout → supabase.auth.signOut() → redirige a /login
-```
+*   **Vía Table Editor:** Entra a la tabla `login_logs` para ver la lista cronológica de accesos.
+*   **Vía SQL Editor (Consulta de ejemplo):**
+    ```sql
+    -- Ver los últimos 20 inicios de sesión con nombre y rol
+    SELECT email, role, logged_in_at, user_agent
+    FROM public.login_logs
+    ORDER BY logged_in_at DESC
+    LIMIT 20;
+    ```
 
 ---
 
-## 8. Flujo de Registro (Crear Cuenta desde la App)
+## 6. Configuración de Seguridad Crítica
 
-El formulario de Login tiene un botón **"Registrar cuenta"** para crear nuevas cuentas:
-
-1. Haz clic en **"Registrar cuenta"** en `/login`
-2. Ingresa email y contraseña
-3. Supabase crea el usuario
-4. **IMPORTANTE:** Sin un rol asignado, el usuario verá el dashboard pero con acceso mínimo (OPERARIO). Un ADMIN debe asignarle el rol manualmente (ver Sección 3, Paso 2).
-
-> [!IMPORTANT]  
-> Para que el botón de Registro funcione, en Supabase → Authentication → Providers → Email debes tener **"Enable Email Signup"** activado. Si solo quieres crear usuarios desde el panel de Supabase y no desde la app, puedes desactivar esto.
+> [!WARNING]  
+> **Seguridad del Registro Público:**  
+> Por defecto, el sistema NO permite el registro libre. Solo un usuario creado por ti o por el administrador puede ingresar. Si deseas deshabilitar el registro de usuarios incluso desde la consola de la App (dejando solo la creación manual por el admin en Supabase):
+> 1. Ve a **Authentication** -> **Providers**.
+> 2. En el apartado de **Email**, desactiva la opción **"Enable signup"**.
+> 3. Esto blindará el sistema para que nadie, ni por error, pueda crear una cuenta sin tu permiso directo.
 
 ---
 
-## 9. Configuración de Seguridad en Supabase
-
-Para revisar o ajustar configuraciones:
-
-| Configuración | Ruta en Supabase |
-|---|---|
-| Habilitar/deshabilitar registro de nuevos usuarios | Authentication → Providers → Email → "Enable Email Signup" |
-| Confirmar email al registrarse | Authentication → Providers → Email → "Confirm email" |
-| Ver sesiones activas de todos los usuarios | Authentication → Users → clic en un usuario → Sessions |
-| Cambiar tiempo de expiración de sesiones | Authentication → Configuration → JWT expiry |
-
----
-
-## 10. Recuperación de Contraseña
-
-Para que un usuario pueda recuperar su contraseña por email:
-
-1. El usuario hace clic en **"¿Olvidé mi contraseña?"** (botón pendiente de implementar en `/login`)
-2. Supabase envía un email de recuperación **siempre que tengas configurado un proveedor de Email** (SendGrid, Resend, etc.) en:
-   - **Supabase → Project Settings → Auth → SMTP Settings**
-
-> Si no tienes SMTP configurado, el reset de contraseña se hace desde el panel de Supabase:
-> **Authentication → Users → [clic en el usuario] → "Send password recovery"**
-
----
-
-## 11. Tabla de Referencia Rápida — Acceso por Módulo
-
-| Módulo | ADMIN | SECRETARIA | OPERARIO |
-|---|:---:|:---:|:---:|
-| **Configuración General** | ✅ Escritura | 👁 Solo Lectura | ❌ Sin acceso |
-| **Catálogo (SKUs, Plantillas)** | ✅ Escritura | 👁 Solo Lectura | 👁 Solo Lectura |
-| **Clientes y Proveedores** | ✅ Escritura | ✅ Escritura | 👁 Solo Lectura |
-| **Cotizaciones** | ✅ Escritura | ✅ Escritura | ❌ Sin acceso |
-| **Entradas y Salidas** | ✅ Escritura | ✅ Escritura | 👁 Solo Lectura |
-| **Movimientos (Kardex)** | ✅ Escritura | 👁 Solo Lectura | 👁 Solo Lectura |
-| **Recetas e Ingeniería** | ✅ Escritura | 👁 Solo Lectura | ❌ Sin acceso |
-| **Kanban Producción** | ✅ Escritura | 👁 Solo Lectura | ✅ Escritura |
-| **Retazos** | ✅ Escritura | 👁 Solo Lectura | ✅ Escritura |
-| **Gestión de Roles** | ✅ Pleno | ❌ Sin acceso | ❌ Sin acceso |
+## 7. Apéndice: Qué hacer si el Admin se queda sin acceso
+Si por error te quitas el permiso de ADMIN a ti mismo y no puedes entrar al panel de configuración:
+1.  Ve a **SQL Editor** en Supabase.
+2.  Ejecuta:
+    ```sql
+    -- Busca tu propio correo para confirmar tu UUID
+    SELECT id, email FROM auth.users WHERE email = 'tu-correo@ejemplo.com';
+    
+    -- Restablécete como ADMIN
+    UPDATE public.user_roles SET role = 'ADMIN' WHERE user_id = 'TU-UUID-COPIADO';
+    ```
