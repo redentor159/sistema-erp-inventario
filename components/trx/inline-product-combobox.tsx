@@ -17,7 +17,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
-import { supabase } from "@/lib/supabase/client"
+import { catApi } from "@/lib/api/cat"
 
 interface InlineProductComboboxProps {
     value?: string
@@ -26,45 +26,29 @@ interface InlineProductComboboxProps {
 }
 
 // Cache global: evita re-fetches cuando hay múltiples filas en el formulario
-let _cache: any[] | null = null
+let _cachedProducts: any[] | null = null
 
 export function InlineProductCombobox({ value, onChange, disabled }: InlineProductComboboxProps) {
     const [open, setOpen] = React.useState(false)
     const [search, setSearch] = React.useState("")
     const [loading, setLoading] = React.useState(false)
-    const [productos, setProductos] = React.useState<any[]>([])
+    const [productos, setProductos] = React.useState<any[]>(_cachedProducts || [])
 
     // Carga todos los productos al abrir el popover (solo la primera vez)
     const handleOpenChange = async (isOpen: boolean) => {
         setOpen(isOpen)
-        if (!isOpen || productos.length > 0) return
-
-        if (_cache) {
-            setProductos(_cache)
+        if (!isOpen) return
+        if (_cachedProducts) {
+            setProductos(_cachedProducts)
             return
         }
 
         setLoading(true)
         try {
-            // Carga completa paginada bypasseando límite de 1000 de Supabase
-            let allData: any[] = []
-            let from = 0
-            const CHUNK = 1000
-            while (true) {
-                const { data, error } = await supabase
-                    .from('vw_stock_realtime')
-                    .select('id_sku, nombre_completo, stock_actual, costo_estandar, costo_mercado_unit')
-                    .order('orden_prioridad', { ascending: true })
-                    .order('id_sku', { ascending: true })
-                    .range(from, from + CHUNK - 1)
-                if (error) throw error
-                if (!data || data.length === 0) break
-                allData = allData.concat(data)
-                if (data.length < CHUNK) break
-                from += CHUNK
-            }
-            _cache = allData
-            setProductos(allData)
+            // catApi.getProductos ya maneja la paginación interna para bypasear el límite de 1000
+            const { data } = await catApi.getProductos({ pageSize: 10000 })
+            _cachedProducts = data || []
+            setProductos(_cachedProducts)
         } catch (err) {
             console.error("Error cargando productos:", err)
         } finally {
@@ -74,14 +58,14 @@ export function InlineProductCombobox({ value, onChange, disabled }: InlineProdu
 
     // Filtrado en memoria — instantáneo, sin llamadas al servidor
     const filtered = React.useMemo(() => {
-        if (!search) return productos.slice(0, 2000)
+        if (!search) return productos.slice(0, 300)
         const q = search.toLowerCase()
         return productos
             .filter(p =>
                 p.nombre_completo?.toLowerCase().includes(q) ||
                 p.id_sku?.toLowerCase().includes(q)
             )
-            .slice(0, 500)
+            .slice(0, 300)
     }, [productos, search])
 
     const selected = productos.find(p => p.id_sku === value)
@@ -117,11 +101,14 @@ export function InlineProductCombobox({ value, onChange, disabled }: InlineProdu
                         {loading && (
                             <div className="flex items-center justify-center py-6 gap-2 text-sm text-muted-foreground">
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                Cargando productos...
+                                Cargando catálogo...
                             </div>
                         )}
-                        {!loading && filtered.length === 0 && (
-                            <CommandEmpty>No se encontraron productos.</CommandEmpty>
+                        {!loading && filtered.length === 0 && search && (
+                            <CommandEmpty>No se encontraron productos para &quot;{search}&quot;.</CommandEmpty>
+                        )}
+                        {!loading && filtered.length === 0 && !search && productos.length === 0 && (
+                            <CommandEmpty>No hay productos en el catálogo.</CommandEmpty>
                         )}
                         <CommandGroup>
                             {!loading && filtered.map((product) => (
