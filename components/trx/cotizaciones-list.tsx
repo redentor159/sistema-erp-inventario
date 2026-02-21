@@ -58,7 +58,7 @@ export function CotizacionesList() {
             }
 
             console.log("Redirecting to:", newCot.id_cotizacion)
-            router.push(`/cotizaciones/${newCot.id_cotizacion}`)
+            router.push(`/cotizaciones/detalle?id=${newCot.id_cotizacion}`)
         } catch (e: any) {
             console.error("Error creating cotizacion:", e)
             toast.error("Error al crear", e.message || "No se pudo crear la cotización")
@@ -104,7 +104,7 @@ export function CotizacionesList() {
                         </thead>
                         <tbody>
                             {data.map((row) => (
-                                <tr key={row.id_cotizacion} className="border-b hover:bg-muted/50 cursor-pointer" onClick={() => router.push(`/cotizaciones/${row.id_cotizacion}`)}>
+                                <tr key={row.id_cotizacion} className="border-b hover:bg-muted/50 cursor-pointer" onClick={() => router.push(`/cotizaciones/detalle?id=${row.id_cotizacion}`)}>
                                     <td className="p-3 font-medium">{row.nombre_proyecto || "Sin nombre"}</td>
                                     <td className="p-3 text-muted-foreground">{row.mst_clientes?.nombre_completo || "---"}</td>
                                     <td className="p-3">{new Date(row.fecha_emision).toLocaleDateString()}</td>
@@ -120,7 +120,7 @@ export function CotizacionesList() {
                                         <div className="flex justify-end gap-2">
                                             <Button variant="ghost" size="sm" onClick={(e) => {
                                                 e.stopPropagation()
-                                                router.push(`/cotizaciones/${row.id_cotizacion}`)
+                                                router.push(`/cotizaciones/detalle?id=${row.id_cotizacion}`)
                                             }}>Ver</Button>
                                             <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={(e) => handleDelete(e, row.id_cotizacion)}>
                                                 <Trash2 className="h-4 w-4" />

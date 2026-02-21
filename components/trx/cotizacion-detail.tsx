@@ -83,7 +83,7 @@ export function CotizacionDetail({ id }: { id: string }) {
                 title: "Éxito",
                 description: "Cotización duplicada correctamente"
             })
-            router.push(`/cotizaciones/${newId}`)
+            router.push(`/cotizaciones/detalle?id=${newId}`)
         } catch (e) {
             console.error(e)
             toast({
@@ -447,7 +447,7 @@ export function CotizacionDetail({ id }: { id: string }) {
                     <Button variant="outline" onClick={handleCloneCotizacion}>
                         <Copy className="mr-2 h-4 w-4" /> Duplicar Cotización
                     </Button>
-                    <Button variant="outline" onClick={() => router.push(`/cotizaciones/${id}/print`)}>
+                    <Button variant="outline" onClick={() => router.push(`/cotizaciones/imprimir?id=${id}`)}>
                         <Printer className="mr-2 h-4 w-4" /> Imprimir
                     </Button>
                     <CotizacionDespieceDialog idCotizacion={id} />
