@@ -6,6 +6,7 @@ import { LayoutDashboard, Settings, User, Box, Users, ShoppingCart, FileText, Tr
 import { cn } from "@/lib/utils"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import { UserNav } from "@/components/dashboard/user-nav"
 
 export function AppSidebar() {
     const pathname = usePathname()
@@ -60,6 +61,8 @@ export function AppSidebar() {
 
                 <NavItem href="/export" icon={FileSpreadsheet} label="Exportar Datos" collapsed={collapsed} active={pathname === '/export'} />
             </nav>
+
+            <UserNav collapsed={collapsed} />
         </aside>
     )
 }

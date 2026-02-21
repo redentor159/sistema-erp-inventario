@@ -6,7 +6,7 @@
 -- 1. FIX: auth_rls_initplan (Suboptimal query performance)
 -- Reemplaza auth.uid() con (select auth.uid()) para evitar reevaluación por fila
 DROP POLICY IF EXISTS "user_see_own_role" ON public.user_roles;
-CREATE POLICY "user_see_own_role" ON public.user_roles FOR SELECT USING (id = (select auth.uid()));
+CREATE POLICY "user_see_own_role" ON public.user_roles FOR SELECT USING (user_id = (select auth.uid()));
 
 DROP POLICY IF EXISTS "admin_manage_roles" ON public.user_roles;
 CREATE POLICY "admin_manage_roles" ON public.user_roles FOR ALL USING ((select public.get_user_role()) = 'ADMIN');
