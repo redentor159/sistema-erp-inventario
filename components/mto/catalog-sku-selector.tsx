@@ -1,9 +1,22 @@
-import { useState, useEffect } from "react"
-import { Search, Check } from "lucide-react"
+import { useState, useEffect, useMemo } from "react"
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
 import { recetasApi } from "@/lib/api/recetas"
+import { useQuery } from "@tanstack/react-query"
 
 interface CatalogSkuSelectorProps {
     value: string
@@ -12,53 +25,41 @@ interface CatalogSkuSelectorProps {
     placeholder?: string
 }
 
-export function CatalogSkuSelector({ value, onChange, initialSearch = "", placeholder = "Buscar producto..." }: CatalogSkuSelectorProps) {
+export function CatalogSkuSelector({
+    value,
+    onChange,
+    initialSearch = "",
+    placeholder = "Buscar accesorio..."
+}: CatalogSkuSelectorProps) {
     const [open, setOpen] = useState(false)
     const [search, setSearch] = useState(initialSearch)
-    const [loading, setLoading] = useState(false)
-    const [results, setResults] = useState<any[]>([])
-    const [selectedObject, setSelectedObject] = useState<any>(null)
 
-    // Load selected product name on mount from server
-    useEffect(() => {
-        if (value && !selectedObject) {
-            // Optimistic check: maybe it's in results?
-            const inResults = results.find(r => r.id_sku === value)
-            if (inResults) {
-                setSelectedObject(inResults)
-            } else {
-                recetasApi.getProductoPorSku(value).then(product => {
-                    if (product) setSelectedObject(product)
-                }).catch(console.error)
-            }
-        }
-    }, [value, results]) // Added results dependency
+    // Cargar todos los variantes una vez y cachear con React Query
+    const { data: allProducts = [], isLoading } = useQuery({
+        queryKey: ["catVariantesAccesorios"],
+        queryFn: () => recetasApi.getVariantesAccesorios(),
+        staleTime: 5 * 60 * 1000, // Cache 5 minutos
+    })
 
-    // Initial fetch when opening
-    useEffect(() => {
-        if (open && results.length === 0) {
-            handleSearch(search)
-        }
-    }, [open])
+    // Filtrado en memoria — igual que ProductCombobox de Entradas/Salidas
+    const filteredProducts = useMemo(() => {
+        if (!allProducts.length) return []
+        if (!search) return allProducts.slice(0, 2000)
 
-    const handleSearch = async (term: string) => {
-        setLoading(true)
-        try {
-            const data = await recetasApi.buscarProductosCatalogo(term, 50)
-            setResults(data)
-        } catch (err) {
-            console.error(err)
-            setResults([])
-        } finally { setLoading(false) }
-    }
+        const q = search.toLowerCase()
+        return allProducts
+            .filter((p: any) =>
+                p.nombre_completo?.toLowerCase().includes(q) ||
+                p.id_sku?.toLowerCase().includes(q)
+            )
+            .slice(0, 3000)
+    }, [allProducts, search])
 
-    const onKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            e.preventDefault()
-            e.stopPropagation()
-            handleSearch(search)
-        }
-    }
+    // Producto actualmente seleccionado
+    const selectedProduct = useMemo(() =>
+        allProducts.find((p: any) => p.id_sku === value),
+        [allProducts, value]
+    )
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
@@ -67,57 +68,79 @@ export function CatalogSkuSelector({ value, onChange, initialSearch = "", placeh
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
-                    className="w-full justify-between h-8 text-xs font-normal"
+                    className={cn(
+                        "w-full justify-between h-8 text-xs font-normal",
+                        value && "font-medium border-primary/50"
+                    )}
                 >
                     <span className="truncate font-mono">
-                        {value ? value : placeholder}
+                        {selectedProduct
+                            ? `${value} — ${selectedProduct.nombre_completo}`
+                            : (value || placeholder)}
                     </span>
-                    {selectedObject && <span className="ml-2 text-[10px] text-muted-foreground truncate max-w-[150px]">{selectedObject.nombre_completo}</span>}
-                    <Search className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                    {isLoading
+                        ? <Loader2 className="ml-2 h-3 w-3 animate-spin shrink-0 opacity-50" />
+                        : <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                    }
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[400px] p-0" align="start">
-                <div className="flex items-center border-b px-3">
-                    <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-                    <Input
-                        className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 border-0 focus-visible:ring-0"
-                        placeholder="Buscar SKU o nombre (Enter)..."
+            <PopoverContent className="w-[420px] p-0" align="start">
+                <Command shouldFilter={false}>
+                    <CommandInput
+                        placeholder="Buscar SKU o nombre..."
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        onKeyDown={onKeyDown}
+                        onValueChange={setSearch}
                     />
-                    <Button variant="ghost" size="sm" onClick={() => handleSearch(search)} disabled={loading}>
-                        {loading ? "..." : "Buscar"}
-                    </Button>
-                </div>
-                <div className="max-h-[300px] overflow-y-auto p-1">
-                    {results.length === 0 && !loading && (
-                        <p className="p-4 text-center text-sm text-muted-foreground">No se encontraron productos.</p>
-                    )}
-                    {results.map((product) => (
-                        <div
-                            key={product.id_sku}
-                            className={`flex items-start gap-2 p-2 rounded-sm cursor-pointer hover:bg-accent text-sm ${value === product.id_sku ? "bg-accent" : ""}`}
-                            onClick={() => {
-                                onChange(product.id_sku, product)
-                                setSelectedObject(product)
-                                setOpen(false)
-                            }}
-                        >
-                            <Check className={`h-4 w-4 mt-1 ${value === product.id_sku ? "opacity-100" : "opacity-0"}`} />
-                            <div className="flex-1">
-                                <div className="font-medium">{product.nombre_completo}</div>
-                                <div className="text-xs text-muted-foreground flex justify-between">
-                                    <span className="font-mono">{product.id_sku}</span>
-                                    <span>Stock: {product.stock_actual}</span>
-                                </div>
-                                <div className="text-xs text-green-600 font-semibold mt-1">
-                                    Precio: {product.moneda_reposicion} {product.costo_mercado_unit?.toFixed(2)}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                    <CommandList className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+                        <CommandEmpty>
+                            {isLoading ? "Cargando productos..." : "No se encontraron productos."}
+                        </CommandEmpty>
+                        <CommandGroup>
+                            {filteredProducts.map((product: any) => (
+                                <CommandItem
+                                    key={product.id_sku}
+                                    value={product.id_sku}
+                                    onSelect={() => {
+                                        onChange(product.id_sku, product)
+                                        setOpen(false)
+                                        setSearch("")
+                                    }}
+                                    onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        onChange(product.id_sku, product)
+                                        setOpen(false)
+                                        setSearch("")
+                                    }}
+                                    className={cn(
+                                        "cursor-pointer",
+                                        value === product.id_sku && "bg-primary/20 font-bold"
+                                    )}
+                                >
+                                    <Check
+                                        className={cn(
+                                            "mr-2 h-4 w-4 text-primary",
+                                            value === product.id_sku ? "opacity-100" : "opacity-0"
+                                        )}
+                                    />
+                                    <div className="flex flex-col w-full">
+                                        <div className="flex justify-between">
+                                            <span className="truncate">{product.nombre_completo}</span>
+                                            {product.costo_mercado_unit != null && (
+                                                <span className="text-green-600 font-semibold ml-2 shrink-0">
+                                                    S/ {Number(product.costo_mercado_unit).toFixed(2)}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex justify-between text-xs text-muted-foreground mt-0.5">
+                                            <span className="font-mono">{product.id_sku}</span>
+                                        </div>
+                                    </div>
+                                </CommandItem>
+                            ))}
+                        </CommandGroup>
+                    </CommandList>
+                </Command>
             </PopoverContent>
         </Popover>
     )
