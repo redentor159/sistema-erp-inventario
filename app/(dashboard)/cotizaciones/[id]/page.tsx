@@ -1,21 +1,14 @@
-import { Suspense } from "react"
-import { CotizacionDetail } from "@/components/trx/cotizacion-detail"
+import CotizacionDetailClient from './client'
 
 export async function generateStaticParams() {
-    return [{ id: '1' }];
+    return [{ id: 'placeholder' }]
 }
 
 interface PageProps {
-    params: {
-        id: string
-    }
+    params: Promise<{ id: string }>
 }
 
 export default async function CotizacionDetailPage({ params }: PageProps) {
     const { id } = await params
-    return (
-        <div className="flex flex-col gap-6 p-6">
-            <CotizacionDetail id={id} />
-        </div>
-    )
+    return <CotizacionDetailClient cotizacionId={id} />
 }

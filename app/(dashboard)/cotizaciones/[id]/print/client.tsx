@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, use } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { cotizacionesApi } from "@/lib/api/cotizaciones"
 import { configApi } from "@/lib/api/config"
@@ -37,8 +37,8 @@ interface PrintTexts {
     notes: string
 }
 
-export default function CotizacionPrintPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = use(params)
+export default function CotizacionPrintPage({ cotizacionId }: { cotizacionId: string }) {
+    const id = cotizacionId
     const router = useRouter()
 
     // Data State

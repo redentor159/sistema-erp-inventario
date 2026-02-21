@@ -1,9 +1,14 @@
 import PrintClient from './client'
 
 export async function generateStaticParams() {
-    return [{ id: '1' }];
+    return [{ id: 'placeholder' }]
 }
 
-export default function Page({ params }: { params: Promise<{ id: string }> }) {
-    return <PrintClient params={params} />
+interface PageProps {
+    params: Promise<{ id: string }>
+}
+
+export default async function Page({ params }: PageProps) {
+    const { id } = await params
+    return <PrintClient cotizacionId={id} />
 }
