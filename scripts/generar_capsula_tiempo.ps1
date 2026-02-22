@@ -30,7 +30,8 @@ Get-ChildItem -Path $BasePath -Exclude $ExcludeList | Copy-Item -Destination "$C
 if (Test-Path "$BasePath\out") {
     Write-Host "Copiando carpeta /out estatica..."
     Copy-Item -Path "$BasePath\out\*" -Destination "$CapsulaPath\build_out" -Recurse -Force
-} else {
+}
+else {
     Write-Host "[!] No se encontro la carpeta /out. Recuerda correr 'npm run build' antes de generar la capsula." -ForegroundColor Red
 }
 
@@ -39,7 +40,8 @@ if (Test-Path "$BasePath\.env.local") {
     Write-Host "Copiando variables de entorno .env.local..."
     Copy-Item -Path "$BasePath\.env.local" -Destination "$CapsulaPath\secretos\.env.local" -Force
     Copy-Item -Path "$BasePath\.env.local" -Destination "$EmergenciaPath\.env.local" -Force
-} else {
+}
+else {
     Write-Host "[!] Archivo .env.local no encontrado." -ForegroundColor Red
 }
 
@@ -47,7 +49,10 @@ if (Test-Path "$BasePath\.env.local") {
 $envFilePath = "$BasePath\.env.local"
 if (Test-Path $envFilePath) {
     # Extraer URI de BD del .env (Asumiendo nombre DATABASE_URL o parecido)
-    $DBUrl = (Select-String -Path $envFilePath -Pattern "NEXT_PUBLIC_SUPABASE_URL"| Out-String)
+    $DBUrl = (Select-String -Path $envFilePath -Pattern "NEXT_PUBLIC_SUPABASE_URL" | Out-String)
+    if ($DBUrl) {
+        Write-Host "Se encontro cadena de conexion a Supabase." -ForegroundColor Cyan
+    }
     Write-Host "[IMPORTANTE] Se reuqiere pg_dump para extraer la base de datos real." -ForegroundColor Magenta
     Write-Host "[IMPORTANTE] El Workflow de Github (.github/workflows) lo hara diario gratis!" -ForegroundColor Magenta
 }

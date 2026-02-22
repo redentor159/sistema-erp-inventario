@@ -257,19 +257,20 @@ export function HelpPanel({ collapsed }: { collapsed?: boolean }) {
 
                                                     // Extraemos el child <code> en react land
                                                     const child = React.Children.toArray(children)[0] as React.ReactElement
+                                                    const childProps = child?.props as any
 
-                                                    const match = /language-(\w+)/.exec(child?.props?.className || '')
+                                                    const match = /language-(\w+)/.exec(childProps?.className || '')
                                                     const isMermaid = match && match[1] === 'mermaid'
 
-                                                    if (isMermaid && typeof child?.props?.children === 'string') {
-                                                        return <MermaidChart chart={child.props.children.replace(/\n$/, '')} />
+                                                    if (isMermaid && typeof childProps?.children === 'string') {
+                                                        return <MermaidChart chart={childProps.children.replace(/\n$/, '')} />
                                                     }
 
                                                     return (
                                                         <div className="relative group/pre my-4">
                                                             <div className="absolute right-2 top-2 opacity-0 group-hover/pre:opacity-100 transition-opacity z-10 flex gap-2">
                                                                 {match && <span className="text-xs text-gray-500 font-mono self-center px-1">{match[1]}</span>}
-                                                                <CopyButton text={codeContent || child?.props?.children?.toString() || ""} />
+                                                                <CopyButton text={codeContent || childProps?.children?.toString() || ""} />
                                                             </div>
                                                             <pre {...props} className="bg-[#f6f8fa] rounded-md border border-[#d0d7de] !p-4 !overflow-x-auto">
                                                                 {children}

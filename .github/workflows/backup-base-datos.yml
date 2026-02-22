@@ -15,12 +15,18 @@ jobs:
 
       - name: Obtener fecha actual
         id: date
-        run: echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+        run: |
+          echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+          echo "date_str=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-      - name: Instalar cliente de PostgreSQL
+      - name: Instalar cliente de PostgreSQL 17
         run: |
           sudo apt-get update
-          sudo apt-get install -y postgresql-client
+          sudo apt-get install -y wget gnupg2 curl
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
+          echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
 
       - name: Generar Dump de Supabase
         env:
@@ -32,11 +38,11 @@ jobs:
           # Realizamos un dump limpio y formateado de la BD
           # -O: No guarda la propiedad de roles internos de Supabase
           # -x: No guarda privilegios que dependen del entorno original
-          pg_dump "$SUPABASE_DB_URL" -O -x > "backup_${{ env.DATE }}.sql"
+          pg_dump "$SUPABASE_DB_URL" -O -x > "backup_${DATE}.sql"
 
       - name: Subir como Artefacto (Descargable desde GitHub)
         uses: actions/upload-artifact@v4
         with:
-          name: supabase-database-backup-${{ env.DATE }}
-          path: backup_${{ env.DATE }}.sql
+          name: supabase-database-backup-${{ steps.date.outputs.date_str }}
+          path: backup_${{ steps.date.outputs.date_str }}.sql
           retention-days: 30 # GitHub guardará el backup gratis por 30 días
