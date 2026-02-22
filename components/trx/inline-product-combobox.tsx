@@ -63,11 +63,24 @@ export function InlineProductCombobox({ value, onChange, disabled }: InlineProdu
         setResults([])
     }
 
-    const handleOpenChange = (isOpen: boolean) => {
+    // Carga inicial: 50 productos con stock al abrir
+    const handleOpenChange = async (isOpen: boolean) => {
         setOpen(isOpen)
         if (!isOpen) {
             setQuery("")
             setResults([])
+            return
+        }
+        if (query) return // ya tiene búsqueda activa
+        setLoading(true)
+        try {
+            // Supabase ordena por orden_prioridad (stock primero) por defecto
+            const { data } = await catApi.getProductos({ pageSize: 50 })
+            setResults(data || [])
+        } catch (err) {
+            console.error("Error cargando productos:", err)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -112,7 +125,7 @@ export function InlineProductCombobox({ value, onChange, disabled }: InlineProdu
                                 Sin resultados para &quot;{query}&quot;.
                             </div>
                         )}
-                        {!loading && !query && (
+                        {!loading && !query && results.length === 0 && (
                             <div className="py-6 text-center text-sm text-muted-foreground">
                                 Escribe para buscar productos
                             </div>
