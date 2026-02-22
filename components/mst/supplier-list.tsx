@@ -1,6 +1,6 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { mstApi } from "@/lib/api/mst"
 import {
     Table,
@@ -11,7 +11,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Plus, Search, Edit } from "lucide-react"
+import { Plus, Search, Edit, Trash2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import {
@@ -22,9 +22,20 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { SupplierFormCmp } from "./supplier-form"
 
 export function SupplierList() {
+    const queryClient = useQueryClient()
     const { data: suppliers, isLoading } = useQuery({
         queryKey: ["mstProveedores"],
         queryFn: mstApi.getProveedores,
@@ -33,6 +44,21 @@ export function SupplierList() {
     const [search, setSearch] = useState("")
     const [open, setOpen] = useState(false)
     const [selectedSupplier, setSelectedSupplier] = useState<any>(null)
+    const [supplierToDelete, setSupplierToDelete] = useState<any>(null)
+
+    const deleteMutation = useMutation({
+        mutationFn: mstApi.deleteProveedor,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["mstProveedores"] })
+            alert("Proveedor eliminado correctamente")
+            setSupplierToDelete(null)
+        },
+        onError: (error: Error) => {
+            console.error(error)
+            alert("Error al eliminar proveedor. Es posible que tenga registros asociados.")
+            setSupplierToDelete(null)
+        }
+    })
 
     if (isLoading) return <div>Cargando proveedores...</div>
 
@@ -142,15 +168,43 @@ export function SupplierList() {
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <Button variant="ghost" size="icon" onClick={() => handleEdit(supplier)} className="h-8 w-8 text-muted-foreground hover:text-primary">
-                                        <Edit className="h-4 w-4" />
-                                    </Button>
+                                    <div className="flex justify-end gap-1">
+                                        <Button variant="ghost" size="icon" onClick={() => handleEdit(supplier)} className="h-8 w-8 text-muted-foreground hover:text-primary">
+                                            <Edit className="h-4 w-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" onClick={() => setSupplierToDelete(supplier)} className="h-8 w-8 text-muted-foreground hover:text-red-600">
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Diálogo de Confirmación para Eliminar */}
+            <AlertDialog open={!!supplierToDelete} onOpenChange={() => setSupplierToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Está absolutamente seguro?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta acción no se puede deshacer. Esto eliminará permanentemente al proveedor
+                            <strong> {supplierToDelete?.razon_social} </strong> y todos sus datos asociados del servidor.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={deleteMutation.isPending}>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => deleteMutation.mutate(supplierToDelete.id_proveedor)}
+                            disabled={deleteMutation.isPending}
+                            className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                        >
+                            {deleteMutation.isPending ? "Eliminando..." : "Sí, eliminar proveedor"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

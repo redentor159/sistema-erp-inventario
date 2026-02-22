@@ -99,5 +99,25 @@ export const mstApi = {
 
         if (error) throw error
         return data as MstProveedor
+    },
+
+    deleteCliente: async (id_cliente: string) => {
+        const { error } = await supabase
+            .from('mst_clientes')
+            .delete()
+            .eq('id_cliente', id_cliente)
+
+        if (error) throw error
+        return true
+    },
+
+    deleteProveedor: async (id_proveedor: string) => {
+        const { error } = await supabase
+            .from('mst_proveedores')
+            .delete()
+            .eq('id_proveedor', id_proveedor)
+
+        if (error) throw error
+        return true
     }
 }

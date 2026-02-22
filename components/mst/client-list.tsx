@@ -1,6 +1,6 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { mstApi } from "@/lib/api/mst"
 import {
     Table,
@@ -11,7 +11,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Plus, Search, Edit } from "lucide-react"
+import { Plus, Search, Edit, Trash2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import {
@@ -22,9 +22,20 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { ClientFormCmp } from "./client-form"
 
 export function ClientList() {
+    const queryClient = useQueryClient()
     const { data: clients, isLoading } = useQuery({
         queryKey: ["mstClientes"],
         queryFn: mstApi.getClientes,
@@ -33,6 +44,21 @@ export function ClientList() {
     const [search, setSearch] = useState("")
     const [open, setOpen] = useState(false)
     const [selectedClient, setSelectedClient] = useState<any>(null)
+    const [clientToDelete, setClientToDelete] = useState<any>(null)
+
+    const deleteMutation = useMutation({
+        mutationFn: mstApi.deleteCliente,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["mstClientes"] })
+            alert("Cliente eliminado correctamente")
+            setClientToDelete(null)
+        },
+        onError: (error: Error) => {
+            console.error(error)
+            alert("Error al eliminar cliente. Es posible que tenga cotizaciones o registros asociados.")
+            setClientToDelete(null)
+        }
+    })
 
     if (isLoading) return <div>Cargando clientes...</div>
 
@@ -121,8 +147,8 @@ export function ClientList() {
                                 <TableCell className="text-center">
                                     <div className="flex justify-center">
                                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full w-fit ${client.tipo_cliente === 'EMPRESA'
-                                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                                                : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                            : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                                             }`}>
                                             {client.tipo_cliente}
                                         </span>
@@ -139,15 +165,43 @@ export function ClientList() {
                                     </span>
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <Button variant="ghost" size="icon" onClick={() => handleEdit(client)} className="h-8 w-8 text-muted-foreground hover:text-primary">
-                                        <Edit className="h-4 w-4" />
-                                    </Button>
+                                    <div className="flex justify-end gap-1">
+                                        <Button variant="ghost" size="icon" onClick={() => handleEdit(client)} className="h-8 w-8 text-muted-foreground hover:text-primary">
+                                            <Edit className="h-4 w-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" onClick={() => setClientToDelete(client)} className="h-8 w-8 text-muted-foreground hover:text-red-600">
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Diálogo de Confirmación para Eliminar */}
+            <AlertDialog open={!!clientToDelete} onOpenChange={() => setClientToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Está absolutamente seguro?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta acción eliminará al cliente <strong>{clientToDelete?.nombre_completo}</strong> sistemáticamente.
+                            Si el cliente tiene cotizaciones activas, esta acción será rechazada por seguridad de la base de datos.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={deleteMutation.isPending}>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => deleteMutation.mutate(clientToDelete.id_cliente)}
+                            disabled={deleteMutation.isPending}
+                            className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                        >
+                            {deleteMutation.isPending ? "Eliminando..." : "Sí, eliminar cliente"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }
