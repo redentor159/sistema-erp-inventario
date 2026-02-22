@@ -18,9 +18,9 @@ jobs:
         run: |
           echo "Haciendo ping a Supabase para simular actividad y evitar apagado de 7 dias..."
           
-          # Hacemos una peticion a la API REST (intentando leer de una tabla cualquiera, ej. param_config)
+          # Hacemos una peticion a la API REST (intentando leer de una tabla existente: login_logs)
           # Esto le dice a Supabase que el proyecto sigue vivo y en uso, reseteando el contador de 7 dias
-          response=$(curl -s -o /dev/null -w "%{http_code}" -X GET "${SUPABASE_URL}/rest/v1/param_config?select=*" \
+          response=$(curl -s -o /dev/null -w "%{http_code}" -X GET "${SUPABASE_URL}/rest/v1/login_logs?select=id&limit=1" \
             -H "apikey: ${SUPABASE_ANON_KEY}" \
             -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
             
