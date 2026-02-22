@@ -138,13 +138,13 @@ Esto es importante para el análisis posterior: puedes ver cuánto sale por vent
 
 ```mermaid
 flowchart TD
-    A["Cotización COT-0042\naprobada"] --> B["Fabricación de ventanas\n(Producción)"]
-    B --> C["Necesitas: 50m de ALU-RS25-NAT\n5m² de VID-4MM-CLR\n10 pz de felpa"]
-    C --> D["Abres módulo Salidas\n→ Nueva Salida"]
-    D --> E["Tipo: PRODUCCION\nRef: COT-0042"]
-    E --> F["Agregas las 3 líneas\nde material"]
+    A["Cotización COT-0042<br/>aprobada"] --> B["Fabricación de ventanas<br/>(Producción)"]
+    B --> C["Necesitas: 50m de ALU-RS25-NAT<br/>5m² de VID-4MM-CLR<br/>10 pz de felpa"]
+    C --> D["Abres módulo Salidas<br/>→ Nueva Salida"]
+    D --> E["Tipo: PRODUCCION<br/>Ref: COT-0042"]
+    E --> F["Agregas las 3 líneas<br/>de material"]
     F --> G["Guardas la salida"]
-    G --> H["✅ Stock descontado\nautomáticamente"]
+    G --> H["✅ Stock descontado<br/>automáticamente"]
 ```
 
 ---

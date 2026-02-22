@@ -11,10 +11,10 @@
 ```mermaid
 graph TD
     SOY{{"¿Quién eres?"}}
-    SOY -->|Usuario del sistema\n(secretaria, operario)| USR["📚 TUTORIALES DE USUARIO\nVer sección Tutoriales abajo"]
-    SOY -->|Administrador del sistema| ADM["⚙️ GUÍAS DE ADMINISTRACIÓN\nVer sección Admin abajo"]
-    SOY -->|Desarrollador / IT| DEV["🔧 DOCS TÉCNICOS\nVer sección Técnicos abajo"]
-    SOY -->|Emergencia / Crisis| EMG["🚨 CONTINGENCIA\n13_CONTINGENCIA_RECUPERACION.md"]
+    SOY -- "Usuario del sistema<br/>(secretaria, operario)" --> USR["📚 TUTORIALES DE USUARIO<br/>Ver sección Tutoriales abajo"]
+    SOY -- "Administrador del sistema" --> ADM["⚙️ GUÍAS DE ADMINISTRACIÓN<br/>Ver sección Admin abajo"]
+    SOY -- "Desarrollador / IT" --> DEV["🔧 DOCS TÉCNICOS<br/>Ver sección Técnicos abajo"]
+    SOY -- "Emergencia / Crisis" --> EMG["🚨 CONTINGENCIA<br/>13_CONTINGENCIA_RECUPERACION.md"]
 ```
 
 ---

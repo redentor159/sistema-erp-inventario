@@ -105,8 +105,8 @@ Ambos módulos tienen una interfaz similar: lista, búsqueda, y formulario de al
 
 ```mermaid
 graph TD
-    CLI["👥 Clientes"] -->|Se usan en| COT["📝 Cotizaciones"]
-    PROV["🏢 Proveedores"] -->|Se usan en| ENT["📥 Entradas de Inventario"]
+    CLI["👥 Clientes"] -- "Se usan en" --> COT["📝 Cotizaciones"]
+    PROV["🏢 Proveedores"] -- "Se usan en" --> ENT["📥 Entradas de Inventario"]
     COT --> HIST["Historial de compras por cliente"]
     ENT --> HPROV["Historial de compras a proveedor"]
 ```

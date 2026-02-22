@@ -255,12 +255,12 @@ Si ya tienes una receta similar y solo necesitas ajustar algunas medidas o compo
 flowchart TD
     A["1. Clic: Nuevo Modelo"] --> B["2. Nombre: Proyectante S35"]
     B --> C["3. Guardar → se abre editor"]
-    C --> D["4. + Agregar línea:\nMarco Superior\nFórmula: ANCHO-30\nType: Perfil\nQty: 1"]
-    D --> E["5. + Agregar línea:\nMarco Inferior\nFórmula: ANCHO-30\nQty: 1"]
-    E --> F["6. + Agregar línea:\nJamba Lateral\nFórmula: ALTO-30\nQty: 2"]
-    F --> G["7. + Agregar línea:\nVidrio\nFórmula: (ANCHO-35)*(ALTO-35)\nType: Vidrio\nQty: 1"]
-    G --> H["8. + Agregar línea:\nBisagra Continua\nFórmula: 1 (fijo)\nType: Accesorio\nQty: 1"]
-    H --> I["9. ✅ Modelo listo\nYa aparece en Cotizaciones"]
+    C --> D["4. + Agregar línea:<br/>Marco Superior<br/>Fórmula: ANCHO-30<br/>Type: Perfil<br/>Qty: 1"]
+    D --> E["5. + Agregar línea:<br/>Marco Inferior<br/>Fórmula: ANCHO-30<br/>Qty: 1"]
+    E --> F["6. + Agregar línea:<br/>Jamba Lateral<br/>Fórmula: ALTO-30<br/>Qty: 2"]
+    F --> G["7. + Agregar línea:<br/>Vidrio<br/>Fórmula: (ANCHO-35)*(ALTO-35)<br/>Type: Vidrio<br/>Qty: 1"]
+    G --> H["8. + Agregar línea:<br/>Bisagra Continua<br/>Fórmula: 1 (fijo)<br/>Type: Accesorio<br/>Qty: 1"]
+    H --> I["9. ✅ Modelo listo<br/>Ya aparece en Cotizaciones"]
 ```
 
 ---

@@ -82,11 +82,11 @@ graph TD
 ```mermaid
 flowchart TD
     A["1. Ir a /export"] --> B["2. Seleccionar 'Comercial'"]
-    B --> C["3. Elegir rango de fecha:\nDesde 01/01/2026\nHasta 22/02/2026"]
-    C --> D["4. Revisar vista previa\n(cuántos registros incluye)"]
+    B --> C["3. Elegir rango de fecha:<br/>Desde 01/01/2026<br/>Hasta 22/02/2026"]
+    C --> D["4. Revisar vista previa<br/>(cuántos registros incluye)"]
     D --> E["5. Click 'Descargar Excel'"]
-    E --> F["6. Se abre diálogo de descarga\nguardar el .xlsx"]
-    F --> G["✅ Abrir en Excel o\ncargar en Power BI"]
+    E --> F["6. Se abre diálogo de descarga<br/>guardar el .xlsx"]
+    F --> G["✅ Abrir en Excel o<br/>cargar en Power BI"]
 ```
 
 ---
@@ -175,8 +175,8 @@ FILTRO KARDEX:
 
 ```mermaid
 flowchart TD
-    SYS["Sistema ERP"] -->|Exportar Comercial| COM["comercial_feb2026.xlsx"]
-    SYS -->|Exportar Maestros| MST["maestros_feb2026.xlsx"]
+    SYS["Sistema ERP"] -- "Exportar Comercial" --> COM["comercial_feb2026.xlsx"]
+    SYS -- "Exportar Maestros" --> MST["maestros_feb2026.xlsx"]
     COM --> PBI["Power BI Desktop"]
     MST --> PBI
     PBI --> R1["Reporte: Ventas por cliente"]

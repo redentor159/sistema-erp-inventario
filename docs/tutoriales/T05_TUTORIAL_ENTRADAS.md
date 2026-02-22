@@ -19,10 +19,10 @@ Las **Entradas** son el registro de todo material que **ingresa** al almacén: c
 
 ```mermaid
 flowchart LR
-    A["📝 Registras\nEntrada"] --> B["💾 Se guarda en\ntrx_entradas_cabecera\n+ detalle"]
-    B --> C["⚡ TRIGGER automático\nen la base de datos"]
-    C --> D["📒 Kardex recibe\nmovimiento COMPRA"]
-    D --> E["📊 Stock se actualiza\nen tiempo real +✅"]
+    A["📝 Registras<br/>Entrada"] --> B["💾 Se guarda en<br/>trx_entradas_cabecera<br/>+ detalle"]
+    B --> C["⚡ TRIGGER automático<br/>en la base de datos"]
+    C --> D["📒 Kardex recibe<br/>movimiento COMPRA"]
+    D --> E["📊 Stock se actualiza<br/>en tiempo real +✅"]
 ```
 
 **No necesitas hacer nada extra.** El stock sube automáticamente al guardar la entrada.

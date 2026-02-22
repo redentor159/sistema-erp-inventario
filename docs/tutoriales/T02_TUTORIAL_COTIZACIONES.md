@@ -375,10 +375,10 @@ flowchart TD
     F --> G["7️⃣ Agregar 2° ítem<br/>Mampara sala 2400×2100"]
     G --> H["8️⃣ Agregar 3° ítem<br/>Ventana cocina 600×500"]
     H --> I["9️⃣ Revisar totales<br/>Total: S/ 3,240"]
-    I --> J["🔟 Imprimir → PDF\nEnviar a Juan"]
+    I --> J["🔟 Imprimir → PDF<br/>Enviar a Juan"]
     J --> K{{"¿Juan acepta?"}}
-    K -->|Sí| L["1️⃣1️⃣ Cambiar estado: Aprobada ✅"]
-    K -->|No| M["1️⃣1️⃣ Cambiar estado: Rechazada ❌"]
+    K -- "Sí" --> L["1️⃣1️⃣ Cambiar estado: Aprobada ✅"]
+    K -- "No" --> M["1️⃣1️⃣ Cambiar estado: Rechazada ❌"]
     L --> N["1️⃣2️⃣ El pedido pasa a Producción"]
 ```
 

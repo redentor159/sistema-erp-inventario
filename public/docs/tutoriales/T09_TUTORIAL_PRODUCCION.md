@@ -19,11 +19,11 @@ El módulo de Producción es un **tablero Kanban** que permite seguir el avance 
 
 ```mermaid
 flowchart LR
-    A["📋 BACKLOG<br/>(Por Planificar)"] -->|Drag| B["✂️ CORTE<br/>(En Fábrica)"]
-    B -->|Drag| C["🔧 ARMADO<br/>(Ensamblaje)"]
-    C -->|Drag| D["🎨 ACABADO<br/>(Pintura/Anodizo)"]
-    D -->|Drag| E["🔍 CONTROL<br/>(Inspección QC)"]
-    E -->|Drag| F["✅ ENTREGADO<br/>(Completo)"]
+    A["📋 BACKLOG<br/>(Por Planificar)"] -- "Drag" --> B["✂️ CORTE<br/>(En Fábrica)"]
+    B -- "Drag" --> C["🔧 ARMADO<br/>(Ensamblaje)"]
+    C -- "Drag" --> D["🎨 ACABADO<br/>(Pintura/Anodizo)"]
+    D -- "Drag" --> E["🔍 CONTROL<br/>(Inspección QC)"]
+    E -- "Drag" --> F["✅ ENTREGADO<br/>(Completo)"]
 ```
 
 | Columna | Color | Significado |

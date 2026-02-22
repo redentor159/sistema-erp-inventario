@@ -22,11 +22,11 @@ El Kardex es el **registro histórico completo** de todos los movimientos de inv
 ```mermaid
 graph TD
     KARDEX["📒 Kardex<br/>trx_movimientos"] 
-    ENT["📥 Entrada Registrada\n→ COMPRA (+)"] --> KARDEX
-    SAL_V["📤 Salida VENTA\n→ VENTA (-)"] --> KARDEX
-    SAL_P["📤 Salida PRODUCCION\n→ PRODUCCION (-)"] --> KARDEX
-    SAL_A["📤 Salida AJUSTE\n→ AJUSTE (-)"] --> KARDEX
-    ENT_D["📥 Devolucion\n→ DEVOLUCION (+)"] --> KARDEX
+    ENT["📥 Entrada Registrada<br/>→ COMPRA (+)"] --> KARDEX
+    SAL_V["📤 Salida VENTA<br/>→ VENTA (-)"] --> KARDEX
+    SAL_P["📤 Salida PRODUCCION<br/>→ PRODUCCION (-)"] --> KARDEX
+    SAL_A["📤 Salida AJUSTE<br/>→ AJUSTE (-)"] --> KARDEX
+    ENT_D["📥 Devolucion<br/>→ DEVOLUCION (+)"] --> KARDEX
 ```
 
 | Tipo de Movimiento | De dónde viene | Efecto en stock |

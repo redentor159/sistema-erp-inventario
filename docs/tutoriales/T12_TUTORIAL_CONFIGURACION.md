@@ -76,12 +76,12 @@ Estos valores afectan directamente todos los cálculos de cotizaciones:
 
 ```mermaid
 flowchart LR
-    M["Costo Materiales\nS/231.10"] --> CD
-    MO["Mano de Obra\n3m² × S/25 = S/75"] --> CD
-    CD["Costo Directo\nS/306.10"] --> P
-    P[" × Markup 35%\n= S/413.24"] --> IGV
-    IGV["+ IGV 18%\n= S/487.62"] --> FIN
-    FIN["💰 Precio Final\nS/487.62"]
+    M["Costo Materiales<br/>S/231.10"] --> CD
+    MO["Mano de Obra<br/>3m² × S/25 = S/75"] --> CD
+    CD["Costo Directo<br/>S/306.10"] --> P
+    P[" × Markup 35%<br/>= S/413.24"] --> IGV
+    IGV["+ IGV 18%<br/>= S/487.62"] --> FIN
+    FIN["💰 Precio Final<br/>S/487.62"]
 ```
 
 ### Cambiar el Markup
@@ -165,15 +165,15 @@ Si el sistema acaba de instalarse, sigue este orden de configuración:
 
 ```mermaid
 flowchart TD
-    A["1️⃣ Datos de empresa\n(nombre, RUC, logo)"] --> B["2️⃣ Parámetros económicos\n(IGV, markup, MO)"]
+    A["1️⃣ Datos de empresa<br/>(nombre, RUC, logo)"] --> B["2️⃣ Parámetros económicos<br/>(IGV, markup, MO)"]
     B --> C["3️⃣ Cuentas bancarias"]
-    C --> D["4️⃣ Textos de cotización\n(garantía, condiciones)"]
-    D --> E["5️⃣ Crear usuarios\n(secretaria, operario)"]
-    E --> F["6️⃣ Crear familias\ny marcas en Catálogo"]
-    F --> G["7️⃣ Cargar proveedores\ny clientes"]
-    G --> H["8️⃣ Cargar productos al Catálogo\n(plantillas + SKUs)"]
-    H --> I["9️⃣ Crear recetas\n(modelos de ventana)"]
-    I --> J["✅ Sistema listo para\nprimera cotización"]
+    C --> D["4️⃣ Textos de cotización<br/>(garantía, condiciones)"]
+    D --> E["5️⃣ Crear usuarios<br/>(secretaria, operario)"]
+    E --> F["6️⃣ Crear familias<br/>y marcas en Catálogo"]
+    F --> G["7️⃣ Cargar proveedores<br/>y clientes"]
+    G --> H["8️⃣ Cargar productos al Catálogo<br/>(plantillas + SKUs)"]
+    H --> I["9️⃣ Crear recetas<br/>(modelos de ventana)"]
+    I --> J["✅ Sistema listo para<br/>primera cotización"]
 ```
 
 ---
