@@ -1,60 +1,104 @@
-# Sistema ERP y WMS para Vidriería
+# Sistema ERP — Vidriería y Carpintería Metálica
 
-Sistema de gestión integral de inventario, cotizaciones y producción (Kanban) diseñado a medida.
+> **Stack:** Next.js 16 · Supabase PostgreSQL 17 · TanStack Query · Tailwind CSS  
+> **Tipo:** SPA Estática (export) + Backend Supabase Cloud  
+> **Estado:** ✅ Activo y en producción
 
-## 🚀 Tecnologías
+---
 
-*   **Frontend:** Next.js 16 (App Router, Export Estático), React 19
-*   **Estilos:** Tailwind CSS v4, Lucide Icons, Radix UI (shadcn/ui)
-*   **Base de Datos y Auth:** Supabase (PostgreSQL, Row Level Security)
-*   **Validaciones:** Zod, React Hook Form
-*   **Peticiones y Caché:** TanStack React Query
+## 🚀 Quick Start
 
-## 📖 Documentación
+```bash
+# 1. Clonar e instalar dependencias
+git clone https://github.com/redentor159/sistema-erp-inventario.git
+cd sistema-erp-inventario
+npm ci
 
-La documentación completa de arquitectura, flujos de base de datos y guías de desarrollo se encuentra disponible en la carpeta `/docs` del repositorio.
+# 2. Configurar variables de entorno
+cp .env.example .env.local
+# Editar .env.local con las claves de Supabase
 
-Dentro del sistema, el **Panel de Ayuda** en la barra lateral permite consultar los manuales para operaciones cotidianas.
+# 3. Iniciar en desarrollo
+npm run dev
 
-## 🛠 Entorno de Desarrollo Local
+# 4. Build para producción
+npm run build   # Genera carpeta /out estática
+```
 
-Si necesitas correr o extender el sistema localmente:
+---
 
-1.  **Clona el repositorio e instala las dependencias:**
-    ```bash
-    npm install
-    ```
+## 📚 Documentación Completa
 
-2.  **Configura las variables de entorno:**
-    Crea un archivo `.env.local` en la raíz (este archivo está ignorado por Git por seguridad) y agrega las variables del proyecto de Supabase:
-    ```
-    NEXT_PUBLIC_SUPABASE_URL=tu_url_aqui
-    NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_anon_key_aqui
-    ```
+Toda la documentación está en la carpeta [`/docs`](./docs/):
 
-3.  **Inicia el servidor de desarrollo:**
-    ```bash
-    npm run dev
-    ```
+**👉 [Ver el Índice Maestro](./docs/00_INDICE_MAESTRO.md) ← Empieza aquí**
 
-4.  Ingresa a `http://localhost:3000` en tu navegador.
+### Tutoriales Rápidos por Módulo
 
-## 🧪 Pruebas Automatizadas (Testing)
+| Módulo | Tutorial |
+|--------|---------|
+| 📊 Dashboard KPI | [T01_TUTORIAL_DASHBOARD.md](./docs/tutoriales/T01_TUTORIAL_DASHBOARD.md) |
+| 📝 Cotizaciones | [T02_TUTORIAL_COTIZACIONES.md](./docs/tutoriales/T02_TUTORIAL_COTIZACIONES.md) |
+| 📦 Catálogo / SKUs | [T03_TUTORIAL_CATALOGO.md](./docs/tutoriales/T03_TUTORIAL_CATALOGO.md) |
+| 📋 Inventario | [T04_TUTORIAL_INVENTARIO.md](./docs/tutoriales/T04_TUTORIAL_INVENTARIO.md) |
+| 📥 Entradas | [T05_TUTORIAL_ENTRADAS.md](./docs/tutoriales/T05_TUTORIAL_ENTRADAS.md) |
+| 📤 Salidas | [T06_TUTORIAL_SALIDAS.md](./docs/tutoriales/T06_TUTORIAL_SALIDAS.md) |
+| 📒 Kardex | [T07_TUTORIAL_KARDEX.md](./docs/tutoriales/T07_TUTORIAL_KARDEX.md) |
+| 🔧 Recetas | [T08_TUTORIAL_RECETAS.md](./docs/tutoriales/T08_TUTORIAL_RECETAS.md) |
+| 🏭 Producción (Kanban) | [T09_TUTORIAL_PRODUCCION.md](./docs/tutoriales/T09_TUTORIAL_PRODUCCION.md) |
+| 📊 Exportador Excel | [T10_TUTORIAL_EXPORTADOR.md](./docs/tutoriales/T10_TUTORIAL_EXPORTADOR.md) |
+| 👥 Clientes / Proveedores | [T11_TUTORIAL_CLIENTES_PROVEEDORES.md](./docs/tutoriales/T11_TUTORIAL_CLIENTES_PROVEEDORES.md) |
+| ⚙️ Configuración | [T12_TUTORIAL_CONFIGURACION.md](./docs/tutoriales/T12_TUTORIAL_CONFIGURACION.md) |
 
-El sistema incluye una suite compleja de pruebas para evitar regresiones lógicas (especialmente en cálculos financieros/ingeniería).
+### Docs Técnicos
 
-*   **Tests de Unitarios y de Componentes (Vitest):**
-    ```bash
-    npm run test
-    ```
-*   **Tests End-to-End (Playwright):**
-    ```bash
-    npm run test:e2e
-    ```
+| Doc | Contenido |
+|-----|-----------|
+| [01 — Arquitectura General](./docs/01_ARQUITECTURA_GENERAL.md) | Stack, capas, despliegue |
+| [02 — Esquema Base de Datos](./docs/02_ESQUEMA_BASE_DATOS.md) | Tablas y relaciones |
+| [05 — Guía del Desarrollador](./docs/05_GUIA_DESARROLLADOR.md) | Setup local, convenciones |
+| [11 — Autenticación y Roles](./docs/11_AUTENTICACION_Y_ROLES.md) | Usuarios, JWT, RLS |
+| [12 — Guía Supabase](./docs/12_GUIA_SUPABASE.md) | Config, API, monitoreo |
+| [13 — Contingencia y Backups](./docs/13_CONTINGENCIA_RECUPERACION.md) | Backups, self-hosting |
 
-## 🏗 Despliegue en Producción
+---
 
-Este proyecto utiliza **Next.js Static Export** (`output: 'export'`), lo que significa que el comando `npm run build` generará puros archivos estáticos HTML/JS en la carpeta `/out`.
+## 🗺️ Arquitectura en Una Imagen
 
-**Despliegue recomendado: Netlify o Vercel.**
-Asegúrate de configurar las 2 variables de entorno (Supabase URL y Anon Key) en la plataforma en la que despliegues.
+```
+[Navegador] ──HTTPS──▶ [CDN/IIS (archivos /out)] → SPA Estática
+     │
+     └──HTTPS──▶ [Supabase Cloud (gnvayzzufcmjseuxggks)]
+                      ├── PostgREST API
+                      ├── PostgreSQL 17 (datos)
+                      └── Auth (JWT + RLS)
+```
+
+---
+
+## ⚙️ Variables de Entorno
+
+| Variable | Descripción |
+|----------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clave pública anon (segura para exponer) |
+
+---
+
+## 🛠️ Scripts Disponibles
+
+| Comando | Qué hace |
+|---------|---------|
+| `npm run dev` | Servidor de desarrollo con HMR |
+| `npm run build` | Genera `/out` estático para producción |
+| `npm run lint` | ESLint sobre el código fuente |
+| `npm test` | Ejecuta tests con Vitest |
+| `npm run test:e2e` | Tests end-to-end con Playwright |
+
+---
+
+## 🚨 Emergencias
+
+- **Supabase pausado:** [Ver instrucciones](./docs/13_CONTINGENCIA_RECUPERACION.md#3-procedimiento-reactivar-proyecto-pausado)
+- **Pérdida de datos:** [Ver instrucciones de restauración](./docs/13_CONTINGENCIA_RECUPERACION.md#4-procedimiento-restaurar-desde-un-backup)
+- **Acceso de administrador perdido:** [Ver instrucciones](./docs/11_AUTENTICACION_Y_ROLES.md#7-apéndice-qué-hacer-si-el-admin-se-queda-sin-acceso)
