@@ -252,8 +252,8 @@ export function HelpPanel({ collapsed }: { collapsed?: boolean }) {
                                             key={doc.id}
                                             onClick={() => setSelectedDoc(doc)}
                                             className={`w-full text-left px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors flex items-center gap-2 ${isSelected
-                                                    ? "bg-[#0969da] text-white"
-                                                    : "text-[#24292f] hover:bg-[#f3f4f6]"
+                                                ? "bg-[#0969da] text-white"
+                                                : "text-[#24292f] hover:bg-[#f3f4f6]"
                                                 }`}
                                         >
                                             <FileText className={`h-3.5 w-3.5 shrink-0 ${isSelected ? "text-blue-200" : "text-[#57606a]"}`} />
@@ -312,7 +312,7 @@ export function HelpPanel({ collapsed }: { collapsed?: boolean }) {
                                                     }
 
                                                     // Extraemos el child <code> en react land
-                                                    const child = React.Children.toArray(children)[0] as React.ReactElement
+                                                    const child = React.Children.toArray(children)[0] as React.ReactElement<any>
                                                     const childProps = child?.props as any
 
                                                     const match = /language-(\w+)/.exec(childProps?.className || '')

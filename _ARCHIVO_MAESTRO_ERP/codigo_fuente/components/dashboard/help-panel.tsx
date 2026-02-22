@@ -256,7 +256,7 @@ export function HelpPanel({ collapsed }: { collapsed?: boolean }) {
                                                     }
 
                                                     // Extraemos el child <code> en react land
-                                                    const child = React.Children.toArray(children)[0] as React.ReactElement
+                                                    const child = React.Children.toArray(children)[0] as React.ReactElement<any>
 
                                                     const match = /language-(\w+)/.exec(child?.props?.className || '')
                                                     const isMermaid = match && match[1] === 'mermaid'
