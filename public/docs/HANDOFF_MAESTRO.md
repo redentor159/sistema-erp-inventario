@@ -157,7 +157,7 @@ Crea una carpeta `_ARCHIVO_MAESTRO_ERP` y guarda:
 | **Código fuente** | Proyecto completo (sin `node_modules` ni `.next`) | `codigo_fuente/` |
 | **Build compilado** | Carpeta `/out` lista para deploy | `build_out/` |
 | **Variables de entorno** | Archivo `.env.local` | `secretos/` |
-| **Dump de BD** | `pg_dump` de toda la base | `base_datos/` |
+| **Dump de BD** | Archivo `.sql` compilado automáticamente. (Descárgalo de GitHub -> Actions -> Backup Diario) | `base_datos/` |
 | **Instalador Node.js** | v20.11.0 LTS para Windows | `instaladores/` |
 | **Instalador VS Code** | Versión actual | `instaladores/` |
 | **Docker Desktop** | Instalador offline | `instaladores/` |

@@ -1,0 +1,34 @@
+name: Keep-Alive Supabase (Anti-Apagado)
+on:
+  schedule:
+    # Se ejecuta cada 3 días a las 12:00 del mediodía
+    - cron: '0 12 */3 * *'
+  workflow_dispatch:
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping a la API REST de Supabase
+        env:
+          # Para que esto funcione, necesitas agregar estas dos variables en Github Secrets
+          # NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY (las mismas que usas en tu .env.local)
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          echo "Haciendo ping a Supabase para simular actividad y evitar apagado de 7 dias..."
+          
+          # Hacemos una peticion a la API REST (intentando leer de una tabla cualquiera, ej. param_config)
+          # Esto le dice a Supabase que el proyecto sigue vivo y en uso, reseteando el contador de 7 dias
+          response=$(curl -s -o /dev/null -w "%{http_code}" -X GET "${SUPABASE_URL}/rest/v1/param_config?select=*" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
+            
+          echo "Respuesta de la API de Supabase: HTTP $response"
+          
+          if [ "$response" == "200" ] || [ "$response" == "400" ]; then
+            echo "✅ Ping exitoso. Supabase cree que la empresa acaba de entrar al ERP."
+          else
+            echo "⚠️ Ping falló con código $response. Revisa que tus secretos en Github sean correctos."
+            exit 1
+          fi

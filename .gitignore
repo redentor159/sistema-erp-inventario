@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Archivos de Contingencia Locales
+_ARCHIVO_MAESTRO_ERP/
+_EMERGENCIA_SUPABASE/

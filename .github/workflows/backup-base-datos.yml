@@ -35,10 +35,10 @@ jobs:
           # Valor: Tu cadena de conexión URI de Supabase (Settings -> Database -> Connection String -> URI)
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
-          # Realizamos un dump limpio y formateado de la BD
+          # Realizamos un dump limpio y formateado de la BD usando el binario v17
           # -O: No guarda la propiedad de roles internos de Supabase
           # -x: No guarda privilegios que dependen del entorno original
-          pg_dump "$SUPABASE_DB_URL" -O -x > "backup_${DATE}.sql"
+          /usr/lib/postgresql/17/bin/pg_dump "$SUPABASE_DB_URL" -O -x > "backup_${{ env.DATE }}.sql"
 
       - name: Subir como Artefacto (Descargable desde GitHub)
         uses: actions/upload-artifact@v4
