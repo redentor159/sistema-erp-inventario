@@ -61,15 +61,16 @@ graph TD
 | 02 | [Esquema Base de Datos](./02_ESQUEMA_BASE_DATOS.md) | Todas las tablas, columnas, tipos y relaciones |
 | 03 | [Módulos y Funcionalidades](./03_MODULOS_Y_FUNCIONALIDADES.md) | Mapa de módulos, rutas y APIs de cada uno |
 | 04 | [Referencia de API](./04_API_REFERENCIA.md) | Funciones de la API, parámetros y ejemplos |
-| 05 | [Guía del Desarrollador](./05_GUIA_DESARROLLADOR.md) | Setup local, convenciones, cómo extender el sistema |
-| 06 | [Blindaje Arquitectónico](./06_BLINDAJE_ARQUITECTONICO.md) | Protecciones, versiones congeladas, antipatrones |
-| 07 | [Guía de Despliegue](./07_GUIA_DESPLIEGUE_ESTATICO.md) | Build, deploy en CDN/IIS/S3, variables de entorno |
-| 08 | [Arquitectura de Recetas](./08_ARQUITECTURA_RECETAS.md) | Motor BOM, fórmulas, resolución de SKUs |
-| 09 | [Diccionario de Datos](./09_DICCIONARIO_DATOS.md) | Referencia de cada campo de cada tabla |
-| 10 | [Flujos de Negocio](./10_FLUJOS_DE_NEGOCIO.md) | Diagramas de secuencia de los procesos clave |
-| 11 | [Autenticación y Roles](./11_AUTENTICACION_Y_ROLES.md) | JWT, RLS, políticas de acceso |
-| 12 | [Guía Supabase](./12_GUIA_SUPABASE.md) | Configuración, API, monitoreo, backups |
-| 13 | [Contingencia y Recuperación](./13_CONTINGENCIA_RECUPERACION.md) | Self-hosting, backups, keep-alive, disaster recovery |
+| 05 | [Manual de Supervivencia (Producción)](./05_MANUAL_SUPERVIVENCIA_PRODUCCION.md) | Guía para resolver problemas comunes en producción |
+| 06 | [Guía del Desarrollador](./06_GUIA_DESARROLLADOR.md) | Setup local, convenciones, cómo extender el sistema |
+| 07 | [Blindaje Arquitectónico](./07_BLINDAJE_ARQUITECTONICO.md) | Protecciones, versiones congeladas, antipatrones |
+| 08 | [Guía de Despliegue](./08_GUIA_DESPLIEGUE_ESTATICO.md) | Build, deploy en CDN/IIS/S3, variables de entorno |
+| 09 | [Arquitectura de Recetas](./09_ARQUITECTURA_RECETAS.md) | Motor BOM, fórmulas, resolución de SKUs |
+| 10 | [Diccionario de Datos](./10_DICCIONARIO_DATOS.md) | Referencia de cada campo de cada tabla |
+| 11 | [Flujos de Negocio](./11_FLUJOS_DE_NEGOCIO.md) | Diagramas de secuencia de los procesos clave |
+| 12 | [Autenticación y Roles](./12_AUTENTICACION_Y_ROLES.md) | JWT, RLS, políticas de acceso |
+| 13 | [Guía Supabase](./13_GUIA_SUPABASE.md) | Configuración, API, monitoreo, backups |
+| 14 | [Contingencia y Recuperación](./14_CONTINGENCIA_RECUPERACION.md) | Self-hosting, backups, keep-alive, disaster recovery |
 
 ---
 
