@@ -193,10 +193,10 @@ export const trxApi = {
         return data
     },
 
-    // --- STOCK REALTIME (VISTA) ---
+    // --- STOCK REALTIME (VISTA MATERIALIZADA) ---
     getStockRealtime: async () => {
         const { data, error } = await supabase
-            .from('vw_stock_realtime')
+            .from('mvw_stock_realtime')
             .select('*')
             .order('nombre_completo')
 

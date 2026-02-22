@@ -1,5 +1,0 @@
-{
-  "name": "Copy of Kanban vidrieria",
-  "description": "A dynamic and interactive Kanban board for production management, allowing users to track work orders through different stages, manage reorder signals, and export project history. Built with React, TypeScript, and Tailwind CSS.",
-  "requestFramePermissions": []
-}

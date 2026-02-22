@@ -82,7 +82,7 @@ export const catApi = {
         acabado = 'ALL'
     } = {}) => {
         let query = supabase
-            .from('vw_stock_realtime')
+            .from('mvw_stock_realtime')
             .select('*', { count: 'exact' })
 
         // Apply filters

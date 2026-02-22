@@ -383,12 +383,12 @@ export const recetasApi = {
     // ─── BÚSQUEDA DE PRODUCTOS (copia independiente, NO modifica catApi) ───
 
     /**
-     * Server-side search against vw_stock_realtime.
+     * Server-side search against mvw_stock_realtime (materialized view).
      * Independent copy of catApi.getProductos — used exclusively by recipe editor.
      */
     buscarProductosCatalogo: async (search: string = '', pageSize: number = 50) => {
         let query = supabase
-            .from('vw_stock_realtime')
+            .from('mvw_stock_realtime')
             .select('*', { count: 'exact' })
 
         if (search) {
@@ -406,12 +406,12 @@ export const recetasApi = {
     },
 
     /**
-     * Get a single product by exact SKU from vw_stock_realtime.
+     * Get a single product by exact SKU from mvw_stock_realtime (materialized view).
      * Used to load the selected product name on component mount.
      */
     getProductoPorSku: async (id_sku: string) => {
         const { data, error } = await supabase
-            .from('vw_stock_realtime')
+            .from('mvw_stock_realtime')
             .select('*')
             .eq('id_sku', id_sku)
             .maybeSingle()

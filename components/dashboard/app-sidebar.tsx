@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { UserNav } from "@/components/dashboard/user-nav"
+import { HelpPanel } from "@/components/dashboard/help-panel"
 
 export function AppSidebar() {
     const pathname = usePathname()
@@ -60,6 +61,10 @@ export function AppSidebar() {
 
                 <NavItem href="/export" icon={FileSpreadsheet} label="Exportar Datos" collapsed={collapsed} active={pathname === '/export'} />
             </nav>
+
+            <div className="p-2 border-t border-gray-200 dark:border-gray-700">
+                <HelpPanel collapsed={collapsed} />
+            </div>
 
             <UserNav collapsed={collapsed} />
         </aside>

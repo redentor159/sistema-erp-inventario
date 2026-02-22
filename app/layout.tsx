@@ -4,11 +4,13 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/toaster";
 
+import { ErrorBoundary } from "@/components/error-boundary";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ERP/WMS Metallic Carpentry",
-  description: "High precision MTO management system",
+  title: "ERP/WMS Inventario y Producción",
+  description: "Sistema de gestión integral para Vidriería",
 };
 
 export default function RootLayout({
@@ -17,12 +19,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body className={`${inter.className} antialiased`}>
-        <Providers>
-          {children}
-          <Toaster />
-        </Providers>
+        <ErrorBoundary>
+          <Providers>
+            {children}
+            <Toaster />
+          </Providers>
+        </ErrorBoundary>
       </body>
     </html>
   );

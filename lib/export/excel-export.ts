@@ -201,7 +201,7 @@ async function generateInventoryExcel(workbook: ExcelJS.Workbook) {
         { header: "peso_teorico_kg", key: "peso_teorico_kg", width: 15 },
     ]
 
-    const queryStock = supabase.from('vw_stock_realtime').select('*').order('id_sku', { ascending: true });
+    const queryStock = supabase.from('mvw_stock_realtime').select('*').order('id_sku', { ascending: true });
     const stockData = await fetchAllRows(queryStock);
     stockData.forEach((row: any) => sheetStock.addRow(row));
 
