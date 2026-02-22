@@ -1,0 +1,6 @@
+1:"$Sreact.fragment"
+2:"$Sreact.suspense"
+3:I[60390,["/_next/static/chunks/c520b2e0e7b35eda.js","/_next/static/chunks/1bea400bb565c6c3.js","/_next/static/chunks/42e92f9b3c1a48fa.js","/_next/static/chunks/6f5bae534bc3ea01.js","/_next/static/chunks/2eeacea9c2af7559.js","/_next/static/chunks/25e24ed4b8b8d5e5.js"],"CotizacionesList"]
+4:I[97367,["/_next/static/chunks/ff1a16fafef87110.js","/_next/static/chunks/a2dfb6fc5208ab9b.js"],"OutletBoundary"]
+0:{"buildId":"ZLsibYazj_EbqhgvWOzbf","rsc":["$","$1","c",{"children":[["$","div",null,{"className":"flex flex-col gap-6 p-6","children":[["$","div",null,{"className":"flex items-center justify-between","children":["$","div",null,{"children":[["$","h1",null,{"className":"text-3xl font-bold tracking-tight","children":"Cotizaciones"}],["$","p",null,{"className":"text-muted-foreground","children":"Gestiona presupuestos y genera despiece automático de materiales."}]]}]}],["$","$2",null,{"fallback":["$","div",null,{"children":"Cargando cotizaciones..."}],"children":["$","$L3",null,{}]}]]}],[["$","script","script-0",{"src":"/_next/static/chunks/25e24ed4b8b8d5e5.js","async":true}]],["$","$L4",null,{"children":["$","$2",null,{"name":"Next.MetadataOutlet","children":"$@5"}]}]]}],"loading":null,"isPartial":false}
+5:null

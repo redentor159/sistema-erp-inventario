@@ -1,0 +1,42 @@
+name: Backup Diario Supabase a GitHub
+on:
+  schedule:
+    # Se ejecuta todos los días a las 3:00 AM UTC (10:00 PM Lima)
+    - cron: '0 3 * * *'
+  # Permite ejecutar el backup manualmente desde la pestaña "Actions"
+  workflow_dispatch:
+
+jobs:
+  backup-postgres:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+
+      - name: Obtener fecha actual
+        id: date
+        run: echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      - name: Instalar cliente de PostgreSQL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Generar Dump de Supabase
+        env:
+          # Necesitas configurar esto en GitHub -> Settings -> Secrets and Variables -> Actions -> New repository secret
+          # Nombre: SUPABASE_DB_URL
+          # Valor: Tu cadena de conexión URI de Supabase (Settings -> Database -> Connection String -> URI)
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          # Realizamos un dump limpio y formateado de la BD
+          # -O: No guarda la propiedad de roles internos de Supabase
+          # -x: No guarda privilegios que dependen del entorno original
+          pg_dump "$SUPABASE_DB_URL" -O -x > "backup_${{ env.DATE }}.sql"
+
+      - name: Subir como Artefacto (Descargable desde GitHub)
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-database-backup-${{ env.DATE }}
+          path: backup_${{ env.DATE }}.sql
+          retention-days: 30 # GitHub guardará el backup gratis por 30 días

@@ -1,0 +1,531 @@
+[
+    {
+        "current_db_schema": [
+            {
+                "table_name": "mst_config_general",
+                "columns": [
+                    {
+                        "column_name": "id_config",
+                        "data_type": "text",
+                        "is_nullable": "NO",
+                        "default": null
+                    },
+                    {
+                        "column_name": "margen_ganancia_default",
+                        "data_type": "numeric",
+                        "is_nullable": "NO",
+                        "default": null
+                    },
+                    {
+                        "column_name": "igv",
+                        "data_type": "numeric",
+                        "is_nullable": "NO",
+                        "default": null
+                    },
+                    {
+                        "column_name": "markup_cotizaciones_default",
+                        "data_type": "numeric",
+                        "is_nullable": "NO",
+                        "default": null
+                    },
+                    {
+                        "column_name": "costo_mo_m2_default",
+                        "data_type": "numeric",
+                        "is_nullable": "NO",
+                        "default": null
+                    },
+                    {
+                        "column_name": "tipo_cambio_referencial",
+                        "data_type": "numeric",
+                        "is_nullable": "NO",
+                        "default": null
+                    },
+                    {
+                        "column_name": "cuenta_bcp_soles",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "texto_condiciones_base",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "nombre_empresa",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "ruc",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "direccion_fiscal",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "telefono_contacto",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "logo_url",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "firma_digital_url",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "email_empresa",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "validez_cotizacion_dias",
+                        "data_type": "integer",
+                        "is_nullable": "YES",
+                        "default": "15"
+                    },
+                    {
+                        "column_name": "descuento_maximo_pct",
+                        "data_type": "numeric",
+                        "is_nullable": "YES",
+                        "default": "0.15"
+                    },
+                    {
+                        "column_name": "moneda_default",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": "'PEN'::text"
+                    },
+                    {
+                        "column_name": "cuenta_bcp_dolares",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "cci_soles",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "cci_dolares",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "nombre_titular_cuenta",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "texto_garantia",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "texto_forma_pago",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "notas_pie_cotizacion",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "nombre_representante",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "cargo_representante",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "color_primario",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": "'#2563eb'::text"
+                    }
+                ],
+                "foreign_keys": null
+            },
+            {
+                "table_name": "trx_cotizaciones_cabecera",
+                "columns": [
+                    {
+                        "column_name": "id_cotizacion",
+                        "data_type": "uuid",
+                        "is_nullable": "NO",
+                        "default": "uuid_generate_v4()"
+                    },
+                    {
+                        "column_name": "fecha_emision",
+                        "data_type": "timestamp without time zone",
+                        "is_nullable": "YES",
+                        "default": "(now() AT TIME ZONE 'America/Lima'::text)"
+                    },
+                    {
+                        "column_name": "estado",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "id_cliente",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "id_marca",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "nombre_proyecto",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "moneda",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "validez_dias",
+                        "data_type": "integer",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "plazo_entrega",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "condicion_pago",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "markup_aplicado",
+                        "data_type": "numeric",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "incluye_igv",
+                        "data_type": "boolean",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "aplica_detraccion",
+                        "data_type": "boolean",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "costo_mano_obra_m2",
+                        "data_type": "numeric",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "costo_global_instalacion",
+                        "data_type": "numeric",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "total_costo_directo",
+                        "data_type": "numeric",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "total_precio_venta",
+                        "data_type": "numeric",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "observaciones",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "link_pdf",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "fecha_prometida",
+                        "data_type": "timestamp without time zone",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "fecha_entrega_real",
+                        "data_type": "timestamp without time zone",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "costo_fijo_instalacion",
+                        "data_type": "numeric",
+                        "is_nullable": "YES",
+                        "default": "0"
+                    },
+                    {
+                        "column_name": "terminos_personalizados",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "titulo_documento",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": "'COTIZACIÓN'::text"
+                    }
+                ],
+                "foreign_keys": [
+                    {
+                        "constraint_name": "trx_cotizaciones_cabecera_id_cliente_fkey",
+                        "column_name": "id_cliente",
+                        "foreign_table": "mst_clientes",
+                        "foreign_column": "id_cliente"
+                    },
+                    {
+                        "constraint_name": "trx_cotizaciones_cabecera_id_marca_fkey",
+                        "column_name": "id_marca",
+                        "foreign_table": "mst_marcas",
+                        "foreign_column": "id_marca"
+                    }
+                ]
+            },
+            {
+                "table_name": "trx_cotizaciones_detalle",
+                "columns": [
+                    {
+                        "column_name": "id_linea_cot",
+                        "data_type": "uuid",
+                        "is_nullable": "NO",
+                        "default": "uuid_generate_v4()"
+                    },
+                    {
+                        "column_name": "id_cotizacion",
+                        "data_type": "uuid",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "id_modelo",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "color_perfiles",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "cantidad",
+                        "data_type": "numeric",
+                        "is_nullable": "NO",
+                        "default": null
+                    },
+                    {
+                        "column_name": "ancho_mm",
+                        "data_type": "numeric",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "alto_mm",
+                        "data_type": "numeric",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "etiqueta_item",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "ubicacion",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "tipo_cierre",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "tipo_vidrio",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "grupo_opcion",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "costo_base_ref",
+                        "data_type": "numeric",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "subtotal_linea",
+                        "data_type": "numeric",
+                        "is_nullable": "YES",
+                        "default": null
+                    }
+                ],
+                "foreign_keys": [
+                    {
+                        "constraint_name": "trx_cotizaciones_detalle_id_cotizacion_fkey",
+                        "column_name": "id_cotizacion",
+                        "foreign_table": "trx_cotizaciones_cabecera",
+                        "foreign_column": "id_cotizacion"
+                    }
+                ]
+            },
+            {
+                "table_name": "trx_desglose_materiales",
+                "columns": [
+                    {
+                        "column_name": "id_desglose",
+                        "data_type": "uuid",
+                        "is_nullable": "NO",
+                        "default": "uuid_generate_v4()"
+                    },
+                    {
+                        "column_name": "id_linea_cot",
+                        "data_type": "uuid",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "tipo_componente",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "codigo_base",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "nombre_componente",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "detalle_acabado",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "medida_corte_mm",
+                        "data_type": "numeric",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "angulo_corte",
+                        "data_type": "integer",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "cantidad_calculada",
+                        "data_type": "numeric",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "sku_real",
+                        "data_type": "text",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "costo_total_item",
+                        "data_type": "numeric",
+                        "is_nullable": "YES",
+                        "default": null
+                    },
+                    {
+                        "column_name": "precio_venta_item",
+                        "data_type": "numeric",
+                        "is_nullable": "YES",
+                        "default": null
+                    }
+                ],
+                "foreign_keys": [
+                    {
+                        "constraint_name": "trx_desglose_materiales_id_linea_cot_fkey",
+                        "column_name": "id_linea_cot",
+                        "foreign_table": "trx_cotizaciones_detalle",
+                        "foreign_column": "id_linea_cot"
+                    },
+                    {
+                        "constraint_name": "trx_desglose_materiales_sku_real_fkey",
+                        "column_name": "sku_real",
+                        "foreign_table": "cat_productos_variantes",
+                        "foreign_column": "id_sku"
+                    }
+                ]
+            }
+        ]
+    }
+]
