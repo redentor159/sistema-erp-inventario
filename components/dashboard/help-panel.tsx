@@ -78,25 +78,71 @@ const MermaidChart = ({ chart }: { chart: string }) => {
     )
 }
 
-const DOCS_LIST = [
-    { id: "01", title: "01 Arquitectura General", path: "/docs/01_ARQUITECTURA_GENERAL.md" },
-    { id: "02", title: "02 Esquema BD", path: "/docs/02_ESQUEMA_BASE_DATOS.md" },
-    { id: "03", title: "03 Módulos", path: "/docs/03_MODULOS_Y_FUNCIONALIDADES.md" },
-    { id: "04", title: "04 API Referencia", path: "/docs/04_API_REFERENCIA.md" },
-    { id: "05", title: "05 Guía Desarrollador", path: "/docs/05_GUIA_DESARROLLADOR.md" },
-    { id: "06", title: "06 Blindaje Arquitectónico", path: "/docs/06_BLINDAJE_ARQUITECTONICO.md" },
-    { id: "07", title: "07 Guía Despliegue Estático", path: "/docs/07_GUIA_DESPLIEGUE_ESTATICO.md" },
-    { id: "08", title: "08 Arquitectura Recetas", path: "/docs/08_ARQUITECTURA_RECETAS.md" },
-    { id: "09", title: "09 Diccionario Datos", path: "/docs/09_DICCIONARIO_DATOS.md" },
-    { id: "10", title: "10 Flujos de Negocio", path: "/docs/10_FLUJOS_DE_NEGOCIO.md" },
-    { id: "11", title: "11 Autenticación/Roles", path: "/docs/11_AUTENTICACION_Y_ROLES.md" },
-    { id: "12", title: "12 Contingencia Supabase", path: "/docs/CONTINGENCIA_SUPABASE.md" },
-    { id: "13", title: "13 Protocolo de Entrega", path: "/docs/HANDOFF_MAESTRO.md" },
+// Tipo extendido para soporte de categorías/separadores
+type DocItem = {
+    id: string
+    title: string
+    path: string
+    category?: string
+    isHeader?: false
+} | {
+    id: string
+    isHeader: true
+    title: string
+    path?: never
+    category?: never
+}
+
+const DOCS_LIST: DocItem[] = [
+    // ── ÍNDICE ──────────────────────────────────────────────
+    { id: "h-idx", isHeader: true, title: "📋 Índice y Referencia Rápida" },
+    { id: "00", title: "00 Índice Maestro", path: "/docs/00_INDICE_MAESTRO.md", category: "indice" },
+
+    // ── TUTORIALES DE USUARIO ────────────────────────────────
+    { id: "h-tut", isHeader: true, title: "📚 Tutoriales para Usuarios" },
+    { id: "T01", title: "T01 Dashboard KPI", path: "/docs/tutoriales/T01_TUTORIAL_DASHBOARD.md", category: "tutorial" },
+    { id: "T02", title: "T02 Cotizaciones", path: "/docs/tutoriales/T02_TUTORIAL_COTIZACIONES.md", category: "tutorial" },
+    { id: "T03", title: "T03 Catálogo de Productos", path: "/docs/tutoriales/T03_TUTORIAL_CATALOGO.md", category: "tutorial" },
+    { id: "T04", title: "T04 Inventario / Stock", path: "/docs/tutoriales/T04_TUTORIAL_INVENTARIO.md", category: "tutorial" },
+    { id: "T05", title: "T05 Entradas (Compras)", path: "/docs/tutoriales/T05_TUTORIAL_ENTRADAS.md", category: "tutorial" },
+    { id: "T06", title: "T06 Salidas (Despachos)", path: "/docs/tutoriales/T06_TUTORIAL_SALIDAS.md", category: "tutorial" },
+    { id: "T07", title: "T07 Kardex", path: "/docs/tutoriales/T07_TUTORIAL_KARDEX.md", category: "tutorial" },
+    { id: "T08", title: "T08 Recetas de Ingeniería", path: "/docs/tutoriales/T08_TUTORIAL_RECETAS.md", category: "tutorial" },
+    { id: "T09", title: "T09 Producción (Kanban)", path: "/docs/tutoriales/T09_TUTORIAL_PRODUCCION.md", category: "tutorial" },
+    { id: "T10", title: "T10 Exportador Excel", path: "/docs/tutoriales/T10_TUTORIAL_EXPORTADOR.md", category: "tutorial" },
+    { id: "T11", title: "T11 Clientes y Proveedores", path: "/docs/tutoriales/T11_TUTORIAL_CLIENTES_PROVEEDORES.md", category: "tutorial" },
+    { id: "T12", title: "T12 Configuración del Sistema", path: "/docs/tutoriales/T12_TUTORIAL_CONFIGURACION.md", category: "tutorial" },
+
+    // ── DOCUMENTACIÓN TÉCNICA ────────────────────────────────
+    { id: "h-tec", isHeader: true, title: "🔧 Documentación Técnica" },
+    { id: "01", title: "01 Arquitectura General", path: "/docs/01_ARQUITECTURA_GENERAL.md", category: "tecnico" },
+    { id: "02", title: "02 Esquema Base de Datos", path: "/docs/02_ESQUEMA_BASE_DATOS.md", category: "tecnico" },
+    { id: "03", title: "03 Módulos y Funcionalidades", path: "/docs/03_MODULOS_Y_FUNCIONALIDADES.md", category: "tecnico" },
+    { id: "04", title: "04 API Referencia", path: "/docs/04_API_REFERENCIA.md", category: "tecnico" },
+    { id: "05", title: "05 Guía Desarrollador", path: "/docs/05_GUIA_DESARROLLADOR.md", category: "tecnico" },
+    { id: "06", title: "06 Blindaje Arquitectónico", path: "/docs/06_BLINDAJE_ARQUITECTONICO.md", category: "tecnico" },
+    { id: "07", title: "07 Guía Despliegue Estático", path: "/docs/07_GUIA_DESPLIEGUE_ESTATICO.md", category: "tecnico" },
+    { id: "08", title: "08 Arquitectura Recetas", path: "/docs/08_ARQUITECTURA_RECETAS.md", category: "tecnico" },
+    { id: "09", title: "09 Diccionario de Datos", path: "/docs/09_DICCIONARIO_DATOS.md", category: "tecnico" },
+    { id: "10", title: "10 Flujos de Negocio", path: "/docs/10_FLUJOS_DE_NEGOCIO.md", category: "tecnico" },
+    { id: "11", title: "11 Autenticación y Roles", path: "/docs/11_AUTENTICACION_Y_ROLES.md", category: "tecnico" },
+    { id: "12", title: "12 Guía Completa Supabase", path: "/docs/12_GUIA_SUPABASE.md", category: "tecnico" },
+    { id: "13", title: "13 Contingencia y Backups", path: "/docs/13_CONTINGENCIA_RECUPERACION.md", category: "tecnico" },
+
+    // ── OPERACIONES ──────────────────────────────────────────
+    { id: "h-ops", isHeader: true, title: "⚙️ Operaciones y Soporte" },
+    { id: "handoff", title: "Handoff Maestro", path: "/docs/HANDOFF_MAESTRO.md", category: "ops" },
+    { id: "cont-legacy", title: "Contingencia Supabase (Resumen)", path: "/docs/CONTINGENCIA_SUPABASE.md", category: "ops" },
+    { id: "csv", title: "CSV a SQL Upsert", path: "/docs/CSV_A_SQL_UPSERT.md", category: "ops" },
+    { id: "mig", title: "Plan Migración Masiva", path: "/docs/PLAN_MIGRACION_MASIVA.md", category: "ops" },
 ]
+
+// Solo los items seleccionables (excluye headers)
+const SELECTABLE_DOCS = DOCS_LIST.filter((d): d is Extract<DocItem, { isHeader?: false }> => !d.isHeader)
 
 export function HelpPanel({ collapsed }: { collapsed?: boolean }) {
     const [open, setOpen] = useState(false)
-    const [selectedDoc, setSelectedDoc] = useState<typeof DOCS_LIST[0]>(DOCS_LIST[0])
+    const [selectedDoc, setSelectedDoc] = useState<Extract<DocItem, { isHeader?: false }>>(SELECTABLE_DOCS[0])
     const [docContent, setDocContent] = useState<string>("")
     const [loading, setLoading] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
@@ -108,7 +154,7 @@ export function HelpPanel({ collapsed }: { collapsed?: boolean }) {
         const fetchDoc = async () => {
             setLoading(true)
             try {
-                const res = await fetch(selectedDoc.path)
+                const res = await fetch(selectedDoc.path!)
                 if (!res.ok) throw new Error("Documento no encontrado en /public/docs.")
                 const text = await res.text()
                 setDocContent(text)
@@ -126,7 +172,8 @@ export function HelpPanel({ collapsed }: { collapsed?: boolean }) {
     const filteredDocs = useMemo(() => {
         if (!searchQuery) return DOCS_LIST;
         const q = searchQuery.toLowerCase();
-        return DOCS_LIST.filter(doc => doc.title.toLowerCase().includes(q));
+        // When searching, only show matching selectable docs (no headers)
+        return SELECTABLE_DOCS.filter(doc => doc.title.toLowerCase().includes(q));
     }, [searchQuery]);
 
     const handleLinkClick = (href: string | undefined, e: React.MouseEvent) => {
@@ -136,7 +183,7 @@ export function HelpPanel({ collapsed }: { collapsed?: boolean }) {
         if (href.endsWith('.md') && !href.startsWith('http')) {
             e.preventDefault();
             const fileName = href.split('/').pop() || '';
-            const targetDoc = DOCS_LIST.find(d => d.path.endsWith(fileName));
+            const targetDoc = SELECTABLE_DOCS.find(d => d.path.endsWith(fileName));
             if (targetDoc) {
                 setSelectedDoc(targetDoc);
             }
@@ -190,17 +237,26 @@ export function HelpPanel({ collapsed }: { collapsed?: boolean }) {
                                 <p className="text-sm text-gray-500 text-center py-4">No se encontraron resultados.</p>
                             ) : (
                                 filteredDocs.map((doc) => {
+                                    // Render group header
+                                    if (doc.isHeader) {
+                                        return (
+                                            <div key={doc.id} className="px-3 pt-4 pb-1 text-[11px] font-bold text-[#57606a] uppercase tracking-wider select-none">
+                                                {doc.title}
+                                            </div>
+                                        )
+                                    }
+                                    // Render selectable doc
                                     const isSelected = selectedDoc.id === doc.id;
                                     return (
                                         <button
                                             key={doc.id}
                                             onClick={() => setSelectedDoc(doc)}
-                                            className={`w-full text-left px-3 py-1.5 rounded-md text-[13.5px] font-medium transition-colors flex items-center gap-2 relative group ${isSelected
-                                                ? "bg-[#0969da] text-white"
-                                                : "text-[#24292f] hover:bg-[#f3f4f6]"
+                                            className={`w-full text-left px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors flex items-center gap-2 ${isSelected
+                                                    ? "bg-[#0969da] text-white"
+                                                    : "text-[#24292f] hover:bg-[#f3f4f6]"
                                                 }`}
                                         >
-                                            <FileText className={`h-4 w-4 shrink-0 ${isSelected ? "text-blue-200" : "text-[#57606a]"}`} />
+                                            <FileText className={`h-3.5 w-3.5 shrink-0 ${isSelected ? "text-blue-200" : "text-[#57606a]"}`} />
                                             <span className="truncate">{doc.title}</span>
                                         </button>
                                     )
@@ -216,7 +272,7 @@ export function HelpPanel({ collapsed }: { collapsed?: boolean }) {
                             <div className="flex items-center gap-1 font-semibold">
                                 <span className="text-blue-600 hover:underline cursor-pointer">docs</span>
                                 <span className="text-[#57606a] mx-1">/</span>
-                                <span>{selectedDoc.path.split('/').pop()}</span>
+                                <span>{selectedDoc.path?.split('/').pop()}</span>
                             </div>
                             <div className="flex items-center gap-2 text-xs text-[#57606a]">
                                 <Bookmark className="h-4 w-4" /> Markdown Source
