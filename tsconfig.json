@@ -38,6 +38,8 @@
   ],
   "exclude": [
     "node_modules",
-    "copy-of-kanban-vidrieria"
+    "copy-of-kanban-vidrieria",
+    "_ARCHIVO_MAESTRO_ERP",
+    "_EMERGENCIA_SUPABASE"
   ]
 }

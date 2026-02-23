@@ -7,7 +7,7 @@ test.describe('Módulo de Inventario (Kardex)', () => {
     test('debe renderizar el título y layout de Inventario', async ({ page }) => {
         // Mock simple de la API solo para que la página renderice sin base de datos
         await page.route('*/**/api/inventory*', async (route) => {
-            const json = [];
+            const json: any[] = [];
             await route.fulfill({ json });
         });
 

@@ -1,4 +1,4 @@
-# Sistema ERP — Vidriería y Carpintería Metálica
+# Sistema ERP — Vidriería y Carpintería Metálica HOLAXD
 
 > **Stack:** Next.js 16 · Supabase PostgreSQL 17 · TanStack Query · Tailwind CSS  
 > **Tipo:** SPA Estática (export) + Backend Supabase Cloud  

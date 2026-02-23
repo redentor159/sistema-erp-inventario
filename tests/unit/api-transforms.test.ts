@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest'
-import { transformKanbanOrders } from '../../lib/kanban-adapter'
 
 describe('API Transforms - Kanban', () => {
 

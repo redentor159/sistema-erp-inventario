@@ -1,0 +1,10 @@
+_ARCHIVO_MAESTRO_ERP/codigo_fuente/tests/e2e/inventory.spec.ts(10,19): error TS7034: Variable 'json' implicitly has type 'any[]' in some locations where its type cannot be determined.
+_ARCHIVO_MAESTRO_ERP/codigo_fuente/tests/e2e/inventory.spec.ts(11,35): error TS7005: Variable 'json' implicitly has an 'any[]' type.
+_ARCHIVO_MAESTRO_ERP/codigo_fuente/tests/unit/api-transforms.test.ts(2,10): error TS2305: Module '"../../lib/kanban-adapter"' has no exported member 'transformKanbanOrders'.
+_ARCHIVO_MAESTRO_ERP/codigo_fuente/tests/unit/validators.test.ts(49,24): error TS18046: 'result.error.errors' is of type 'unknown'.
+_ARCHIVO_MAESTRO_ERP/codigo_fuente/tests/unit/validators.test.ts(82,24): error TS18046: 'result.error.errors' is of type 'unknown'.
+tests/e2e/inventory.spec.ts(10,19): error TS7034: Variable 'json' implicitly has type 'any[]' in some locations where its type cannot be determined.
+tests/e2e/inventory.spec.ts(11,35): error TS7005: Variable 'json' implicitly has an 'any[]' type.
+tests/unit/api-transforms.test.ts(2,10): error TS2305: Module '"../../lib/kanban-adapter"' has no exported member 'transformKanbanOrders'.
+tests/unit/validators.test.ts(49,24): error TS18046: 'result.error.errors' is of type 'unknown'.
+tests/unit/validators.test.ts(82,24): error TS18046: 'result.error.errors' is of type 'unknown'.
