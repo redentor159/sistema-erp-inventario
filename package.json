@@ -36,7 +36,7 @@
     "file-saver": "2.0.5",
     "get-nonce": "1.0.1",
     "github-markdown-css": "^5.9.0",
-    "lucide-react": "0.563.0",
+    "lucide-react": "0.575.0",
     "mermaid": "^11.12.3",
     "next": "16.1.6",
     "pg": "8.18.0",
