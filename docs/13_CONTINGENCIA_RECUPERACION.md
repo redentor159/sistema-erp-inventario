@@ -24,8 +24,10 @@
 | Supabase Cloud **caída temporal** (<4h) | 🟡 Bajo | Esperar | Monitorear status.supabase.com |
 | Supabase Cloud **caída prolongada** (>24h) | 🟠 Medio | <4 horas | Activar self-hosting temporal |
 | Supabase **sube precios** significativamente | 🟠 Medio | 30 días | Planificar migración |
+| **Obsolescencia API** (Supabase v3) / Librería | 🟠 Medio | Semanas | Actualización Rigurosa (Dependabot) |
 | **Corrupción o pérdida de datos** | 🔴 Crítico | <2 horas | Restaurar desde backup |
 | Supabase **cierra el servicio Cloud** | 🔴 Crítico | 30 días | Migrar a self-hosting permanente |
+| Bloqueo **CORS/Cookies** por navegadores | 🔴 Crítico | Días | Migrar a Custom Domains (Plan Pro) |
 | **Brecha de seguridad** / acceso no autorizado | 🔴 Crítico | Inmediato | Revocar claves + auditar accesos |
 
 ---
@@ -227,7 +229,26 @@ npm run build
 
 ---
 
-## 6. Diagrama de Decisión de Contingencia
+## 6. Contingencias a Largo Plazo (Obsolescencia y Navegadores)
+
+El modelo de *"Mantenimiento Cero"* en infraestructuras gratuitas tiene dos riesgos existenciales a largo plazo que no dependen de tu código, sino del ecosistema (navegadores y empresas de terceros):
+
+### 6.1 Obsolescencia de la API (El problema de los 18 meses)
+Si Supabase deprecia la versión de la API que usa la librería `@supabase/supabase-js` actual, el ERP dejará de registrar transacciones en silencio (error `401` o `API Deprecated`).
+**Contingencia (Protocolo de Actualización Rigurosa):**
+1. **GitHub Dependabot:** Escanea el repositorio semanalmente gracias al archivo `.github/dependabot.yml`. Notificará vía email cuando hay una actualización crítica en librerías.
+2. **Entorno Aislado:** Cuando llegue el aviso, **NUNCA** actualices directo en la rama `main`. Usa la rama generada por Dependabot (ej: `update-supabase-vX`).
+3. **Pruebas Locales:** Borrar la carpeta `node_modules`, hacer `npm install`, y ejecutar el entorno de desarrollo local (`npm run dev`). Simular el flujo de supervivencia: crear una Cotización compleja y mover una tarjeta Kanban.
+4. **Pase a Producción:** Solo si las pruebas transaccionales pasan con éxito, hacer *merge* a `main` para que Vercel regenere el estático.
+
+### 6.2 Políticas Estrictas de Navegadores (CORS y Cookies 3rd-Party)
+Navegadores como Safari/Chrome son cada vez más estrictos. Podrían bloquear peticiones cruzadas (`erp.vercel.app` hacia `xyz.supabase.co`) asumiendo que son rastreadores de marketing maliciosos. Un "botón de aceptar cookies" legal no sirve, porque el bloqueo futuro ocurre a nivel del motor de red del navegador.
+**Contingencia:** 
+Si este "apocalipsis" se vuelve un estándar forzoso global, la única solución técnica real es pasar Supabase a un **Plan de Pago (Pro)** y configurar la opción **Custom Domains** (`api.tu-erp.com`) para engañar al navegador logrando que confíe en el tráfico como "proveniente del mismo sitio".
+
+---
+
+## 7. Diagrama de Decisión de Contingencia
 
 ```mermaid
 flowchart TD

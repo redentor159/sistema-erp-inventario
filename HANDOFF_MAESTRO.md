@@ -158,6 +158,7 @@ Crea una carpeta `_ARCHIVO_MAESTRO_ERP` y guarda:
 | **Build compilado** | Carpeta `/out` lista para deploy | `build_out/` |
 | **Variables de entorno** | Archivo `.env.local` | `secretos/` |
 | **Dump de BD** | Archivo `.sql` compilado automáticamente. (Descárgalo de GitHub -> Actions -> Backup Diario) | `base_datos/` |
+| **Alertas Dependabot** | Archivo `.github/dependabot.yml` que asegura avisos de obsolescencia a futuro. | `codigo_fuente/` |
 | **Instalador Node.js** | v20.11.0 LTS para Windows | `instaladores/` |
 | **Instalador VS Code** | Versión actual | `instaladores/` |
 | **Docker Desktop** | Instalador offline | `instaladores/` |
@@ -172,6 +173,18 @@ Crea una carpeta `_ARCHIVO_MAESTRO_ERP` y guarda:
 | **Disco externo SSD** | 10-15 años | Almacenado en lugar fresco y seco |
 | **GitHub/GitLab privado** | ~Indefinido | Mientras el servicio exista |
 | **Google Drive** | ~Indefinido | Backup secundario en la nube |
+
+---
+
+## Mantenimiento a Largo Plazo (Firma de API)
+
+Aunque el servidor no tiene mantenimiento (Static Export), las dependencias externas sí. El repositorio cuenta con `.github/dependabot.yml`.
+- Si el bot detecta que Supabase o Next.js están obsoletos, creará un Pull Request automático.
+- **Protocolo del Futuro Desarrollador:**
+  1. No hacer *merge* ciego. Bajar los cambios: `git fetch origin && git checkout dependabot/...`
+  2. Borrar `node_modules` y hacer `npm install`.
+  3. Probar flujos críticos localmente (`npm run dev`). Evaluar "Breaking changes".
+  4. Si la app vive, fusionar a `main`.
 
 ---
 

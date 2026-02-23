@@ -1,0 +1,8 @@
+version: 2
+updates:
+  - package-ecosystem: "npm" # Busca dependencias en package.json
+    directory: "/" # Directorio raíz
+    schedule:
+      interval: "weekly" # Cada semana
+    labels:
+      - "dependencies"

@@ -313,7 +313,7 @@ En el Home del proyecto en Supabase, encontrarás métricas en tiempo real:
 | **Auth Users** | Usuarios registrados | 50,000 |
 | **Storage** | No se usa en este proyecto | — |
 
-> **⚠️ Alerta de Plan Free:** El plan Free de Supabase **pausa el proyecto** si no hay actividad en 7 días. Esto se evita con el workflow de keep-alive. Ver [13_CONTINGENCIA_RECUPERACION.md](./13_CONTINGENCIA_RECUPERACION.md).
+> **⚠️ Alerta de Plan Free (Inactividad):** A Supabase le cuesta mantener servidores sin uso. El plan Free **pausa el proyecto permanentemente** si no hay llamadas directas a la base de datos en 7 días. Esto se evita y se mantiene "vivo" (Keep-Alive) de forma automática con la ejecución de tu workflow de GitHub `.github/workflows/backup-base-datos.yml` cada 24 horas. Ver [13_CONTINGENCIA_RECUPERACION.md](./13_CONTINGENCIA_RECUPERACION.md).
 
 ### Ver Logs en Tiempo Real
 
@@ -403,10 +403,12 @@ User: postgres.gnvayzzufcmjseuxggks
 |-----------|-------|--------------|
 | **Diario** | Verificar que el backup se ejecutó | GitHub → Actions → último workflow |
 | **Semanal** | Revisar logs de Auth por errores | Supabase → Logs → Auth |
+| **Semanal** | Revisar alertas de versión (Dependabot) | GitHub → Pestaña Security/Dependabot |
 | **Mensual** | Verificar tamaño de la BD | Supabase → Home → Database size |
 | **Mensual** | Revisar usuarios activos | Supabase → Authentication → Users |
 | **Trimestral** | Probar restauración del backup | Ver procedimiento en doc 13 |
 | **Semestral** | Revisar y limpiar datos zombie | Correr consulta de stock zombie |
+| **Anual** | Revisar obsolescencia (Deprecation) API | Alertas de Dependabot y notas de Supabase |
 
 ---
 
