@@ -1,205 +1,98 @@
-# T01 — Tutorial: Dashboard KPI
+# T01 — Tutorial: Cockpit MTO (Dashboard)
 
-> **Módulo:** Dashboard  
-> **Ruta en la app:** `/dashboard` (página de inicio al ingresar)  
-> **Rol requerido:** ADMIN, SECRETARIA, OPERARIO (todos pueden verlo)  
+> **Módulo:** Cockpit MTO (Dashboard)  
+> **Ruta en la app:** `/dashboard`  
+> **Rol requerido:** ADMIN, GERENTE (Acceso total)  
 > **Última actualización:** Febrero 2026  
 
 ---
 
-## 📋 ¿Qué es el Dashboard?
+## 🎯 ¿Qué es el Cockpit MTO?
 
-El Dashboard es la **pantalla principal** del sistema. Es lo primero que ves al iniciar sesión. Muestra un resumen en tiempo real del estado completo del negocio: ventas, inventario y producción — todo en un solo lugar, sin necesidad de entrar a cada módulo.
-
-> **💡 Piénsalo así:** Es como el tablero de un auto. De un vistazo ves la velocidad (ventas), el combustible (stock) y el motor (producción).
+El **Cockpit MTO (Make-To-Order)** es el tablero principal de Inteligencia Operativa y Control de Producción del sistema. No es solo un resumen gráfico, sino una herramienta de toma de decisiones dividida en tres grandes dimensiones: **Ejecutiva, Comercial y Analítica de Inventario**.
 
 ---
 
-## 🗺️ ¿Dónde está?
+## 🧭 Navegación del Cockpit
+
+El panel está dividido por pestañas laterales (o superiores en móviles) que cambian el enfoque de los indicadores gráficos:
 
 ```mermaid
 graph LR
-    LOGIN["🔐 Inicio de Sesión"] -->|Ingresar| DASH["📊 Dashboard<br/>/dashboard"]
-    DASH -.->|Menú lateral| COT["Cotizaciones"]
-    DASH -.->|Menú lateral| CAT["Catálogo"]
-    DASH -.->|Menú lateral| PROD["Producción"]
-```
-
-Al ingresar al sistema, el Dashboard aparece automáticamente. También puedes acceder desde el **menú lateral izquierdo** → icono de gráfico de barras 📊.
-
----
-
-## 🖥️ Anatomía del Dashboard
-
-```
-┌─────────────────────────────────────────────────────────┐
-│  MENÚ LATERAL   │             HEADER                     │
-│  📊 Dashboard   │  Sistema ERP · Vidriería               │
-│  📝 Cotizaciones│                                        │
-│  📦 Catálogo    ├────────────────────────────────────────│
-│  📥 Entradas    │  TARJETAS KPI (fila 1)                 │
-│  📤 Salidas     │  [Total Cotiz] [Aprobadas] [Rechazadas]│
-│  📒 Kardex      │  [Valor Stock] [OTIF]      [Conversión]│
-│                 ├────────────────────────────────────────│
-│  🔧 Recetas     │  GRÁFICOS (fila 2)                     │
-│  🏭 Producción  │  [Cotiz/Mes]  │  [Distribución ABC]    │
-│  📊 Exportar    ├────────────────────────────────────────│
-│  ⚙️ Config      │  TABLAS RÁPIDAS (fila 3)               │
-│                 │  [Top Productos]  [Stock Crítico]       │
-└─────────────────────────────────────────────────────────┘
+    DASH["📊 Cockpit /dashboard"] --> EJEC["Vista Ejecutiva"]
+    DASH --> COM["Inteligencia Comercial"]
+    DASH --> ANA["Analítica Inventarios"]
 ```
 
 ---
 
-## 📊 Sección 1: Tarjetas KPI
+## 📈 1. Vista Ejecutiva (Valorización & KPIs)
 
-Las **tarjetas KPI** (Key Performance Indicators) son los recuadros de colores en la parte superior. Cada una muestra un número clave del negocio.
+Esta vista ofrece el **estado financiero y el nivel de servicio**.
 
-| Tarjeta | Qué mide | Cómo interpretarla |
-|---------|----------|-------------------|
-| **Total Cotizaciones** | Cantidad de cotizaciones del período | Mayor = más trabajo comercial |
-| **Cotizaciones Aprobadas** | Las que el cliente aceptó | Mayor = más ventas cerradas |
-| **Tasa de Conversión** | % de cotizaciones que se aprobaron | Meta: >40% es buena performance |
-| **Valor del Inventario** | Suma del costo de todo el stock | Control de capital inmovilizado |
-| **OTIF** | Entregas a tiempo y completas | Meta: >90% es excelente |
-| **Stock en Alerta** | Productos bajo el mínimo | Menor = mejor gestión de compras |
+### 📊 KPIs Principales:
+| Indicador | Qué mide | Cómo se calcula |
+|-----------|----------|-----------------|
+| **Valor Total Inventario** | El capital inmovilizado en la empresa | Σ (Stock Actual × Costo PMP) de todos los SKUs |
+| **Nivel de Servicio (OTIF)** | *On-Time In-Full*. Puntualidad de entrega | % de Pedidos entregados A TIEMPO y COMPLETOS |
+| **Materiales Críticos** | Riesgo de parar producción | Cantidad de SKUs cuyo Stock Actual ≤ Stock Mínimo |
+| **Total Items (SKUs)** | Tamaño de la maestría de materiales | Total de productos/SKUs registrados |
 
-### 🔍 Filtro de Período
+### 📉 Gráficos:
+1. **Histórico de Cumplimiento (OTIF)**: Evolución mensual de tu puntualidad. Barras verdes (>90%) y amarillas (<90%).
+2. **Margen de Contribución**: Ventas vs Costos Directos del mes actual.
 
-En la esquina superior derecha del Dashboard encontrarás botones para filtrar los datos:
-
-```
-[ Último Mes ]  [ Trimestre ]  [ Año ]
-```
-
-| Botón | Período que muestra |
-|-------|-------------------|
-| **Último Mes** | Los últimos 30 días |
-| **Trimestre** | Los últimos 90 días |
-| **Año** | Los últimos 365 días |
-
-> **⚠️ Importante:** El filtro solo afecta a las tarjetas de Cotizaciones. El valor del stock siempre es en tiempo real.
+> **💡 Tip de Moneda:** En la parte superior derecha de esta vista puedes alternar **[ PEN | USD ]** para ver tu valorización total convertida automáticamente según tu tipo de cambio configurado.
 
 ---
 
-## 📈 Sección 2: Gráficos
+## 🤝 2. Inteligencia Comercial (Ventas & Márgenes)
 
-### Gráfico 1 — Cotizaciones por Mes (Barras)
+Métricas reales de eficiencia en ventas y la salud de tus proyectos.
 
-```
-S/ 45,000 │    ████
-S/ 40,000 │    ████  ████
-S/ 35,000 │    ████  ████  ████
-S/ 30,000 │ ████  ████  ████  ████
-          └─ Oct   Nov   Dic   Ene
-              Cotizaciones enviadas por mes
-```
+### 📊 KPIs Principales:
+| Indicador | Qué mide |
+|-----------|----------|
+| **Tasa de Conversión** | % de las Cotizaciones que fueron Aprobadas vs el total emitido. |
+| **Ticket Promedio** | El tamaño monetario típico de un proyecto cerrado (S/). |
+| **Margen Promedio** | Utilidad Bruta Real promedio (Diferencia de Precio de Venta vs Costos Directos). |
+| **Ciclo de Venta** | Días promedio desde que emites una cotización hasta que el cliente la aprueba. |
 
-- **Barras azules:** Valor total de cotizaciones enviadas
-- **Barras verdes:** Valor de cotizaciones aprobadas
-- **Al pasar el mouse** sobre cada barra: muestra el número exacto y cantidad de cotizaciones
-
-### Gráfico 2 — Distribución ABC del Stock (Circular)
-
-```
-        ████ A (20% productos = 80% valor)
-      ██████ B (30% productos = 15% valor)  
-     ███████ C (50% productos = 5% valor)
-```
-
-| Categoría | Qué significa | Acción recomendada |
-|-----------|---------------|-------------------|
-| **A (Rojo)** | Productos de alto valor, pocos SKUs | Priorizar reposición, controlar stock |
-| **B (Amarillo)** | Valor y cantidad medios | Monitoreo regular |
-| **C (Verde)** | Muchos productos, poco valor | Comprar en menor frecuencia |
+### 📉 Gráficos:
+1. **Top Sistemas Vendidos**: Gráfico de barras horizontal («Vacas Lecheras») acumulando el volumen de ventas por Modelo de producto.
+2. **Estado de Cotizaciones (Embudo)**: Gráfico de pastel mostrando proporción de proyectos en estatus "Ganadas", "Perdidas" o "Pendientes".
 
 ---
 
-## 📋 Sección 3: Tablas de Alerta Rápida
+## 📦 3. Analítica de Inventarios (Quiebres & Pareto)
 
-### Tabla: Top Productos por Valor
+Esta vista se centra en la "salud" de tu almacén: detectar faltantes urgentes y descubrir capital estancado.
 
-Muestra los productos que representan mayor inversión en inventario. Si alguno llega a cero, es una alerta crítica de reposición.
+### 🚨 Monitor de Quiebres (La "Lista Roja")
+Tabla en tiempo real que lista los SKUs cuyo **Stock Actual** llegó al límite o a cero.
+- Muestra el nombre, el stock disponible (en rojo) y el **Punto de Reorden (ROP)** sugerido.
 
-| Columna | Qué significa |
-|---------|--------------|
-| SKU | Código único del producto |
-| Descripción | Nombre del perfil/vidrio/accesorio |
-| Stock Actual | Unidades en almacén ahora mismo |
-| Valor Total | Stock × Costo Promedio |
-| Clase | A, B o C según análisis ABC |
+### 🧟‍♂️ Inventario Zombie
+Muestra tu "capital estancado".
+- Lista los productos que **tienen stock físico** pero que **no han tenido ninguna salida** en los últimos 90 días. Se ordena mostrando primero los de mayor impacto económico. (Obliga a realizar liquidaciones o promociones).
 
-### Tabla: Productos en Estado Crítico
+### 💎 Tesoro Oculto (Retazos)
+Calcula el valor económico que tienes "tirado" en la zona de despuntes.
+- Muestra el **Valor Económico Recuperable** en Soles de las piezas útiles.
+- Contabiliza cantidad de trozos y los Metros Lineales totales que suman.
 
-Lista de productos donde el stock está por debajo del mínimo configurado. **Estos productos necesitan reposición urgente.**
-
-| Columna | Qué significa |
-|---------|--------------|
-| SKU | Código del producto |
-| Stock Actual | Lo que hay en almacén |
-| Stock Mínimo | Lo que debería haber como mínimo |
-| Diferencia | Cuánto falta para llegar al mínimo |
-| Estado | 🟡 Alerta / 🔴 Crítico |
-
----
-
-## 🔘 Botones y Acciones del Dashboard
-
-| Elemento | Ubicación | Qué hace |
-|----------|-----------|----------|
-| **Filtro de período** | Esquina superior derecha | Cambia el rango de fechas de los KPIs |
-| **Click en tarjeta KPI** | Tarjetas superiores | En algunos casos abre el módulo correspondiente |
-| **Hover en gráfico** | Barras o sectores | Muestra tooltip con detalle exacto |
-| **Click en fila de tabla** | Tablas inferiores | Navega al detalle del producto o cotización |
-| **🔄 Actualizar** | (automático) | Los datos se actualizan al volver a esta página |
-
----
-
-## 💡 Flujo Típico de Uso Diario
-
-```mermaid
-flowchart TD
-    A["☕ Inicio del día\nAbre el sistema"] --> B["Revisa Dashboard"]
-    B --> C{{"¿Alertas en rojo?"}}
-    C -->|Sí: Stock crítico| D["Va a Catálogo\npara revisar stock"]
-    C -->|Sí: OTIF bajo| E["Va a Producción\npara ver atrasos"]
-    C -->|No: Todo OK| F["Revisa cotizaciones\npendientes del día"]
-    D --> F
-    E --> F
-```
-
----
-
-## ❓ Preguntas Frecuentes
-
-**¿Por qué los datos parecen desactualizados?**
-> El Dashboard se actualiza automáticamente al cargar la página. Si ves datos viejos, presiona F5 (recargar) en el navegador.
-
-**¿Por qué la Tasa de Conversión está en 0%?**
-> Si no hay cotizaciones aprobadas en el período seleccionado, la tasa es 0%. Prueba cambiar el filtro a "Año".
-
-**¿El Dashboard muestra datos en tiempo real?**
-> Sí. Cada vez que alguien registra una entrada, cotización o movimiento, los datos del Dashboard se actualizan al recargar.
-
-**¿Puedo exportar el Dashboard a Excel?**
-> El Dashboard en sí no se exporta. Para exportar datos ve al módulo **Exportador Excel** (`/export`). Ver [T10_TUTORIAL_EXPORTADOR.md](./T10_TUTORIAL_EXPORTADOR.md).
-
----
-
-## ⚠️ Errores Comunes y Soluciones
-
-| Error / Situación | Causa | Solución |
-|-------------------|-------|----------|
-| Tarjetas muestran 0 | Sin datos en el período | Cambiar filtro a "Año" |
-| Gráfico no carga | Conexión a Supabase | Verificar internet y recargar |
-| Stock en rojo siempre | Stock mínimo muy alto configurado | Ir a Catálogo → ajustar stock mínimo del producto |
-| No veo el dashboard | Sin permiso de sesión | Cerrar sesión y volver a ingresar |
+### 📊 Análisis de Pareto (Curva ABC)
+Gráfico interactivo crítico para la estrategia de abastecimiento.
+- Puedes clasificar los materiales por su peso en el **Consumo** (movimiento histórico) o en el **Valor Actual** (el stock detenido).
+- Filtra por [90d], [180d], [1 año] o [Total].
+- **Clase A (Azul oscuro):** ~80% del valor.
+- **Clase B (Celeste):** ~15% del valor.
+- **Clase C (Gris):** ~5% del valor.
 
 ---
 
 ## 🔗 Documentos Relacionados
 
-- [T02_TUTORIAL_COTIZACIONES.md](./T02_TUTORIAL_COTIZACIONES.md) — Cómo gestionar cotizaciones
-- [T03_TUTORIAL_CATALOGO.md](./T03_TUTORIAL_CATALOGO.md) — Cómo interpretar el stock y el catálogo de SKUs
-- [T09_TUTORIAL_PRODUCCION.md](./T09_TUTORIAL_PRODUCCION.md) — Cómo gestionar el Kanban
-- [03_MODULOS_Y_FUNCIONALIDADES.md](../03_MODULOS_Y_FUNCIONALIDADES.md) — Referencia técnica de módulos
+- [T02_TUTORIAL_COTIZACIONES.md](./T02_TUTORIAL_COTIZACIONES.md) — Para entender cómo afecta la Tasa de Conversión.
+- [T03_TUTORIAL_CATALOGO.md](./T03_TUTORIAL_CATALOGO.md) — Dónde modificar el Stock Mínimo para el Monitor de Quiebres.
+- [T09_TUTORIAL_PRODUCCION.md](./T09_TUTORIAL_PRODUCCION.md) — Dónde se determina el indicador de puntualidad (OTIF).
