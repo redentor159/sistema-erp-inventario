@@ -1,8 +1,18 @@
 version: 2
 updates:
-  - package-ecosystem: "npm" # Busca dependencias en package.json
-    directory: "/" # Directorio raíz
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
-      interval: "weekly" # Cada semana
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
     labels:
       - "dependencies"
+    groups:
+      next-react-ecosystem:
+        patterns:
+          - "next"
+          - "react"
+          - "react-dom"
+      dev-dependencies:
+        dependency-type: "development"

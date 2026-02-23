@@ -1,0 +1,35 @@
+name: Sincronizar Tipos de Supabase
+on:
+  schedule:
+    - cron: '0 4 * * 0' # Se ejecuta todos los domingos a las 4 AM
+  workflow_dispatch:
+
+jobs:
+  update-types:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generar Tipos desde el Proyecto de Producción
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+        run: |
+          # Asegurar que el directorio types exista
+          mkdir -p types
+          npx supabase login --token $SUPABASE_ACCESS_TOKEN
+          npx supabase gen types typescript --project-id $PROJECT_ID > types/supabase.ts
+
+      - name: Crear Pull Request si hay cambios
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: actualización automática de tipos de Supabase"
+          title: "🔄 Sincronización de Tipos de Base de Datos"
+          body: "Se han detectado cambios en el esquema de Supabase. Revisa los nuevos tipos generados."
+          branch: "update-supabase-types"

@@ -1,0 +1,43 @@
+name: Guardián de Integridad (Lint & Build)
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar Dependencias
+        run: npm ci
+
+      - name: Verificar Formato y Errores (Linting)
+        run: npm run lint
+        
+      - name: Verificación de Tipos (TypeScript Strict)
+        run: npx tsc --noEmit
+
+      - name: Simulacro de Compilación Estática (Build)
+        run: npm run build
+
+      - name: Pruebas Unitarias (Lógica Matemática)
+        run: npm run test -- --run
+
+      - name: Instalar Navegadores para Pruebas E2E
+        run: npx playwright install --with-deps
+
+      - name: Pruebas End-to-End (Simulación de Usuario)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: npm run test:e2e
