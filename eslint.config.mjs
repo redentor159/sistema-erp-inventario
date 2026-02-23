@@ -27,6 +27,10 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/no-unused-expressions": "warn",
       // ts-ignore is used to work around known library type issues
       "@typescript-eslint/ban-ts-comment": "warn",
+      // shadcn/ui generated components use empty interfaces
+      "@typescript-eslint/no-empty-object-type": "warn",
+      // Some utility files still use require() style imports
+      "@typescript-eslint/no-require-imports": "warn",
 
       // React rules — cosmetic / style, not runtime errors
       "react/no-unescaped-entities": "warn",

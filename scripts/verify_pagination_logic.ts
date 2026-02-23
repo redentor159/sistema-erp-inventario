@@ -37,7 +37,7 @@ async function verify() {
     // ─────────────────────────────────────────────────────────────
     // COPIED LOGIC FROM cat.ts
     // ─────────────────────────────────────────────────────────────
-    let query = supabase
+    const query = supabase
         .from('vw_stock_realtime')
         .select('*', { count: 'exact' })
         .order('orden_prioridad', { ascending: true })
