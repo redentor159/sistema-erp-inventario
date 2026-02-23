@@ -21,7 +21,7 @@ El Dashboard es la **pantalla principal** del sistema. Es lo primero que ves al 
 graph LR
     LOGIN["🔐 Inicio de Sesión"] -->|Ingresar| DASH["📊 Dashboard<br/>/dashboard"]
     DASH -.->|Menú lateral| COT["Cotizaciones"]
-    DASH -.->|Menú lateral| INV["Inventario"]
+    DASH -.->|Menú lateral| CAT["Catálogo"]
     DASH -.->|Menú lateral| PROD["Producción"]
 ```
 
@@ -37,10 +37,10 @@ Al ingresar al sistema, el Dashboard aparece automáticamente. También puedes a
 │  📊 Dashboard   │  Sistema ERP · Vidriería               │
 │  📝 Cotizaciones│                                        │
 │  📦 Catálogo    ├────────────────────────────────────────│
-│  📋 Inventario  │  TARJETAS KPI (fila 1)                 │
-│  📥 Entradas    │  [Total Cotiz] [Aprobadas] [Rechazadas]│
-│  📤 Salidas     │  [Valor Stock] [OTIF]      [Conversión]│
-│  📒 Kardex      ├────────────────────────────────────────│
+│  📥 Entradas    │  TARJETAS KPI (fila 1)                 │
+│  📤 Salidas     │  [Total Cotiz] [Aprobadas] [Rechazadas]│
+│  📒 Kardex      │  [Valor Stock] [OTIF]      [Conversión]│
+│                 ├────────────────────────────────────────│
 │  🔧 Recetas     │  GRÁFICOS (fila 2)                     │
 │  🏭 Producción  │  [Cotiz/Mes]  │  [Distribución ABC]    │
 │  📊 Exportar    ├────────────────────────────────────────│
@@ -161,7 +161,7 @@ Lista de productos donde el stock está por debajo del mínimo configurado. **Es
 flowchart TD
     A["☕ Inicio del día\nAbre el sistema"] --> B["Revisa Dashboard"]
     B --> C{{"¿Alertas en rojo?"}}
-    C -->|Sí: Stock crítico| D["Va a Inventario\npara revisar stock"]
+    C -->|Sí: Stock crítico| D["Va a Catálogo\npara revisar stock"]
     C -->|Sí: OTIF bajo| E["Va a Producción\npara ver atrasos"]
     C -->|No: Todo OK| F["Revisa cotizaciones\npendientes del día"]
     D --> F
@@ -200,6 +200,6 @@ flowchart TD
 ## 🔗 Documentos Relacionados
 
 - [T02_TUTORIAL_COTIZACIONES.md](./T02_TUTORIAL_COTIZACIONES.md) — Cómo gestionar cotizaciones
-- [T04_TUTORIAL_INVENTARIO.md](./T04_TUTORIAL_INVENTARIO.md) — Cómo interpretar el stock
+- [T03_TUTORIAL_CATALOGO.md](./T03_TUTORIAL_CATALOGO.md) — Cómo interpretar el stock y el catálogo de SKUs
 - [T09_TUTORIAL_PRODUCCION.md](./T09_TUTORIAL_PRODUCCION.md) — Cómo gestionar el Kanban
 - [03_MODULOS_Y_FUNCIONALIDADES.md](../03_MODULOS_Y_FUNCIONALIDADES.md) — Referencia técnica de módulos

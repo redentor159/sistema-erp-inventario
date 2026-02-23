@@ -179,6 +179,6 @@ Haz clic en cualquier fila de la lista para ver el detalle completo:
 
 ## 🔗 Documentos Relacionados
 
-- [T04_TUTORIAL_INVENTARIO.md](./T04_TUTORIAL_INVENTARIO.md) — Ver el efecto en el stock
+- [T03_TUTORIAL_CATALOGO.md](./T03_TUTORIAL_CATALOGO.md) — Ver el efecto en el stock
 - [T07_TUTORIAL_KARDEX.md](./T07_TUTORIAL_KARDEX.md) — Verificar el movimiento en el Kardex
 - [T11_TUTORIAL_CLIENTES_PROVEEDORES.md](./T11_TUTORIAL_CLIENTES_PROVEEDORES.md) — Crear proveedores

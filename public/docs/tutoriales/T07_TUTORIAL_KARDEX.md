@@ -137,7 +137,7 @@ Fecha     │ Tipo     │  Qty   │ Saldo
 22/02/26  │ VENTA    │  -50.0m│ 375.0m  ← Stock actual
 ```
 
-El saldo final (375.0m) es lo que verás en el módulo de **Stock en Tiempo Real**.
+El saldo final (375.0m) es lo que verás como Stock Actual al buscar el producto en el **Catálogo**.
 
 ---
 
@@ -157,7 +157,7 @@ El saldo final (375.0m) es lo que verás en el módulo de **Stock en Tiempo Real
 
 ## ❓ Preguntas Frecuentes
 
-**¿Por qué el saldo en el Kardex no coincide con lo que muestro en Inventario?**
+**¿Por qué el saldo en el Kardex no coincide con el Stock Actual en el Catálogo?**
 > Deben coincidir siempre. Si hay diferencia, puede ser un problema de actualización de la vista. Recarga la página (F5).
 
 **¿Puedo borrar un movimiento del Kardex?**

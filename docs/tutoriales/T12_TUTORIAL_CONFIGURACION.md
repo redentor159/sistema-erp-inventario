@@ -66,10 +66,11 @@ Estos valores afectan directamente todos los cálculos de cotizaciones:
 | Parámetro | Valor actual | Qué afecta |
 |-----------|-------------|-----------|
 | **Tasa IGV** | 18% | Se suma al precio final de cada cotización |
-| **Markup default** | 35% | Margen de ganancia por defecto en nuevas cotizaciones |
-| **Costo MO (m²)** | S/25.00/m² | Costo mano de obra por metro cuadrado de vidrio |
-| **Tipo de cambio** | S/3.75 | Conversión PEN/USD en cotizaciones en dólares |
-| **Validez de cotización** | 15 días | Días que la cotización es válida (aparece en documento) |
+| **Markup default** | 35% | Margen de ganancia (`markup_cotizaciones_default`) en nuevas cotizaciones |
+| **Costo MO (m²)** | S/25.00/m² | Costo mano de obra (`costo_mo_m2_default`) en base al cristal |
+| **Tipo de cambio** | S/3.75 | Conversión PEN/USD global |
+| **Descuento Máx %** | 0.15 (15%) | Límite porcentual negociable que acepta el sistema  |
+| **Validez de cotiz.** | 15 días | Días que la cotización es válida (aparece en documento) |
 | **Moneda default** | PEN (Soles) | Pre-selección en nuevas cotizaciones |
 
 ### Cómo funcionan los parámetros en la cotización:
@@ -114,30 +115,19 @@ Completa solo las cuentas que uses. Las vacías no aparecen en la cotización.
 
 ---
 
-## 📄 SECCIÓN 4: Textos de Cotización
+## 📄 SECCIÓN 4: Textos y Firmantes
 
-Textos que se imprimen en las cotizaciones al pie de página. Puedes personalizar:
+Textos y variables para la generación de la cotización impresa. Puedes personalizar:
 
 | Texto | Ejemplo | Aparece en |
 |-------|---------|-----------|
-| **Condiciones de pago** | "50% al inicio, 50% a la entrega" | Cotización impresa |
+| **Cond. Bases** | "1. Las instalaciones corren bajo..." | Cláusulas de las cotizaciones impresas |
+| **Formas de Pago**| "50% al inicio, 50% a la entrega" | Pie de cotización |
 | **Garantía** | "12 meses contra defectos de fabricación" | Cotización impresa |
-| **Observaciones** | "Precios válidos 15 días" | Cotización impresa |
-| **Nota de pago** | "Favor realizar depósito previo al inicio" | Cotización impresa |
-
-> **Tip:** Puedes usar HTML simple para dar formato: `<b>texto negrita</b>` o `<br/>` para saltos de línea.
-
----
-
-## 🎨 SECCIÓN 5: Personalización Visual
-
-| Ajuste | Opciones | Para qué sirve |
-|--------|----------|----------------|
-| **Color primario** | Selector de color | Color del menú lateral y encabezados |
-| **Tema** | Claro / Oscuro | Preferencia visual del sistema |
-| **Moneda default** | PEN / USD | Pre-selección en formularios |
-
----
+| **Notas Pie** | "Precios válidos 15 días" | Parte más baja de la cotización impresa |
+| **Representante** | "Carlos Vidal" | Nombre del ejecutivo a cargo de la firma |
+| **Cargo Repres.** | "Gerente General" | Cargo mostrado debajo del representante |
+| **Color Primario** | "#2563eb" (Azul HEX) | Marca visual usada en el PDF |
 
 ## 🔐 SECCIÓN 6: Gestión de Usuarios y Roles
 

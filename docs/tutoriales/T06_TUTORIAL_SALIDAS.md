@@ -177,6 +177,6 @@ flowchart TD
 
 ## 🔗 Documentos Relacionados
 
-- [T04_TUTORIAL_INVENTARIO.md](./T04_TUTORIAL_INVENTARIO.md) — Verificar stock antes de sacar
+- [T03_TUTORIAL_CATALOGO.md](./T03_TUTORIAL_CATALOGO.md) — Verificar stock antes de sacar
 - [T07_TUTORIAL_KARDEX.md](./T07_TUTORIAL_KARDEX.md) — Ver el movimiento registrado
 - [T05_TUTORIAL_ENTRADAS.md](./T05_TUTORIAL_ENTRADAS.md) — Si necesitas agregar stock primero

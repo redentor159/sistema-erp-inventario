@@ -38,7 +38,8 @@ Ambos módulos tienen una interfaz similar: lista, búsqueda, y formulario de al
 |-------|-------------|-------------|
 | **RUC o DNI** | ✅ Sí | 11 dígitos para empresa, 8 para natural |
 | **Razón Social / Nombre** | ✅ Sí | Nombre completo para facturas |
-| **Dirección** | ❌ No | Se imprime en la cotización |
+| **Tipo Cliente** | ✅ Sí | Selecciona entre **EMPRESA** o **PERSONA** |
+| **Dirección** | ❌ No | Dirección de obra o fiscal, se imprime en la cotización |
 | **Teléfono** | ❌ No | Para contacto |
 | **Correo Electrónico** | ❌ No | Para envío de cotizaciones |
 | **Contacto** | ❌ No | Nombre de la persona de contacto en empresas |
@@ -84,6 +85,8 @@ Ambos módulos tienen una interfaz similar: lista, búsqueda, y formulario de al
 | **RUC** | ✅ Sí | Número de RUC del proveedor |
 | **Razón Social** | ✅ Sí | Nombre legal del proveedor |
 | **Tipo de Material** | ❌ No | Aluminio, Vidrio, Accesorios, Otros |
+| **Días de Crédito** | ❌ No | Días de crédito otorgados para pagarle |
+| **Moneda Predet.** | ❌ No | Moneda por defecto para comprarle (PEN o USD) |
 | **Teléfono** | ❌ No | Línea de contacto |
 | **Correo** | ❌ No | Email para pedidos |
 | **Contacto** | ❌ No | Nombre del asesor comercial |

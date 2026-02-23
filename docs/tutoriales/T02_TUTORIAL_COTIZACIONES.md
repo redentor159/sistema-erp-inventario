@@ -53,7 +53,7 @@ Al abrir Cotizaciones verás una tabla con todas las cotizaciones del sistema:
 | Botón / Elemento | Icono | Qué hace |
 |-----------------|-------|----------|
 | **Nueva Cotización** | ➕ | Abre formulario para crear cotización nueva |
-| **Filtro de Estado** | 📂 | Filtra: Todas / Borrador / Aprobada / Rechazada / Anulada |
+| **Filtro de Estado** | 📂 | Filtra: Todas / Borrador / Aprobada / Finalizada / Rechazada / Anulada |
 | **Ver detalle** | 👁️ | Abre el detalle completo de la cotización |
 | **Editar** | ✏️ | Solo aparece en estado Borrador |
 | **Click en fila** | — | Abre el detalle de esa cotización |
@@ -64,6 +64,7 @@ Al abrir Cotizaciones verás una tabla con todas las cotizaciones del sistema:
 graph LR
     ALL["Todas"] --> B["Borrador 📝"]
     ALL --> A["Aprobada ✅"]
+    ALL --> F["Finalizada 🚀"]
     ALL --> R["Rechazada ❌"]
     ALL --> AN["Anulada 🚫"]
 ```
@@ -72,6 +73,7 @@ graph LR
 |--------|-------|-------------|----------------|
 | **Borrador** | Gris/Azul | En preparación, no enviada aún | ✅ Sí |
 | **Aprobada** | Verde | Cliente aceptó el presupuesto | ❌ No |
+| **Finalizada** | Azul | Pedido completado y entregado | ❌ No |
 | **Rechazada** | Rojo | Cliente rechazó el presupuesto | ❌ No |
 | **Anulada** | Naranja | Se canceló internamente | ❌ No |
 
@@ -94,8 +96,10 @@ Se abre un formulario con los datos generales:
 │  Cliente: [Buscar cliente...]          [+ Nuevo]    │
 │  Marca:   [ALUVID / ALUPEX / ...]      (lista)      │
 │  Moneda:  ● PEN (Soles)  ○ USD (Dólares)            │
-│  Tipo de Cambio: S/ 3.75 (configurable)             │
 │  Validez: 15 días (configurable)                    │
+│  Costo Fijo Inst.: [ S/ 150.00 ] (flete/embalaje)   │
+│  Términos Pers.:   [ Condiciones de venta... ]      │
+│  Título Doc:       [ Cotización Especial ]          │
 │  Notas:   [Texto libre...]                          │
 │                                          [Guardar]  │
 └─────────────────────────────────────────────────────┘
@@ -108,6 +112,9 @@ Se abre un formulario con los datos generales:
 | **Moneda** | ✅ Sí | Soles (PEN) o Dólares (USD). Afecta cómo se muestran los precios |
 | **Tipo de Cambio** | Solo si USD | Rate PEN/USD para conversiones |
 | **Validez** | ✅ Sí | Días que es válida la cotización (default: 15) |
+| **Costo Fijo Inst.** | ❌ No | Monto para instalación general, flete de equipo o embalajes |
+| **Términos Pers.** | ❌ No | Cláusulas redactadas específicamente para este cliente |
+| **Título Doc.** | ❌ No | Título alternativo ("Presupuesto Proforma", etc.) para el PDF |
 | **Notas** | ❌ No | Observaciones internas o para el cliente |
 
 > **⚠️ Sobre la Marca:** La marca seleccionada aquí determina qué perfiles de aluminio se usan en el despiece. Si seleccionas "ALUVID", el sistema usará los SKUs de esa marca. Esto es crítico para que los costos sean correctos.
@@ -174,9 +181,12 @@ Haz clic en **"+ Agregar Ítem"**. Se abre un diálogo con este formulario:
 │  Ancho (mm):   [ 1200 ]                             │
 │  Alto (mm):    [  900 ]                             │
 │  Cantidad:     [    1 ]                             │
-│  Tipo de Vidrio: [Vidrio Simple 4mm ▼]    (lista)   │
-│  Acabado/Color:  [Natural ▼]              (lista)   │
-│                                                     │
+│  Acabado/Color:[Natural ▼]                (lista)   │
+│  Tipo de Cierre: [Cierre lateral c/llave] (lista)   │
+│  Tipo de Vidrio: [Laminado 6mm Incoloro]  (lista)   │
+│  Grupo Opciones: [Opciones avanzadas...]            │
+│  Opciones Adic.: [Factor Flete: 5%]                 │
+│  [x] Es despiece manual (ignorar auto)              │
 │  [Cancelar]                        [Guardar y Calcular] │
 └─────────────────────────────────────────────────────┘
 ```
@@ -188,8 +198,12 @@ Haz clic en **"+ Agregar Ítem"**. Se abre un diálogo con este formulario:
 | **Ancho (mm)** | ✅ | Ancho en milímetros. Ej: 1200 = 1.20 metros |
 | **Alto (mm)** | ✅ | Alto en milímetros. Ej: 900 = 90 centímetros |
 | **Cantidad** | ✅ | Cuántas ventanas iguales necesita el cliente |
-| **Tipo de Vidrio** | ✅ | Tipo de vidrio (Simple, Laminado, Templado, etc.) |
 | **Acabado/Color** | ✅ | Color del aluminio (Natural, Champagne, Bronze, etc.) |
+| **Tipo Cierre** | ❌ | Accesorio de cierre o chapa que usa la hoja |
+| **Tipo Vidrio** | ❌ | Variación del vidrio; puede cruzarse con las opciones |
+| **Grupo de Op.** | ❌ | Selección de un template de opciones y variables de la ventana |
+| **Opciones Adic.** | ❌ | Configurado como JSON, sirve p. ej. para el Flete (`factor_flete`) |
+| **Despiece Manual** | — | Marca si quieres despiezarlo 100% manual sin usar las recetas |
 
 > **💡 Tip Ancho/Alto:** Siempre ingresa en milímetros. Una ventana de 1.20m × 0.90m se ingresa como **Ancho: 1200** y **Alto: 900**.
 
@@ -287,6 +301,7 @@ stateDiagram-v2
     Borrador --> Borrador : Editar ítems
     Borrador --> Aprobada : Cliente acepta ✅
     Borrador --> Rechazada : Cliente rechaza ❌
+    Aprobada --> Finalizada : Pedido entregado 🚀
     Aprobada --> Anulada : Se cancela internamente
     Rechazada --> Borrador : Clonar y reactivar
 ```
@@ -300,6 +315,7 @@ stateDiagram-v2
 | Opción | Cuándo usarla |
 |--------|--------------|
 | **✅ Aprobar** | El cliente confirmó que acepta la propuesta |
+| **🚀 Finalizar** | El proyecto está terminado, cancelado en su totalidad y entregado |
 | **❌ Rechazar** | El cliente no acepta (puedes ingresar el motivo) |
 | **🚫 Anular** | Se cancela por razones internas |
 
