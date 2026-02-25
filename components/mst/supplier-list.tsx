@@ -32,6 +32,13 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { SupplierFormCmp } from "./supplier-form"
 
 export function SupplierList() {
@@ -45,6 +52,9 @@ export function SupplierList() {
     const [open, setOpen] = useState(false)
     const [selectedSupplier, setSelectedSupplier] = useState<any>(null)
     const [supplierToDelete, setSupplierToDelete] = useState<any>(null)
+
+    const [page, setPage] = useState(0)
+    const [pageSize, setPageSize] = useState(100)
 
     const deleteMutation = useMutation({
         mutationFn: mstApi.deleteProveedor,
@@ -66,7 +76,10 @@ export function SupplierList() {
         s.razon_social.toLowerCase().includes(search.toLowerCase()) ||
         s.ruc.includes(search) ||
         (s.nombre_comercial && s.nombre_comercial.toLowerCase().includes(search.toLowerCase()))
-    )
+    ) || []
+
+    const totalPages = Math.ceil(filteredSuppliers.length / pageSize)
+    const paginatedSuppliers = filteredSuppliers.slice(page * pageSize, (page + 1) * pageSize)
 
     const handleEdit = (supplier: any) => {
         setSelectedSupplier(supplier)
@@ -89,6 +102,22 @@ export function SupplierList() {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground hidden md:inline">Mostrar:</span>
+                    <Select value={pageSize.toString()} onValueChange={(val) => {
+                        setPageSize(Number(val))
+                        setPage(0)
+                    }}>
+                        <SelectTrigger className="w-[80px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="100">100</SelectItem>
+                            <SelectItem value="500">500</SelectItem>
+                            <SelectItem value="1000">1000</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
                 <Dialog open={open} onOpenChange={setOpen}>
                     <DialogTrigger asChild>
@@ -134,7 +163,7 @@ export function SupplierList() {
                                 </TableCell>
                             </TableRow>
                         )}
-                        {filteredSuppliers?.map((supplier) => (
+                        {paginatedSuppliers?.map((supplier: any) => (
                             <TableRow key={supplier.id_proveedor} className="group hover:bg-muted/30">
                                 <TableCell className="font-medium">
                                     <div className="flex flex-col">
@@ -181,6 +210,34 @@ export function SupplierList() {
                         ))}
                     </TableBody>
                 </Table>
+
+                {/* Pagination Controls */}
+                <div className="flex items-center justify-between px-4 py-4 border-t">
+                    <div className="text-sm text-muted-foreground">
+                        Mostrando {filteredSuppliers.length > 0 ? (page * pageSize) + 1 : 0} a {Math.min((page + 1) * pageSize, filteredSuppliers.length)} de {filteredSuppliers.length}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage(p => Math.max(0, p - 1))}
+                            disabled={page === 0 || isLoading}
+                        >
+                            Anterior
+                        </Button>
+                        <div className="text-sm font-medium">
+                            Página {page + 1} de {totalPages || 1}
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                            disabled={page >= totalPages - 1 || isLoading}
+                        >
+                            Siguiente
+                        </Button>
+                    </div>
+                </div>
             </div>
 
             {/* Diálogo de Confirmación para Eliminar */}

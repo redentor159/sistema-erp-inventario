@@ -28,6 +28,13 @@ import { SalidaDetail } from "./salida-detail"
 import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 export function SalidaList({ active }: { active: boolean }) {
     const [search, setSearch] = useState("")
@@ -40,6 +47,12 @@ export function SalidaList({ active }: { active: boolean }) {
 
     const [open, setOpen] = useState(false)
     const [selectedSalida, setSelectedSalida] = useState<any>(null)
+
+    const [page, setPage] = useState(0)
+    const [pageSize, setPageSize] = useState(100)
+
+    const totalPages = Math.ceil((salidas?.length || 0) / pageSize)
+    const paginatedSalidas = salidas?.slice(page * pageSize, (page + 1) * pageSize)
 
     return (
         <div className="space-y-4">
@@ -59,6 +72,22 @@ export function SalidaList({ active }: { active: boolean }) {
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground hidden md:inline">Mostrar:</span>
+                        <Select value={pageSize.toString()} onValueChange={(val) => {
+                            setPageSize(Number(val))
+                            setPage(0)
+                        }}>
+                            <SelectTrigger className="w-[80px]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="100">100</SelectItem>
+                                <SelectItem value="500">500</SelectItem>
+                                <SelectItem value="1000">1000</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     <Dialog open={open} onOpenChange={setOpen}>
@@ -108,7 +137,7 @@ export function SalidaList({ active }: { active: boolean }) {
                                 </TableCell>
                             </TableRow>
                         )}
-                        {salidas?.map((sal: any) => (
+                        {paginatedSalidas?.map((sal: any) => (
                             <TableRow key={sal.id_salida} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedSalida(sal)}>
                                 <TableCell>{format(new Date(sal.fecha), "dd/MM/yyyy", { locale: es })}</TableCell>
                                 <TableCell>
@@ -138,6 +167,34 @@ export function SalidaList({ active }: { active: boolean }) {
                         ))}
                     </TableBody>
                 </Table>
+
+                {/* Pagination Controls */}
+                <div className="flex items-center justify-between px-4 py-4 border-t">
+                    <div className="text-sm text-muted-foreground">
+                        Mostrando {salidas && salidas.length > 0 ? (page * pageSize) + 1 : 0} a {Math.min((page + 1) * pageSize, salidas?.length || 0)} de {salidas?.length || 0}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage(p => Math.max(0, p - 1))}
+                            disabled={page === 0 || isLoading}
+                        >
+                            Anterior
+                        </Button>
+                        <div className="text-sm font-medium">
+                            Página {page + 1} de {totalPages || 1}
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                            disabled={page >= totalPages - 1 || isLoading}
+                        >
+                            Siguiente
+                        </Button>
+                    </div>
+                </div>
             </div>
         </div>
     )

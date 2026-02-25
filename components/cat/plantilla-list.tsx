@@ -26,6 +26,13 @@ import {
 import { PlantillaForm } from "./plantilla-form"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/use-toast"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 export function PlantillaList() {
     const queryClient = useQueryClient()
@@ -40,6 +47,9 @@ export function PlantillaList() {
     const [editingPlantilla, setEditingPlantilla] = useState<any>(null)
     const [deletingId, setDeletingId] = useState<string | null>(null)
     const [deleteDTOpen, setDeleteDTOpen] = useState(false)
+
+    const [page, setPage] = useState(0)
+    const [pageSize, setPageSize] = useState(100)
 
     const deleteMutation = useMutation({
         mutationFn: catApi.deletePlantilla,
@@ -66,6 +76,9 @@ export function PlantillaList() {
         p.mst_familias?.nombre_familia.toLowerCase().includes(search.toLowerCase())
     ) || []
 
+    const totalPages = Math.ceil(filteredPlantillas.length / pageSize)
+    const paginatedPlantillas = filteredPlantillas.slice(page * pageSize, (page + 1) * pageSize)
+
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center gap-4">
@@ -77,6 +90,22 @@ export function PlantillaList() {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground hidden md:inline">Mostrar:</span>
+                    <Select value={pageSize.toString()} onValueChange={(val) => {
+                        setPageSize(Number(val))
+                        setPage(0)
+                    }}>
+                        <SelectTrigger className="w-[80px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="100">100</SelectItem>
+                            <SelectItem value="500">500</SelectItem>
+                            <SelectItem value="1000">1000</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
                 <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                     <DialogTrigger asChild>
@@ -125,7 +154,7 @@ export function PlantillaList() {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            filteredPlantillas.map((plantilla: any) => (
+                            paginatedPlantillas.map((plantilla: any) => (
                                 <TableRow key={plantilla.id_plantilla}>
                                     <TableCell className="font-mono text-xs font-medium">{plantilla.id_plantilla}</TableCell>
                                     <TableCell className="font-medium">{plantilla.nombre_generico}</TableCell>
@@ -169,6 +198,34 @@ export function PlantillaList() {
                         )}
                     </TableBody>
                 </Table>
+
+                {/* Pagination Controls */}
+                <div className="flex items-center justify-between px-4 py-4 border-t">
+                    <div className="text-sm text-muted-foreground">
+                        Mostrando {filteredPlantillas.length > 0 ? (page * pageSize) + 1 : 0} a {Math.min((page + 1) * pageSize, filteredPlantillas.length)} de {filteredPlantillas.length}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage(p => Math.max(0, p - 1))}
+                            disabled={page === 0 || isLoading}
+                        >
+                            Anterior
+                        </Button>
+                        <div className="text-sm font-medium">
+                            Página {page + 1} de {totalPages || 1}
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                            disabled={page >= totalPages - 1 || isLoading}
+                        >
+                            Siguiente
+                        </Button>
+                    </div>
+                </div>
             </div>
 
             {/* Edit Dialog */}

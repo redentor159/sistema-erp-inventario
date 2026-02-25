@@ -12,12 +12,25 @@ import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
 import { CotizacionListItem } from "@/types/cotizaciones"
 import { useToastHelper } from "@/lib/hooks/useToastHelper"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 export function CotizacionesList() {
     const router = useRouter()
     const toast = useToastHelper()
     const [data, setData] = useState<CotizacionListItem[]>([])
     const [loading, setLoading] = useState(true)
+
+    const [page, setPage] = useState(0)
+    const [pageSize, setPageSize] = useState(100)
+
+    const totalPages = Math.ceil(data.length / pageSize)
+    const paginatedData = data.slice(page * pageSize, (page + 1) * pageSize)
 
     useEffect(() => {
         loadData()
@@ -85,9 +98,27 @@ export function CotizacionesList() {
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Listado Reciente</CardTitle>
-                <Button onClick={handleCreate}>
-                    <Plus className="mr-2 h-4 w-4" /> Nueva Cotización
-                </Button>
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground hidden md:inline">Mostrar:</span>
+                        <Select value={pageSize.toString()} onValueChange={(val) => {
+                            setPageSize(Number(val))
+                            setPage(0)
+                        }}>
+                            <SelectTrigger className="w-[80px]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="100">100</SelectItem>
+                                <SelectItem value="500">500</SelectItem>
+                                <SelectItem value="1000">1000</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <Button onClick={handleCreate}>
+                        <Plus className="mr-2 h-4 w-4" /> Nueva Cotización
+                    </Button>
+                </div>
             </CardHeader>
             <CardContent>
                 <div className="rounded-md border">
@@ -103,7 +134,7 @@ export function CotizacionesList() {
                             </tr>
                         </thead>
                         <tbody>
-                            {data.map((row) => (
+                            {paginatedData.map((row) => (
                                 <tr key={row.id_cotizacion} className="border-b hover:bg-muted/50 cursor-pointer" onClick={() => router.push(`/cotizaciones/detalle?id=${row.id_cotizacion}`)}>
                                     <td className="p-3 font-medium">{row.nombre_proyecto || "Sin nombre"}</td>
                                     <td className="p-3 text-muted-foreground">{row.mst_clientes?.nombre_completo || "---"}</td>
@@ -138,6 +169,34 @@ export function CotizacionesList() {
                             )}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Pagination Controls */}
+                <div className="flex items-center justify-between pt-4">
+                    <div className="text-sm text-muted-foreground">
+                        Mostrando {data.length > 0 ? (page * pageSize) + 1 : 0} a {Math.min((page + 1) * pageSize, data.length)} de {data.length}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage(p => Math.max(0, p - 1))}
+                            disabled={page === 0 || loading}
+                        >
+                            Anterior
+                        </Button>
+                        <div className="text-sm font-medium">
+                            Página {page + 1} de {totalPages || 1}
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                            disabled={page >= totalPages - 1 || loading}
+                        >
+                            Siguiente
+                        </Button>
+                    </div>
                 </div>
             </CardContent>
         </Card>

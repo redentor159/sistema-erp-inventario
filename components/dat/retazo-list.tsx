@@ -29,6 +29,8 @@ import { RetazoForm } from "./retazo-form"
 export function RetazosList() {
     const [filterEstado, setFilterEstado] = useState("TODOS")
     const [isFormOpen, setIsFormOpen] = useState(false)
+    const [page, setPage] = useState(0)
+    const [pageSize, setPageSize] = useState(100)
     const queryClient = useQueryClient()
 
     const { data: retazos, isLoading } = useQuery({
@@ -51,6 +53,9 @@ export function RetazosList() {
         }
     }
 
+    const totalPages = Math.ceil((retazos?.length || 0) / pageSize)
+    const paginatedRetazos = retazos?.slice(page * pageSize, (page + 1) * pageSize)
+
     return (
         <div className="space-y-4">
             <div className="flex flex-col md:flex-row justify-between gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900/50 items-center">
@@ -71,6 +76,23 @@ export function RetazosList() {
                             <SelectItem value="USADO">Usados</SelectItem>
                         </SelectContent>
                     </Select>
+
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground hidden md:inline">Mostrar:</span>
+                        <Select value={pageSize.toString()} onValueChange={(val) => {
+                            setPageSize(Number(val))
+                            setPage(0)
+                        }}>
+                            <SelectTrigger className="w-[80px]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="100">100</SelectItem>
+                                <SelectItem value="500">500</SelectItem>
+                                <SelectItem value="1000">1000</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
 
                     <Button onClick={() => setIsFormOpen(true)}>
                         + Nuevo Retazo
@@ -98,7 +120,7 @@ export function RetazosList() {
                                 </TableCell>
                             </TableRow>
                         )}
-                        {retazos?.map((item) => (
+                        {paginatedRetazos?.map((item) => (
                             <TableRow key={item.id_retazo}>
                                 <TableCell className="text-xs text-muted-foreground">
                                     {format(new Date(item.fecha_creacion), "dd/MM/yy", { locale: es })}
@@ -149,6 +171,34 @@ export function RetazosList() {
                         ))}
                     </TableBody>
                 </Table>
+
+                {/* Pagination Controls */}
+                <div className="flex items-center justify-between px-4 py-4 border-t">
+                    <div className="text-sm text-muted-foreground">
+                        Mostrando {retazos && retazos.length > 0 ? (page * pageSize) + 1 : 0} a {Math.min((page + 1) * pageSize, retazos?.length || 0)} de {retazos?.length || 0}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage(p => Math.max(0, p - 1))}
+                            disabled={page === 0 || isLoading}
+                        >
+                            Anterior
+                        </Button>
+                        <div className="text-sm font-medium">
+                            Página {page + 1} de {totalPages || 1}
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                            disabled={page >= totalPages - 1 || isLoading}
+                        >
+                            Siguiente
+                        </Button>
+                    </div>
+                </div>
             </div>
 
             <RetazoForm open={isFormOpen} onOpenChange={setIsFormOpen} />
