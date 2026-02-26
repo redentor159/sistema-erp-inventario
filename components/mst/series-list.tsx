@@ -122,8 +122,8 @@ export function SeriesList() {
             </div>
 
             <div className="border rounded-md bg-card shadow-sm overflow-hidden pointer-events-auto">
-                <div className="overflow-auto hidden md:block">
-                    <Table>
+                <div className="overflow-x-auto hidden md:block">
+                    <Table className="whitespace-nowrap">
                         <TableHeader className="bg-muted/50">
                             <TableRow>
                                 <TableHead className="font-semibold">ID Sistema</TableHead>

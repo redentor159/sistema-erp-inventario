@@ -12,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
 import { CotizacionListItem } from "@/types/cotizaciones";
 import { useToastHelper } from "@/lib/hooks/useToastHelper";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -25,12 +27,21 @@ export function CotizacionesList() {
   const toast = useToastHelper();
   const [data, setData] = useState<CotizacionListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(100);
 
-  const totalPages = Math.ceil(data.length / pageSize);
-  const paginatedData = data.slice(page * pageSize, (page + 1) * pageSize);
+  const filteredData = data.filter((row) => {
+    if (!searchQuery) return true;
+    const lowerQuery = searchQuery.toLowerCase();
+    const proyecto = (row.nombre_proyecto || "").toLowerCase();
+    const cliente = (row.mst_clientes?.nombre_completo || "").toLowerCase();
+    return proyecto.includes(lowerQuery) || cliente.includes(lowerQuery);
+  });
+
+  const totalPages = Math.ceil(filteredData.length / pageSize);
+  const paginatedData = filteredData.slice(page * pageSize, (page + 1) * pageSize);
 
   useEffect(() => {
     loadData();
@@ -110,39 +121,50 @@ export function CotizacionesList() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <CardTitle>Listado Reciente</CardTitle>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground hidden md:inline">
-              Mostrar:
-            </span>
-            <Select
-              value={pageSize.toString()}
-              onValueChange={(val) => {
-                setPageSize(Number(val));
-                setPage(0);
-              }}
-            >
-              <SelectTrigger className="w-[80px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="100">100</SelectItem>
-                <SelectItem value="500">500</SelectItem>
-                <SelectItem value="1000">1000</SelectItem>
-              </SelectContent>
-            </Select>
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar proyecto o cliente..."
+              className="pl-9 bg-background"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-          <Button onClick={handleCreate}>
-            <Plus className="mr-2 h-4 w-4" /> Nueva Cotización
-          </Button>
+          <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground hidden lg:inline">
+                Mostrar:
+              </span>
+              <Select
+                value={pageSize.toString()}
+                onValueChange={(val) => {
+                  setPageSize(Number(val));
+                  setPage(0);
+                }}
+              >
+                <SelectTrigger className="w-[80px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="100">100</SelectItem>
+                  <SelectItem value="500">500</SelectItem>
+                  <SelectItem value="1000">1000</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button onClick={handleCreate} className="shrink-0">
+              <Plus className="mr-2 h-4 w-4" /> Nueva Cotización
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
         {/* Desktop Table View */}
-        <div className="hidden md:block rounded-md border">
-          <table className="w-full text-sm">
+        <div className="hidden md:block rounded-md border overflow-x-auto">
+          <table className="w-full text-sm whitespace-nowrap">
             <thead className="bg-muted/50">
               <tr className="border-b text-left">
                 <th className="p-3 font-medium">Proyecto</th>

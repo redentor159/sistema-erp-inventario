@@ -163,8 +163,8 @@ export function SupplierList() {
 
       <div className="border rounded-md bg-card shadow-sm overflow-hidden pointer-events-auto">
         {/* Desktop Table View */}
-        <div className="hidden md:block overflow-auto">
-          <Table>
+        <div className="hidden md:block overflow-x-auto">
+          <Table className="whitespace-nowrap">
             <TableHeader className="bg-muted/50">
               <TableRow>
                 <TableHead className="font-semibold">RUC</TableHead>

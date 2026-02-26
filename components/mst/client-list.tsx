@@ -159,8 +159,8 @@ export function ClientList() {
 
       <div className="border rounded-md bg-card shadow-sm overflow-hidden pointer-events-auto">
         {/* Desktop Table View */}
-        <div className="hidden md:block overflow-auto">
-          <Table>
+        <div className="hidden md:block overflow-x-auto">
+          <Table className="whitespace-nowrap">
             <TableHeader className="bg-muted/50">
               <TableRow>
                 <TableHead className="font-semibold">RUC</TableHead>
@@ -209,11 +209,10 @@ export function ClientList() {
                   <TableCell className="text-center">
                     <div className="flex justify-center">
                       <span
-                        className={`text-xs font-medium px-2 py-0.5 rounded-full w-fit ${
-                          client.tipo_cliente === "EMPRESA"
+                        className={`text-xs font-medium px-2 py-0.5 rounded-full w-fit ${client.tipo_cliente === "EMPRESA"
                             ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
                             : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                        }`}
+                          }`}
                       >
                         {client.tipo_cliente}
                       </span>

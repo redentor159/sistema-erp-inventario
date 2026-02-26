@@ -7,15 +7,17 @@ import { PlantillaList } from "@/components/cat/plantilla-list";
 
 export default function CatalogPage() {
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col md:flex-row md:items-baseline gap-2 md:gap-4 border-b pb-2">
-        <h2 className="text-xl font-bold tracking-tight">
-          Catálogo de Productos
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Gestione las plantillas de productos terminados (ventanas, puertas) y
-          los SKUs de materiales.
-        </p>
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+      <div className="flex items-center justify-between space-y-2">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-primary">
+            Catálogo de Productos
+          </h2>
+          <p className="text-muted-foreground">
+            Gestione las plantillas de productos terminados (ventanas, puertas) y
+            los SKUs de materiales.
+          </p>
+        </div>
       </div>
 
       <Tabs defaultValue="items" className="space-y-4">
