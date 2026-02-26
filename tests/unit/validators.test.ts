@@ -46,7 +46,7 @@ describe('Validadores de Transacciones (trx.ts)', () => {
             })
             expect(result.success).toBe(false)
             if (!result.success && 'errors' in result.error) {
-                expect(result.error.errors[0].message).toBe('Proveedor es requerido para Compras')
+                expect((result.error as any).errors[0].message).toBe('Proveedor es requerido para Compras')
             }
         })
 
@@ -79,7 +79,7 @@ describe('Validadores de Transacciones (trx.ts)', () => {
             })
             expect(result.success).toBe(false)
             if (!result.success && 'errors' in result.error) {
-                expect(result.error.errors[0].message).toBe('Cliente es requerido para Ventas')
+                expect((result.error as any).errors[0].message).toBe('Cliente es requerido para Ventas')
             }
         })
     })

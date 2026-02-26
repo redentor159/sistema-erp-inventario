@@ -12,6 +12,14 @@ test.describe('Autenticación', () => {
     });
 
     test('debe mostrar error con credenciales incorrectas', async ({ page }) => {
+        // Mockear la respuesta de Supabase auth para simular el error sin depender de la red/credenciales
+        await page.route('**/auth/v1/token?grant_type=password', async route => {
+            await route.fulfill({
+                status: 400,
+                json: { error: "invalid_grant", error_description: "Invalid login credentials" }
+            });
+        });
+
         await page.goto('/login');
 
         await page.fill('input[type="email"]', 'test_invalido@vidrieria.com');
