@@ -15,17 +15,37 @@ export default function ResetPasswordPage() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 
-    // Opcional: Verificar que el usuario tenga un "Recovery Token" activo
-    // Supabase en la versión con PKCE loguea al usuario silenciosamente al intercambiar el código
+    // En modo SPA/Static Export, Supabase pondrá el recovery token en el hash de la URL (#access_token=...)
+    // y lo procesará automáticamente, disparando un evento 'PASSWORD_RECOVERY'.
     useEffect(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            (event, session) => {
+                if (event === "PASSWORD_RECOVERY") {
+                    // El token fue procesado, estamos listos para mostrar el formulario
+                    console.log("Modo recovery activado");
+                } else if (event === "SIGNED_OUT") {
+                    router.push("/login?error=Invalid_or_expired_recovery_link");
+                }
+            }
+        );
+
+        // Enfoque clásico para asegurarse por si acaso (sin ser tan estricto al inicio por velocidad en re-render)
         const checkSession = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
-                // Redirigir al login si accedió a esta vista directamente sin un link de reseteo o la sesión ya caducó
-                router.push("/login?error=Invalid_or_expired_recovery_link");
+                // Como NextJS hidratará 2 veces, daremos un margen de .5s antes de botar al usuario
+                setTimeout(async () => {
+                    const { data: { session: delayedSession } } = await supabase.auth.getSession();
+                    if (!delayedSession) router.push("/login?error=Invalid_or_expired_recovery_link");
+                }, 500);
             }
         };
+
         checkSession();
+
+        return () => {
+            subscription.unsubscribe();
+        };
     }, [router, supabase.auth]);
 
     async function handleResetPassword(e: React.FormEvent) {
