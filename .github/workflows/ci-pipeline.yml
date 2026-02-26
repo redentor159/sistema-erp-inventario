@@ -28,6 +28,9 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Simulacro de Compilación Estática (Build)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: npm run build
 
       - name: Pruebas Unitarias (Lógica Matemática)
