@@ -1,5 +1,6 @@
 
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
+import { MobileSidebar } from "@/components/dashboard/mobile-sidebar"
 import { AuthGuard } from "@/components/auth-guard"
 
 export default function DashboardLayout({
@@ -14,8 +15,13 @@ export default function DashboardLayout({
                 <AppSidebar />
 
                 {/* Main Content */}
-                <main className="flex-1 overflow-y-auto">
-                    <div className="p-8">
+                <main className="flex-1 flex flex-col overflow-y-auto">
+                    {/* Mobile Header */}
+                    <header className="md:hidden flex items-center h-14 px-4 border-b bg-white dark:bg-gray-800 shrink-0">
+                        <MobileSidebar />
+                        <span className="ml-3 font-bold text-lg tracking-tight">ERP Yahiro</span>
+                    </header>
+                    <div className="p-4 md:p-8 flex-1">
                         {children}
                     </div>
                 </main>

@@ -42,7 +42,7 @@ export async function updateSession(request: NextRequest) {
     // Redirigir root o login al dashboard si ya hay sesión
     if (user && (isLoginPage || request.nextUrl.pathname === '/')) {
         const url = request.nextUrl.clone()
-        url.pathname = '/cotizaciones'
+        url.pathname = '/dashboard'
         return NextResponse.redirect(url)
     }
 
