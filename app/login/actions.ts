@@ -1,51 +1,51 @@
-'use server'
+"use server";
 
-import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 
 export async function login(formData: FormData) {
-    const supabase = await createClient()
+  const supabase = await createClient();
 
-    // type-casting here for convenience
-    // in practice, you should validate your inputs
-    const data = {
-        email: formData.get('email') as string,
-        password: formData.get('password') as string,
-    }
+  // type-casting here for convenience
+  // in practice, you should validate your inputs
+  const data = {
+    email: formData.get("email") as string,
+    password: formData.get("password") as string,
+  };
 
-    const { error } = await supabase.auth.signInWithPassword(data)
+  const { error } = await supabase.auth.signInWithPassword(data);
 
-    if (error) {
-        redirect('/login?error=Invalid_Credentials')
-    }
+  if (error) {
+    redirect("/login?error=Invalid_Credentials");
+  }
 
-    revalidatePath('/', 'layout')
-    redirect('/cotizaciones') // or your main dashboard route
+  revalidatePath("/", "layout");
+  redirect("/cotizaciones"); // or your main dashboard route
 }
 
 export async function signup(formData: FormData) {
-    const supabase = await createClient()
+  const supabase = await createClient();
 
-    // type-casting here for convenience
-    // in practice, you should validate your inputs
-    const data = {
-        email: formData.get('email') as string,
-        password: formData.get('password') as string,
-    }
+  // type-casting here for convenience
+  // in practice, you should validate your inputs
+  const data = {
+    email: formData.get("email") as string,
+    password: formData.get("password") as string,
+  };
 
-    const { error } = await supabase.auth.signUp(data)
+  const { error } = await supabase.auth.signUp(data);
 
-    if (error) {
-        redirect('/login?error=Could_not_create_user')
-    }
+  if (error) {
+    redirect("/login?error=Could_not_create_user");
+  }
 
-    revalidatePath('/', 'layout')
-    redirect('/cotizaciones') // or your main dashboard route
+  revalidatePath("/", "layout");
+  redirect("/cotizaciones"); // or your main dashboard route
 }
 
 export async function logout() {
-    const supabase = await createClient()
-    await supabase.auth.signOut()
-    redirect('/login')
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  redirect("/login");
 }
