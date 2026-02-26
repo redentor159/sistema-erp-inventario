@@ -57,7 +57,15 @@ export function WorkOrderDialog({
     additional_desc: "",
   });
 
-  useEffect(() => {
+  const [prevOrder, setPrevOrder] = useState(order);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  const [prevInitialData, setPrevInitialData] = useState(initialData);
+
+  if (order !== prevOrder || isOpen !== prevIsOpen || initialData !== prevInitialData) {
+    setPrevOrder(order);
+    setPrevIsOpen(isOpen);
+    setPrevInitialData(initialData);
+
     if (order) {
       setFormData({ ...order });
     } else if (initialData) {
@@ -88,7 +96,7 @@ export function WorkOrderDialog({
         additional_desc: "",
       });
     }
-  }, [order, isOpen, initialData]);
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

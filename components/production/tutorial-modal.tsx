@@ -250,6 +250,14 @@ export function TutorialModal({
     [safeSampleCard],
   );
 
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (!isOpen) {
+      setModalStyle((prev) => ({ ...prev, visibility: "hidden" }));
+    }
+  }
+
   useEffect(() => {
     if (isOpen) {
       const currentStep = steps[step];
@@ -257,29 +265,24 @@ export function TutorialModal({
       // Manage modal states based on the current step
       const shouldOpenStats = currentStep.modal === "statistics";
       const shouldOpenExport = currentStep.modal === "export";
-      // Settings logic if needed
 
       setStatisticsModalOpen(shouldOpenStats);
       setExportModalOpen(shouldOpenExport);
-      // setSettingsModalOpen(shouldOpenSettings);
 
-      // Hide modal before recalculating position to measure it correctly
-      setModalStyle((prev) => ({ ...prev, visibility: "hidden" }));
+      const element = currentStep.targetId
+        ? document.getElementById(currentStep.targetId)
+        : null;
+
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          inline: "center",
+        });
+      }
 
       // Use a delay to allow modals to open/close and elements to become visible
       const timer = setTimeout(() => {
-        const element = currentStep.targetId
-          ? document.getElementById(currentStep.targetId)
-          : null;
-
-        if (element) {
-          element.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-            inline: "center",
-          });
-        }
-
         // Another delay to let scrolling finish
         const positionTimer = setTimeout(() => {
           const targetRect = element?.getBoundingClientRect() ?? null;
@@ -329,9 +332,9 @@ export function TutorialModal({
                 pos.top >= viewportPadding &&
                 pos.left >= viewportPadding &&
                 pos.top + modalRect.height <=
-                  window.innerHeight - viewportPadding &&
+                window.innerHeight - viewportPadding &&
                 pos.left + modalRect.width <=
-                  window.innerWidth - viewportPadding
+                window.innerWidth - viewportPadding
               ) {
                 finalPos = pos;
                 break;
@@ -379,7 +382,7 @@ export function TutorialModal({
         }, 400); // Wait for scroll
 
         return () => clearTimeout(positionTimer);
-      }, 350);
+      }, 50);
 
       return () => clearTimeout(timer);
     }

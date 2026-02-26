@@ -874,7 +874,10 @@ function AccesorioRow({
 
   // Load product info (price) from server when we have a SKU
   const [catalogProduct, setCatalogProduct] = useState<any>(null);
-  useEffect(() => {
+  const [prevCurrentSku, setPrevCurrentSku] = useState(currentSku);
+
+  if (currentSku !== prevCurrentSku) {
+    setPrevCurrentSku(currentSku);
     if (currentSku) {
       recetasApi
         .getProductoPorSku(currentSku)
@@ -885,7 +888,7 @@ function AccesorioRow({
     } else {
       setCatalogProduct(null);
     }
-  }, [currentSku]);
+  }
 
   // When user selects a new SKU from catalog
   function handleSkuSelect(sku: string, producto: any) {

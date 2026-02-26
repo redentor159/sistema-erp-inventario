@@ -105,7 +105,7 @@ export function RetazoForm({ open, onOpenChange }: RetazoFormProps) {
   const onSubmit = (data: RetazoFormValues) => {
     mutation.mutate({
       ...data,
-      // @ts-ignore
+      // @ts-expect-error - Expected error due to auto-generated ids
       id_retazo: crypto.randomUUID(),
       ubicacion: data.ubicacion || null,
       orden_trabajo: data.orden_trabajo || null,
@@ -189,10 +189,10 @@ export function RetazoForm({ open, onOpenChange }: RetazoFormProps) {
                               .toLowerCase()
                               .includes(searchTerm.toLowerCase()),
                         ).length === 0 && (
-                          <div className="p-4 text-center text-muted-foreground text-sm">
-                            No se encontraron perfiles
-                          </div>
-                        )}
+                            <div className="p-4 text-center text-muted-foreground text-sm">
+                              No se encontraron perfiles
+                            </div>
+                          )}
                       </div>
                     </SelectContent>
                   </Select>

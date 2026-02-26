@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   LayoutDashboard,
   Settings,
-  User,
   Box,
   Users,
   ShoppingCart,
@@ -16,23 +15,25 @@ import {
   FileSpreadsheet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/dashboard/user-nav";
 import { HelpPanel } from "@/components/dashboard/help-panel";
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(pathname === "/production");
+  const [prevPathname, setPrevPathname] = useState(pathname);
 
   // Auto-collapse on production page
-  useEffect(() => {
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     if (pathname === "/production") {
       setCollapsed(true);
     } else {
       setCollapsed(false);
     }
-  }, [pathname]);
+  }
 
   return (
     <aside

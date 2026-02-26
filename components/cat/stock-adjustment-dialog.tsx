@@ -63,13 +63,13 @@ export function StockAdjustmentDialog({
           tipo_entrada: "AJUSTE_POSITIVO",
           moneda: "PEN",
           tipo_cambio: 1,
-          // @ts-ignore
           detalles: [
             {
               id_sku: product.id_sku,
               cantidad: absDiff,
-              costo_unitario: costOrPrice,
-            },
+              costo_unitario:
+                product.costo_estandar || product.costo_mercado_unit || 0,
+            } as any,
           ],
           comentarios: `Ajuste Inventario. Stock Sistema: ${currentStock}. Físico: ${count}. ${comments}`,
           estado: "INGRESADO",
@@ -78,13 +78,12 @@ export function StockAdjustmentDialog({
         // Salida
         await trxApi.createSalida({
           tipo_salida: "AJUSTE_NEGATIVO",
-          // @ts-ignore
           detalles: [
             {
               id_sku: product.id_sku,
               cantidad: absDiff,
               precio_unitario: costOrPrice,
-            },
+            } as any,
           ],
           comentario: `Ajuste Inventario. Stock Sistema: ${currentStock}. Físico: ${count}. ${comments}`,
           estado: "CONFIRMADO",
