@@ -38,11 +38,17 @@ export function SettingsModal({
   const [companyName, setCompanyName] = useState(currentCompanyName);
   const [wipLimits, setWipLimits] = useState(currentWipLimits);
 
-  // Sync state when props change
-  useEffect(() => {
+  const [prevCompanyName, setPrevCompanyName] = useState(currentCompanyName);
+  const [prevWipLimits, setPrevWipLimits] = useState(currentWipLimits);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+
+  if (currentCompanyName !== prevCompanyName || currentWipLimits !== prevWipLimits || isOpen !== prevIsOpen) {
+    setPrevCompanyName(currentCompanyName);
+    setPrevWipLimits(currentWipLimits);
+    setPrevIsOpen(isOpen);
     setCompanyName(currentCompanyName);
     setWipLimits(currentWipLimits);
-  }, [currentCompanyName, currentWipLimits, isOpen]);
+  }
 
   const handleSave = () => {
     onSave({

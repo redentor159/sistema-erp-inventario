@@ -81,12 +81,17 @@ export function CotizacionIngenieriaManualDialog({
     enabled: isOpen,
   });
 
+  const [prevServerItems, setPrevServerItems] = useState<any>(null);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+
   // Sync state when data loads
-  useEffect(() => {
+  if (serverItems !== prevServerItems || isOpen !== prevIsOpen) {
+    setPrevServerItems(serverItems);
+    setPrevIsOpen(isOpen);
     if (serverItems && !isDirty) {
       setLocalItems(JSON.parse(JSON.stringify(serverItems)));
     }
-  }, [serverItems, isOpen]);
+  }
 
   // Update mutations
   const updateMutation = useMutation({
@@ -350,7 +355,7 @@ export function CotizacionIngenieriaManualDialog({
                       <TableCell className="text-right font-medium">
                         {formatCurrency(
                           (item.costo_total_item || 0) *
-                            (item.cantidad_calculada || 1),
+                          (item.cantidad_calculada || 1),
                         )}
                         {/* Note: In DB structure cost_total_item is usually UNIT cost? 
                                                 Wait, check view.

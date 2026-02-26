@@ -30,13 +30,16 @@ export function MarketCostDialog({
 }: MarketCostDialogProps) {
   const [costo, setCosto] = useState("");
   const queryClient = useQueryClient();
+  const [prevOpen, setPrevOpen] = useState(open);
+  const [prevProduct, setPrevProduct] = useState(product);
 
-  useEffect(() => {
+  if (open !== prevOpen || product !== prevProduct) {
+    setPrevOpen(open);
+    setPrevProduct(product);
     if (open && product) {
-      // Prefer costo_estandar (Market Cost) if available, otherwise fallback to existing or 0
       setCosto(product.costo_estandar?.toString() || "0");
     }
-  }, [open, product]);
+  }
 
   const updateMutation = useMutation({
     mutationFn: async () => {

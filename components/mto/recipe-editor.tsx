@@ -992,11 +992,13 @@ function InlineFormula({
 }) {
   const [local, setLocal] = useState(value);
   const [dirty, setDirty] = useState(false);
+  const [prevValue, setPrevValue] = useState(value);
 
-  useEffect(() => {
+  if (value !== prevValue) {
+    setPrevValue(value);
     setLocal(value);
     setDirty(false);
-  }, [value]);
+  }
 
   const validation = useMemo(
     () => (local ? validateFormula(local) : null),
@@ -1048,10 +1050,13 @@ function InlineText({
 }) {
   const [local, setLocal] = useState(value);
   const [dirty, setDirty] = useState(false);
-  useEffect(() => {
+  const [prevValue, setPrevValue] = useState(value);
+
+  if (value !== prevValue) {
+    setPrevValue(value);
     setLocal(value);
     setDirty(false);
-  }, [value]);
+  }
   function commit() {
     if (dirty && local !== value && local.trim()) {
       onSave(local.trim());
@@ -1085,10 +1090,13 @@ function InlineNumber({
 }) {
   const [local, setLocal] = useState(String(value || ""));
   const [dirty, setDirty] = useState(false);
-  useEffect(() => {
+  const [prevValue, setPrevValue] = useState(value);
+
+  if (value !== prevValue) {
+    setPrevValue(value);
     setLocal(String(value || ""));
     setDirty(false);
-  }, [value]);
+  }
   function commit() {
     const n = parseFloat(local) || 0;
     if (dirty && n !== value) {
@@ -1156,9 +1164,11 @@ function AddDialog({
     precio: "",
   });
   const [saving, setSaving] = useState(false);
+  const [prevOpen, setPrevOpen] = useState(open);
 
-  useEffect(() => {
-    if (open)
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) {
       setForm({
         nombre: "",
         plantilla: "",
@@ -1168,7 +1178,8 @@ function AddDialog({
         angulo: 90,
         precio: "",
       });
-  }, [open]);
+    }
+  }
 
   function up(k: string, v: any) {
     setForm((p) => ({ ...p, [k]: v }));
