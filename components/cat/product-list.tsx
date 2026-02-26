@@ -316,7 +316,8 @@ export function ProductList({ active }: { active: boolean }) {
             </div >
 
             <div className="border rounded-md bg-white dark:bg-gray-800 flex flex-col">
-                <div className="flex-1 overflow-auto">
+                {/* Desktop Table View */}
+                <div className="hidden md:block flex-1 overflow-auto">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -470,6 +471,67 @@ export function ProductList({ active }: { active: boolean }) {
                             )}
                         </TableBody>
                     </Table>
+                </div>
+
+                {/* Mobile Cards View */}
+                <div className="md:hidden flex flex-col divide-y divide-gray-100 dark:divide-gray-800">
+                    {products.length === 0 ? (
+                        <div className="p-8 text-center text-muted-foreground">No se encontraron productos.</div>
+                    ) : (
+                        products.map((product: any) => {
+                            const stock = Number(product.stock_actual || 0)
+                            const costoMercado = pendingChanges[product.id_sku] !== undefined
+                                ? pendingChanges[product.id_sku]
+                                : Number(product.costo_mercado_unit || 0)
+                            const moneda = product.moneda_reposicion === 'USD' ? 'USD' : 'PEN'
+                            const isNegative = stock < 0
+                            const isPositive = stock > 0
+                            const stockClass = isNegative ? "text-red-700 font-bold bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded" : (isPositive ? "text-green-700 font-bold bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded" : "text-gray-600 bg-gray-50 dark:bg-gray-800 px-2 py-0.5 rounded")
+
+                            return (
+                                <div key={product.id_sku} className="p-4 flex flex-col gap-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                    <div className="flex justify-between items-start gap-3">
+                                        <div className="flex-1">
+                                            <h3 className="font-bold text-sm text-gray-900 dark:text-gray-100 leading-tight">{product.nombre_completo}</h3>
+                                            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                                                <Badge variant="outline" className="text-[10px] uppercase font-mono bg-white dark:bg-gray-900">{product.id_sku}</Badge>
+                                                <span className="text-[10px] text-muted-foreground truncate">{product.nombre_familia}</span>
+                                                <span className="text-[10px] text-muted-foreground truncate">• {product.nombre_marca}</span>
+                                            </div>
+                                        </div>
+                                        <div className="text-right flex-shrink-0 flex flex-col items-end gap-1">
+                                            <span className={`text-base flex items-baseline gap-1 ${stockClass}`}>
+                                                {stock.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
+                                                <span className="text-[9px] uppercase font-medium bg-transparent px-0">{product.unidad_medida}</span>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between items-center py-2 bg-slate-50 dark:bg-slate-900/50 rounded-md px-3 border border-slate-100 dark:border-slate-800">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">Acabado</span>
+                                            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{product.nombre_acabado || '-'}</span>
+                                        </div>
+                                        <div className="flex flex-col text-right">
+                                            <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">Costo Merc.</span>
+                                            <span className="text-xs font-mono font-bold text-slate-900 dark:text-slate-100">
+                                                {isEditMode ? "--" : costoMercado.toLocaleString('es-PE', { style: 'currency', currency: moneda })}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-1">
+                                        <ProductDetailSheet product={product}>
+                                            <Button variant="outline" size="sm" className="w-full text-xs font-medium h-9 text-blue-600 border-blue-200 hover:text-blue-700 hover:bg-blue-50 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-900 dark:text-blue-400">
+                                                <Search className="h-3.5 w-3.5 mr-2" />
+                                                Ficha Técnica y Detalle
+                                            </Button>
+                                        </ProductDetailSheet>
+                                    </div>
+                                </div>
+                            )
+                        })
+                    )}
                 </div>
 
                 {/* Pagination Controls */}

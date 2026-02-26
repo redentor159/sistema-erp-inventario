@@ -11,6 +11,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Plus, Search, Edit, Trash2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
@@ -143,70 +144,118 @@ export function ClientList() {
             </div>
 
             <div className="border rounded-md bg-card shadow-sm overflow-hidden pointer-events-auto">
-                <Table>
-                    <TableHeader className="bg-muted/50">
-                        <TableRow>
-                            <TableHead className="font-semibold">RUC</TableHead>
-                            <TableHead className="font-semibold">Nombre / Razón Social</TableHead>
-                            <TableHead className="font-semibold text-center w-[120px]">Tipo</TableHead>
-                            <TableHead className="font-semibold">Contacto</TableHead>
-                            <TableHead className="font-semibold">Dirección</TableHead>
-                            <TableHead className="text-right font-semibold w-[100px]">Acciones</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {filteredClients?.length === 0 && (
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-auto">
+                    <Table>
+                        <TableHeader className="bg-muted/50">
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
-                                    No se encontraron clientes.
-                                </TableCell>
+                                <TableHead className="font-semibold">RUC</TableHead>
+                                <TableHead className="font-semibold">Nombre / Razón Social</TableHead>
+                                <TableHead className="font-semibold text-center w-[120px]">Tipo</TableHead>
+                                <TableHead className="font-semibold">Contacto</TableHead>
+                                <TableHead className="font-semibold">Dirección</TableHead>
+                                <TableHead className="text-right font-semibold w-[100px]">Acciones</TableHead>
                             </TableRow>
-                        )}
-                        {paginatedClients?.map((client: any) => (
-                            <TableRow key={client.id_cliente} className="group hover:bg-muted/30">
-                                <TableCell className="font-medium">
-                                    <div className="flex flex-col">
-                                        <span>{client.ruc}</span>
-                                        <span className="text-[10px] text-muted-foreground">{client.id_cliente}</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <span className="font-medium text-primary">{client.nombre_completo}</span>
-                                </TableCell>
-                                <TableCell className="text-center">
-                                    <div className="flex justify-center">
-                                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full w-fit ${client.tipo_cliente === 'EMPRESA'
-                                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                                            : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                            }`}>
+                        </TableHeader>
+                        <TableBody>
+                            {filteredClients?.length === 0 && (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
+                                        No se encontraron clientes.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                            {paginatedClients?.map((client: any) => (
+                                <TableRow key={client.id_cliente} className="group hover:bg-muted/30">
+                                    <TableCell className="font-medium">
+                                        <div className="flex flex-col">
+                                            <span>{client.ruc}</span>
+                                            <span className="text-[10px] text-muted-foreground">{client.id_cliente}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span className="font-medium text-primary">{client.nombre_completo}</span>
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        <div className="flex justify-center">
+                                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full w-fit ${client.tipo_cliente === 'EMPRESA'
+                                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                                : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                                }`}>
+                                                {client.tipo_cliente}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col">
+                                            <span>{client.telefono || <span className="text-muted-foreground italic text-xs">Sin teléfono</span>}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span className="text-sm truncate max-w-[200px] block" title={client.direccion_obra_principal || ""}>
+                                            {client.direccion_obra_principal || <span className="text-muted-foreground italic text-xs">-</span>}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex justify-end gap-1">
+                                            <Button variant="ghost" size="icon" onClick={() => handleEdit(client)} className="h-8 w-8 text-muted-foreground hover:text-primary">
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" onClick={() => setClientToDelete(client)} className="h-8 w-8 text-muted-foreground hover:text-red-600">
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+
+                {/* Mobile Cards View (Contact List) */}
+                <div className="md:hidden flex flex-col divide-y divide-border">
+                    {filteredClients?.length === 0 && (
+                        <div className="p-8 text-center text-sm text-muted-foreground">
+                            No se encontraron clientes.
+                        </div>
+                    )}
+                    {paginatedClients?.map((client: any) => (
+                        <div key={client.id_cliente} className="p-4 flex flex-col gap-3 hover:bg-muted/30 transition-colors">
+                            <div className="flex justify-between items-start gap-2">
+                                <div className="flex-1">
+                                    <h4 className="font-bold text-sm text-primary leading-tight">{client.nombre_completo}</h4>
+                                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                                        <Badge variant="outline" className="text-[10px] font-mono bg-background text-muted-foreground px-1.5 py-0">
+                                            RUC: {client.ruc}
+                                        </Badge>
+                                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${client.tipo_cliente === 'EMPRESA' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'}`}>
                                             {client.tipo_cliente}
                                         </span>
                                     </div>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex flex-col">
-                                        <span>{client.telefono || <span className="text-muted-foreground italic text-xs">Sin teléfono</span>}</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <span className="text-sm truncate max-w-[200px] block" title={client.direccion_obra_principal || ""}>
-                                        {client.direccion_obra_principal || <span className="text-muted-foreground italic text-xs">-</span>}
-                                    </span>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <div className="flex justify-end gap-1">
-                                        <Button variant="ghost" size="icon" onClick={() => handleEdit(client)} className="h-8 w-8 text-muted-foreground hover:text-primary">
-                                            <Edit className="h-4 w-4" />
-                                        </Button>
-                                        <Button variant="ghost" size="icon" onClick={() => setClientToDelete(client)} className="h-8 w-8 text-muted-foreground hover:text-red-600">
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                                </div>
+                                <div className="flex gap-1 flex-shrink-0">
+                                    <Button variant="ghost" size="icon" onClick={() => handleEdit(client)} className="h-8 w-8 text-muted-foreground hover:text-primary bg-muted/20">
+                                        <Edit className="h-3.5 w-3.5" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" onClick={() => setClientToDelete(client)} className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 bg-muted/20">
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-1.5 text-xs text-muted-foreground mt-1 bg-muted/30 p-2.5 rounded-md border border-border/40">
+                                <div className="flex items-start gap-2">
+                                    <span className="font-semibold w-14 uppercase text-[9px] tracking-wider mt-0.5 text-foreground/60">Teléfono:</span>
+                                    <span className="font-medium text-foreground">{client.telefono || <span className="italic font-normal opacity-50">Sin teléfono</span>}</span>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                    <span className="font-semibold w-14 uppercase text-[9px] tracking-wider mt-0.5 text-foreground/60">Dirección:</span>
+                                    <span className="leading-snug">{client.direccion_obra_principal || <span className="italic font-normal opacity-50">-</span>}</span>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
 
                 {/* Pagination Controls */}
                 <div className="flex items-center justify-between px-4 py-4 border-t">

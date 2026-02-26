@@ -121,7 +121,8 @@ export function CotizacionesList() {
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="rounded-md border">
+                {/* Desktop Table View */}
+                <div className="hidden md:block rounded-md border">
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50">
                             <tr className="border-b text-left">
@@ -169,6 +170,51 @@ export function CotizacionesList() {
                             )}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Mobile Cards View */}
+                <div className="md:hidden flex flex-col gap-3">
+                    {paginatedData.map((row) => (
+                        <div key={row.id_cotizacion} className="bg-white border rounded-lg p-4 flex flex-col gap-3 shadow-sm hover:border-gray-300 transition-colors cursor-pointer" onClick={() => router.push(`/cotizaciones/detalle?id=${row.id_cotizacion}`)}>
+                            <div className="flex justify-between items-start gap-2">
+                                <div className="flex-1">
+                                    <h3 className="font-bold text-gray-900 leading-tight">{row.nombre_proyecto || "Sin nombre"}</h3>
+                                    <p className="text-xs text-gray-500 mt-1">{row.mst_clientes?.nombre_completo || "Cliente No Asignado"}</p>
+                                </div>
+                                <Badge variant={row.estado === 'Borrador' ? 'secondary' : 'default'} className="flex-shrink-0 text-[10px] px-2 py-0.5">
+                                    {row.estado}
+                                </Badge>
+                            </div>
+
+                            <div className="flex justify-between items-end border-t pt-3 mt-1 border-gray-100">
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Fecha Emisión</span>
+                                    <span className="text-xs font-medium text-gray-700">{new Date(row.fecha_emision).toLocaleDateString()}</span>
+                                </div>
+                                <div className="flex flex-col items-end">
+                                    <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Total</span>
+                                    <span className="text-lg font-bold text-green-600 leading-none">
+                                        {formatCurrency(row._vc_precio_final_cliente || 0)}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-2 pt-1">
+                                <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={(e) => {
+                                    e.stopPropagation()
+                                    router.push(`/cotizaciones/detalle?id=${row.id_cotizacion}`)
+                                }}>Ver Detalles</Button>
+                                <Button variant="outline" size="icon" className="h-9 w-9 text-red-500 hover:text-red-700 hover:bg-red-50 border-red-100" onClick={(e) => handleDelete(e, row.id_cotizacion)}>
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    ))}
+                    {data.length === 0 && (
+                        <div className="p-8 text-center text-muted-foreground border rounded-lg bg-gray-50 text-sm">
+                            No hay cotizaciones registradas.
+                        </div>
+                    )}
                 </div>
 
                 {/* Pagination Controls */}

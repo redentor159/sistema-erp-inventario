@@ -152,76 +152,131 @@ export function EntradaList({ active }: { active: boolean }) {
                 id={selectedEntrada?.id_entrada}
             />
 
-            <div className="border rounded-md bg-white dark:bg-gray-800">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead
-                                className="cursor-pointer hover:bg-muted/50"
-                                onClick={() => handleSort('fecha_registro')}
-                            >
-                                Fecha {sortConfig?.key === 'fecha_registro' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                            </TableHead>
-                            <TableHead
-                                className="cursor-pointer hover:bg-muted/50"
-                                onClick={() => handleSort('tipo_entrada')}
-                            >
-                                Tipo {sortConfig?.key === 'tipo_entrada' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                            </TableHead>
-                            <TableHead
-                                className="cursor-pointer hover:bg-muted/50"
-                                onClick={() => handleSort('proveedor')}
-                            >
-                                Proveedor {sortConfig?.key === 'proveedor' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                            </TableHead>
-                            <TableHead
-                                className="cursor-pointer hover:bg-muted/50"
-                                onClick={() => handleSort('nro_documento_fisico')}
-                            >
-                                Documento {sortConfig?.key === 'nro_documento_fisico' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                            </TableHead>
-                            <TableHead>Moneda</TableHead>
-                            <TableHead>Estado</TableHead>
-                            <TableHead className="text-right">Acciones</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {sortedEntradas?.length === 0 && (
+            <div className="border rounded-md bg-white dark:bg-gray-800 overflow-hidden">
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-auto">
+                    <Table>
+                        <TableHeader>
                             <TableRow>
-                                <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
-                                    No se encontraron entradas con los filtros actuales.
-                                </TableCell>
+                                <TableHead
+                                    className="cursor-pointer hover:bg-muted/50"
+                                    onClick={() => handleSort('fecha_registro')}
+                                >
+                                    Fecha {sortConfig?.key === 'fecha_registro' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                </TableHead>
+                                <TableHead
+                                    className="cursor-pointer hover:bg-muted/50"
+                                    onClick={() => handleSort('tipo_entrada')}
+                                >
+                                    Tipo {sortConfig?.key === 'tipo_entrada' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                </TableHead>
+                                <TableHead
+                                    className="cursor-pointer hover:bg-muted/50"
+                                    onClick={() => handleSort('proveedor')}
+                                >
+                                    Proveedor {sortConfig?.key === 'proveedor' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                </TableHead>
+                                <TableHead
+                                    className="cursor-pointer hover:bg-muted/50"
+                                    onClick={() => handleSort('nro_documento_fisico')}
+                                >
+                                    Documento {sortConfig?.key === 'nro_documento_fisico' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                </TableHead>
+                                <TableHead>Moneda</TableHead>
+                                <TableHead>Estado</TableHead>
+                                <TableHead className="text-right">Acciones</TableHead>
                             </TableRow>
-                        )}
-                        {paginatedEntradas?.map((ent: any) => (
-                            <TableRow key={ent.id_entrada} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedEntrada(ent)}>
-                                <TableCell>{format(new Date(ent.fecha_registro), "dd/MM/yyyy", { locale: es })}</TableCell>
-                                <TableCell>{ent.tipo_entrada}</TableCell>
-                                <TableCell className="font-medium">{ent.mst_proveedores?.razon_social || "Sin Proveedor"}</TableCell>
-                                <TableCell>{ent.nro_documento_fisico || "-"}</TableCell>
-                                <TableCell>{ent.moneda}</TableCell>
-                                <TableCell>
+                        </TableHeader>
+                        <TableBody>
+                            {sortedEntradas?.length === 0 && (
+                                <TableRow>
+                                    <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
+                                        No se encontraron entradas con los filtros actuales.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                            {paginatedEntradas?.map((ent: any) => (
+                                <TableRow key={ent.id_entrada} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedEntrada(ent)}>
+                                    <TableCell>{format(new Date(ent.fecha_registro), "dd/MM/yyyy", { locale: es })}</TableCell>
+                                    <TableCell>{ent.tipo_entrada}</TableCell>
+                                    <TableCell className="font-medium">{ent.mst_proveedores?.razon_social || "Sin Proveedor"}</TableCell>
+                                    <TableCell>{ent.nro_documento_fisico || "-"}</TableCell>
+                                    <TableCell>{ent.moneda}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={
+                                            ent.estado === 'INGRESADO' ? 'default' :
+                                                ent.estado === 'BORRADOR' ? 'outline' : 'secondary'
+                                        } className={
+                                            ent.estado === 'INGRESADO' ? 'bg-green-100 text-green-800 hover:bg-green-200 border-green-200' : ''
+                                        }>
+                                            {ent.estado}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <Button variant="ghost" size="sm" onClick={(e) => {
+                                            e.stopPropagation()
+                                            setSelectedEntrada(ent)
+                                        }}>
+                                            Ver Detalle
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+
+                {/* Mobile Cards View (Activity Feed) */}
+                <div className="md:hidden flex flex-col divide-y divide-gray-100 dark:divide-gray-800">
+                    {sortedEntradas?.length === 0 && (
+                        <div className="p-8 text-center text-sm text-muted-foreground">
+                            No se encontraron entradas con los filtros actuales.
+                        </div>
+                    )}
+                    {paginatedEntradas?.map((ent: any) => (
+                        <div key={ent.id_entrada} className="p-4 flex flex-col gap-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors" onClick={() => setSelectedEntrada(ent)}>
+                            <div className="flex justify-between items-start gap-2">
+                                <div className="flex items-start gap-3 flex-1">
+                                    <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <ArrowDownRight className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h4 className="font-bold text-sm text-gray-900 dark:text-gray-100 leading-tight">{ent.mst_proveedores?.razon_social || "Sin Proveedor"}</h4>
+                                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                                            <Badge variant="outline" className="text-[9px] font-mono bg-white dark:bg-gray-900 text-gray-500 uppercase px-1.5 py-0">
+                                                {ent.tipo_entrada}
+                                            </Badge>
+                                            <span className="text-[10px] text-gray-500 font-mono flex items-center">
+                                                Doc: {ent.nro_documento_fisico || "S/D"}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex-shrink-0">
                                     <Badge variant={
                                         ent.estado === 'INGRESADO' ? 'default' :
                                             ent.estado === 'BORRADOR' ? 'outline' : 'secondary'
                                     } className={
-                                        ent.estado === 'INGRESADO' ? 'bg-green-100 text-green-800 hover:bg-green-200 border-green-200' : ''
+                                        ent.estado === 'INGRESADO' ? 'bg-green-100 text-green-800 hover:bg-green-200 border-green-200 text-[10px] px-2 py-0.5' : 'text-[10px] px-2 py-0.5'
                                     }>
                                         {ent.estado}
                                     </Badge>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <Button variant="ghost" size="sm" onClick={(e) => {
-                                        e.stopPropagation()
-                                        setSelectedEntrada(ent)
-                                    }}>
-                                        Ver Detalle
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-between items-center text-xs mt-1 bg-slate-50 dark:bg-slate-900/50 px-3 py-2 rounded-md border border-slate-100 dark:border-slate-800">
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">Fecha Registro</span>
+                                    <span className="font-medium text-slate-700 dark:text-slate-300">{format(new Date(ent.fecha_registro), "dd/MM/yyyy", { locale: es })}</span>
+                                </div>
+                                <div className="flex flex-col text-right">
+                                    <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">Moneda Repos.</span>
+                                    <span className="font-bold text-slate-900 dark:text-slate-100">{ent.moneda}</span>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
 
                 {/* Pagination Controls */}
                 <div className="flex items-center justify-between px-4 py-4 border-t">
