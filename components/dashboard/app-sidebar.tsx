@@ -119,6 +119,13 @@ export function AppSidebar() {
           active={pathname === "/configuracion"}
         />
         <NavItem
+          href="/maestros/series"
+          icon={Box}
+          label="Sistemas y Series"
+          collapsed={collapsed}
+          active={pathname === "/maestros/series"}
+        />
+        <NavItem
           href="/recetas"
           icon={FileText}
           label="Recetas"

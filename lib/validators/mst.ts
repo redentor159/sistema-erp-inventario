@@ -82,3 +82,15 @@ export const proveedorSchema = z.object({
 export type ConfigGeneralForm = z.infer<typeof configGeneralSchema>;
 export type ClienteForm = z.infer<typeof clienteSchema>;
 export type ProveedorForm = z.infer<typeof proveedorSchema>;
+
+export const serieEquivalenciaSchema = z.object({
+  id_sistema: z.string().min(1, "ID Sistema es requerido"),
+  nombre_comercial: z.string().min(1, "Nombre Comercial es requerido"),
+  cod_corrales: z.string().optional(),
+  cod_eduholding: z.string().optional(),
+  cod_hpd: z.string().optional(),
+  cod_limatambo: z.string().optional(),
+  uso_principal: z.string().optional(),
+});
+
+export type SerieEquivalenciaForm = z.infer<typeof serieEquivalenciaSchema>;

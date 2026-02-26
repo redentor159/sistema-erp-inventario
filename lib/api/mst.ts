@@ -1,9 +1,10 @@
 import { supabase } from "@/lib/supabase/client";
-import { MstConfigGeneral, MstCliente, MstProveedor } from "@/types";
+import { MstConfigGeneral, MstCliente, MstProveedor, MstSerieEquivalencia } from "@/types";
 import {
   ConfigGeneralForm,
   ClienteForm,
   ProveedorForm,
+  SerieEquivalenciaForm,
 } from "@/lib/validators/mst";
 
 export const mstApi = {
@@ -122,6 +123,50 @@ export const mstApi = {
       .from("mst_proveedores")
       .delete()
       .eq("id_proveedor", id_proveedor);
+
+    if (error) throw error;
+    return true;
+  },
+
+  // Series Equivalencias
+  getSeriesEquivalencias: async () => {
+    const { data, error } = await supabase
+      .from("mst_series_equivalencias")
+      .select("*")
+      .order("id_sistema");
+
+    if (error) throw error;
+    return data as MstSerieEquivalencia[];
+  },
+
+  createSerieEquivalencia: async (serie: SerieEquivalenciaForm) => {
+    const { data, error } = await supabase
+      .from("mst_series_equivalencias")
+      .insert(serie)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as MstSerieEquivalencia;
+  },
+
+  updateSerieEquivalencia: async (serie: SerieEquivalenciaForm) => {
+    const { data, error } = await supabase
+      .from("mst_series_equivalencias")
+      .update(serie)
+      .eq("id_sistema", serie.id_sistema)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as MstSerieEquivalencia;
+  },
+
+  deleteSerieEquivalencia: async (id_sistema: string) => {
+    const { error } = await supabase
+      .from("mst_series_equivalencias")
+      .delete()
+      .eq("id_sistema", id_sistema);
 
     if (error) throw error;
     return true;

@@ -94,6 +94,13 @@ export function MobileSidebar() {
             onClick={() => setOpen(false)}
           />
           <NavItem
+            href="/maestros/series"
+            icon={Box}
+            label="Sistemas y Series"
+            active={pathname === "/maestros/series"}
+            onClick={() => setOpen(false)}
+          />
+          <NavItem
             href="/recetas"
             icon={FileText}
             label="Recetas"
