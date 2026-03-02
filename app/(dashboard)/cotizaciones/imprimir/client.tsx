@@ -784,7 +784,7 @@ export default function CotizacionPrintPage({
                         return (
                           <div className="flex gap-3">
                             {/* SVG Column */}
-                            <div className={cn(IMAGE_SIZE_CLASSES[config.imageSize], "flex-shrink-0 bg-white border border-slate-200 rounded-sm overflow-hidden flex items-center justify-center p-0.5")}>
+                            <div className={cn(IMAGE_SIZE_CLASSES[config.imageSize], "flex-shrink-0 bg-white overflow-hidden flex items-center justify-center")}>
                               <ItemRenderer
                                 anchoMm={item.ancho_mm || 1000}
                                 altoMm={item.alto_mm || 1000}
