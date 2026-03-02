@@ -3,7 +3,7 @@
 > **Módulo:** Configuración  
 > **Ruta en la app:** `/configuracion` y `/settings`  
 > **Rol requerido:** Solo ADMIN  
-> **Última actualización:** Febrero 2026  
+> **Última actualización:** Marzo 2026  
 
 ---
 
@@ -72,6 +72,7 @@ Estos valores afectan directamente todos los cálculos de cotizaciones:
 | **Descuento Máx %** | 0.15 (15%) | Límite porcentual negociable que acepta el sistema  |
 | **Validez de cotiz.** | 15 días | Días que la cotización es válida (aparece en documento) |
 | **Moneda default** | PEN (Soles) | Pre-selección en nuevas cotizaciones |
+| **Título documento** | COTIZACIÓN | Encabezado del PDF imprimible (puede ser COTIZACIÓN, PROFORMA, etc.) |
 
 ### Cómo funcionan los parámetros en la cotización:
 
@@ -103,15 +104,22 @@ Las cuentas aparecen automáticamente en el pie de las cotizaciones impresas (si
 ┌─────────────────────────────────────────────────────┐
 │  CUENTAS BANCARIAS                                  │
 ├─────────────────────────────────────────────────────│
+│  Titular:       [Carlos Vidal SAC]                   │
+│                                                      │
 │  BCP SOLES:     [000-12345678-0-01]                 │
+│  CCI SOLES:     [00200011021501234567]              │
 │  BCP DÓLARES:   [000-98765432-1-76]                 │
+│  CCI DÓLARES:   [00200011021598765432]              │
 │  BBVA SOLES:    [0011-0215-01234567-19]             │
+│  CCI BBVA S/:   [01121500001234567819]              │
 │  BBVA DÓLARES:  [011-321-000123456789-55]           │
-│  Interbancario: [00200011021501234567]               │
+│  CCI BBVA US$:  [01113210001234567855]              │
 └─────────────────────────────────────────────────────┘
 ```
 
 Completa solo las cuentas que uses. Las vacías no aparecen en la cotización.
+
+> **💡 Tip:** El nombre del titular se muestra junto a las cuentas bancarias en el PDF. Asigna el nombre exacto que aparece en el estado de cuenta.
 
 ---
 
@@ -125,6 +133,7 @@ Textos y variables para la generación de la cotización impresa. Puedes persona
 | **Formas de Pago**| "50% al inicio, 50% a la entrega" | Pie de cotización |
 | **Garantía** | "12 meses contra defectos de fabricación" | Cotización impresa |
 | **Notas Pie** | "Precios válidos 15 días" | Parte más baja de la cotización impresa |
+| **Términos Personalizados** | Texto libre | Aparece en cotizaciones que tengan términos especiales |
 | **Representante** | "Carlos Vidal" | Nombre del ejecutivo a cargo de la firma |
 | **Cargo Repres.** | "Gerente General" | Cargo mostrado debajo del representante |
 | **Color Primario** | "#2563eb" (Azul HEX) | Marca visual usada en el PDF |

@@ -951,21 +951,25 @@ function AccesorioRow({
 
   // Load product info (price) from server when we have a SKU
   const [catalogProduct, setCatalogProduct] = useState<any>(null);
-  const [prevCurrentSku, setPrevCurrentSku] = useState(currentSku);
+  const [loadingPrice, setLoadingPrice] = useState(false);
 
-  if (currentSku !== prevCurrentSku) {
-    setPrevCurrentSku(currentSku);
-    if (currentSku) {
-      recetasApi
-        .getProductoPorSku(currentSku)
-        .then((p) => {
-          if (p) setCatalogProduct(p);
-        })
-        .catch(console.error);
-    } else {
+  // Load catalog product on mount and when SKU changes
+  useEffect(() => {
+    if (!currentSku) {
       setCatalogProduct(null);
+      return;
     }
-  }
+    let cancelled = false;
+    setLoadingPrice(true);
+    recetasApi
+      .getProductoPorSku(currentSku)
+      .then((p) => {
+        if (!cancelled && p) setCatalogProduct(p);
+      })
+      .catch(console.error)
+      .finally(() => { if (!cancelled) setLoadingPrice(false); });
+    return () => { cancelled = true; };
+  }, [currentSku]);
 
   // When user selects a new SKU from catalog
   function handleSkuSelect(sku: string, producto: any) {
@@ -980,6 +984,8 @@ function AccesorioRow({
   function handlePriceChange(newPrice: number) {
     if (currentSku && newPrice > 0) {
       onUpdateCatalogPrice(currentSku, newPrice);
+      // Optimistically update local state so display refreshes
+      setCatalogProduct((prev: any) => prev ? { ...prev, costo_mercado_unit: newPrice } : prev);
     } else {
       onSave(r.id_receta, "precio_unitario_manual", newPrice || null);
     }
@@ -1016,9 +1022,13 @@ function AccesorioRow({
         />
       </td>
 
-      {/* Precio catálogo (editable, actualiza catálogo directo) */}
+      {/* Precio catálogo (muestra valor actual, editable al click) */}
       <td className="py-1 px-2 text-right">
-        <InlineNumber value={displayPrice} onSave={handlePriceChange} />
+        {loadingPrice ? (
+          <span className="text-[10px] text-slate-400 animate-pulse">...</span>
+        ) : (
+          <InlineNumber value={displayPrice} onSave={handlePriceChange} />
+        )}
       </td>
 
       {/* Preview */}

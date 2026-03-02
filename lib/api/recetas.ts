@@ -348,7 +348,7 @@ export const recetasApi = {
     const { data: variantes, error: varError } = await supabase
       .from("cat_productos_variantes")
       .select(
-        "id_sku, id_plantilla, nombre_completo, costo_mercado_unit, moneda_costo, fecha_act_precio",
+        "id_sku, id_plantilla, nombre_completo, costo_mercado_unit, moneda_reposicion, fecha_act_precio",
       )
       .in("id_plantilla", plantillaIds)
       .eq("id_material", "GEN");
@@ -365,7 +365,7 @@ export const recetasApi = {
         sku_catalogo: variante?.id_sku || null,
         nombre_producto: variante?.nombre_completo || null,
         precio_catalogo: variante?.costo_mercado_unit || null,
-        moneda_precio: variante?.moneda_costo || "PEN",
+        moneda_precio: variante?.moneda_reposicion || "PEN",
         fecha_precio: variante?.fecha_act_precio || null,
       };
     });
@@ -413,7 +413,7 @@ export const recetasApi = {
     const { data, error } = await supabase
       .from("cat_productos_variantes")
       .select(
-        "id_sku, id_plantilla, id_material, nombre_completo, costo_mercado_unit, moneda_costo",
+        "id_sku, id_plantilla, id_material, nombre_completo, costo_mercado_unit, moneda_reposicion",
       )
       .order("id_sku");
 

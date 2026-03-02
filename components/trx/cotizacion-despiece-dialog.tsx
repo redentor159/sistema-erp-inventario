@@ -98,6 +98,17 @@ export function CotizacionDespieceDialog({
         _displayQty: displayQty,
         _displayCost: displayCost,
         _qtyItem: qtyItem,
+        // Back-calculate unit cost from stored costo_unitario (already PEN-converted by SQL)
+        // Perfiles: costo_metro = total / (qty × medida_m) → cost per meter
+        // Otros:    costo_unit  = total / qty → cost per piece/m²
+        _displayUnitCost: (() => {
+          if (qtyUnit <= 0) return 0;
+          if (item.tipo_componente === "Perfil") {
+            const medidaM = (item.medida_corte_mm || 0) / 1000;
+            return medidaM > 0 ? costUnit / (qtyUnit * medidaM) : 0;
+          }
+          return costUnit / qtyUnit;
+        })(),
       };
     })
     .sort((a, b) => {
@@ -256,7 +267,7 @@ export function CotizacionDespieceDialog({
                             )}
                           </TableCell>
                           <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                            {formatCurrency(row.costo_mercado_unit)}
+                            {formatCurrency(row._displayUnitCost)}
                           </TableCell>
                           <TableCell className="text-right font-bold text-sm">
                             {formatCurrency(row._displayCost)}

@@ -249,50 +249,42 @@ export const catApi = {
     return data;
   },
 
-  // Bulk update
+  // Bulk update (supports price + currency changes)
   updatePreciosMasivos: async (
-    updates: { id_sku: string; costo_mercado_unit: number }[],
+    updates: { id_sku: string; costo_mercado_unit?: number; moneda_reposicion?: string }[],
   ) => {
-    const { data, error } = await supabase.rpc("update_costos_mercado_bulk", {
-      payload: updates,
+    // Always use iterative update to support mixed price/currency changes
+    const promises = updates.map((u) => {
+      const updateFields: Record<string, any> = {
+        fecha_act_precio: new Date().toISOString(),
+      };
+      if (u.costo_mercado_unit !== undefined) updateFields.costo_mercado_unit = u.costo_mercado_unit;
+      if (u.moneda_reposicion !== undefined) updateFields.moneda_reposicion = u.moneda_reposicion;
+      return supabase
+        .from("cat_productos_variantes")
+        .update(updateFields)
+        .eq("id_sku", u.id_sku);
     });
-
-    if (error && error.code === "PGRST202") {
-      console.warn(
-        "RPC update_costos_mercado_bulk not found, falling back to iterative update",
-      );
-      const promises = updates.map((u) =>
-        supabase
-          .from("cat_productos_variantes")
-          .update({
-            costo_mercado_unit: u.costo_mercado_unit,
-            fecha_act_precio: new Date().toISOString(),
-          })
-          .eq("id_sku", u.id_sku),
-      );
-      const results = await Promise.all(promises);
-      const firstError = results.find((r) => r.error)?.error;
-      if (firstError) throw firstError;
-      return true;
-    } else if (error) {
-      throw error;
-    }
-
-    return data;
+    const results = await Promise.all(promises);
+    const firstError = results.find((r) => r.error)?.error;
+    if (firstError) throw firstError;
+    return true;
   },
 
   updatePreciosMasivosClient: async (
-    updates: { id_sku: string; costo_mercado_unit: number }[],
+    updates: { id_sku: string; costo_mercado_unit?: number; moneda_reposicion?: string }[],
   ) => {
-    const promises = updates.map((u) =>
-      supabase
+    const promises = updates.map((u) => {
+      const updateFields: Record<string, any> = {
+        fecha_act_precio: new Date().toISOString(),
+      };
+      if (u.costo_mercado_unit !== undefined) updateFields.costo_mercado_unit = u.costo_mercado_unit;
+      if (u.moneda_reposicion !== undefined) updateFields.moneda_reposicion = u.moneda_reposicion;
+      return supabase
         .from("cat_productos_variantes")
-        .update({
-          costo_mercado_unit: u.costo_mercado_unit,
-          fecha_act_precio: new Date().toISOString(),
-        })
-        .eq("id_sku", u.id_sku),
-    );
+        .update(updateFields)
+        .eq("id_sku", u.id_sku);
+    });
     const results = await Promise.all(promises);
     const firstError = results.find((r) => r.error)?.error;
     if (firstError) throw firstError;

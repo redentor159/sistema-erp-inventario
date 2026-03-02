@@ -29,6 +29,7 @@ import {
   Copy,
   Pencil,
   FileText,
+  FileSpreadsheet,
   ChevronRight,
   ChevronDown,
 } from "lucide-react";
@@ -40,6 +41,7 @@ import { CotizacionItemDialog } from "./cotizacion-item-dialog";
 import { ItemRenderer } from "@/components/trx/ItemRenderer";
 import { CatalogSkuSelector } from "@/components/mto/catalog-sku-selector";
 import { recetasApi } from "@/lib/api/recetas";
+import { exportCotizacionToExcel } from "@/lib/utils/exportToExcel";
 import {
   CotizacionDetallada,
   CotizacionDetalleEnriquecido,
@@ -520,11 +522,32 @@ export function CotizacionDetail({ id }: { id: string }) {
           <Button variant="outline" onClick={handleCloneCotizacion}>
             <Copy className="mr-2 h-4 w-4" /> Duplicar Cotización
           </Button>
+          <Button variant="outline" onClick={() => router.push(`/cotizaciones/imprimir?id=${id}`)}>
+            <Printer className="mr-2 h-4 w-4" /> Imprimir
+          </Button>
           <Button
             variant="outline"
-            onClick={() => router.push(`/cotizaciones/imprimir?id=${id}`)}
+            onClick={async () => {
+              try {
+                toast({ title: "Generando Excel...", description: "Espera un momento" });
+                const [desgloseData, configData] = await Promise.all([
+                  cotizacionesApi.getReporteDesglose(id),
+                  cotizacionesApi.getGlobalConfig(),
+                ]);
+                await exportCotizacionToExcel({
+                  cabecera: cotizacion,
+                  detalles: cotizacion.detalles || [],
+                  desglose: desgloseData || [],
+                  configEmpresa: configData,
+                });
+                toast({ title: "✅ Excel Descargado", description: "Archivo generado exitosamente" });
+              } catch (e: any) {
+                console.error(e);
+                toast({ variant: "destructive", title: "Error", description: "No se pudo generar el Excel" });
+              }
+            }}
           >
-            <Printer className="mr-2 h-4 w-4" /> Imprimir
+            <FileSpreadsheet className="mr-2 h-4 w-4" /> Exportar Excel
           </Button>
           <CotizacionDespieceDialog idCotizacion={id} />
           <Button variant="outline" onClick={() => load()}>

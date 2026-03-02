@@ -95,6 +95,9 @@ export function ProductList({ active }: { active: boolean }) {
   const [pendingChanges, setPendingChanges] = useState<Record<string, number>>(
     {},
   );
+  const [pendingCurrencyChanges, setPendingCurrencyChanges] = useState<Record<string, string>>(
+    {},
+  );
 
   const { data: result, isLoading } = useQuery({
     queryKey: [
@@ -149,6 +152,7 @@ export function ProductList({ active }: { active: boolean }) {
       queryClient.invalidateQueries({ queryKey: ["catProductos"] });
       toast({ title: "Precios actualizados masivamente", variant: "default" });
       setPendingChanges({});
+      setPendingCurrencyChanges({});
       setIsEditMode(false);
     },
     onError: (error) => {
@@ -160,10 +164,17 @@ export function ProductList({ active }: { active: boolean }) {
   });
 
   const handleSaveBulk = () => {
-    const updates = Object.entries(pendingChanges).map(([id_sku, costo]) => ({
-      id_sku,
-      costo_mercado_unit: costo,
-    }));
+    // Merge price and currency changes into a unified update list
+    const allSkus = new Set([
+      ...Object.keys(pendingChanges),
+      ...Object.keys(pendingCurrencyChanges),
+    ]);
+    const updates = Array.from(allSkus).map((id_sku) => {
+      const upd: { id_sku: string; costo_mercado_unit?: number; moneda_reposicion?: string } = { id_sku };
+      if (pendingChanges[id_sku] !== undefined) upd.costo_mercado_unit = pendingChanges[id_sku];
+      if (pendingCurrencyChanges[id_sku] !== undefined) upd.moneda_reposicion = pendingCurrencyChanges[id_sku];
+      return upd;
+    });
     if (updates.length === 0) {
       setIsEditMode(false);
       return;
@@ -231,18 +242,19 @@ export function ProductList({ active }: { active: boolean }) {
                     className="bg-green-600 hover:bg-green-700 text-white"
                     onClick={handleSaveBulk}
                     disabled={
-                      Object.keys(pendingChanges).length === 0 ||
+                      (Object.keys(pendingChanges).length === 0 && Object.keys(pendingCurrencyChanges).length === 0) ||
                       bulkUpdateMutation.isPending
                     }
                   >
                     <Save className="mr-2 h-4 w-4" />
-                    Guardar ({Object.keys(pendingChanges).length})
+                    Guardar ({Object.keys(pendingChanges).length + Object.keys(pendingCurrencyChanges).length})
                   </Button>
                   <Button
                     variant="ghost"
                     onClick={() => {
                       setIsEditMode(false);
                       setPendingChanges({});
+                      setPendingCurrencyChanges({});
                     }}
                   >
                     <XCircle className="mr-2 h-4 w-4" />
@@ -405,15 +417,15 @@ export function ProductList({ active }: { active: boolean }) {
             materialFilter !== "ALL" ||
             acabadoFilter !== "ALL" ||
             sistemaFilter !== "ALL") && (
-            <Button
-              variant="ghost"
-              onClick={clearFilters}
-              className="text-red-500 hover:text-red-700 hover:bg-red-50 h-10 px-3"
-            >
-              <X className="mr-2 h-4 w-4" />
-              Limpiar
-            </Button>
-          )}
+              <Button
+                variant="ghost"
+                onClick={clearFilters}
+                className="text-red-500 hover:text-red-700 hover:bg-red-50 h-10 px-3"
+              >
+                <X className="mr-2 h-4 w-4" />
+                Limpiar
+              </Button>
+            )}
         </div>
       </div>
 
@@ -455,8 +467,12 @@ export function ProductList({ active }: { active: boolean }) {
                       : Number(product.costo_mercado_unit || 0);
 
                   const inversion = Number(product.inversion_total || 0);
-                  const moneda =
+                  const monedaBase =
                     product.moneda_reposicion === "USD" ? "USD" : "PEN";
+                  const moneda =
+                    pendingCurrencyChanges[product.id_sku] !== undefined
+                      ? pendingCurrencyChanges[product.id_sku]
+                      : monedaBase;
 
                   const isNegative = stock < 0;
                   const isPositive = stock > 0;
@@ -469,7 +485,7 @@ export function ProductList({ active }: { active: boolean }) {
                       ? "text-green-600 font-bold"
                       : "text-gray-500";
 
-                  const isDirty = pendingChanges[product.id_sku] !== undefined;
+                  const isDirty = pendingChanges[product.id_sku] !== undefined || pendingCurrencyChanges[product.id_sku] !== undefined;
 
                   return (
                     <TableRow key={product.id_sku} className={`${rowClass}`}>
@@ -502,12 +518,33 @@ export function ProductList({ active }: { active: boolean }) {
                       <TableCell className="text-right text-xs font-mono p-1">
                         {isEditMode ? (
                           <div className="flex items-center gap-1">
-                            <span className="text-[10px] text-muted-foreground">
-                              {moneda}
-                            </span>
+                            <select
+                              className={`text-[10px] bg-transparent border rounded px-0.5 py-1 cursor-pointer hover:bg-slate-50 focus:outline-none focus:ring-1 focus:ring-blue-400 ${pendingCurrencyChanges[product.id_sku] !== undefined ? "bg-yellow-50 border-yellow-400 font-bold" : "border-slate-200"
+                                }`}
+                              value={moneda}
+                              onChange={(e) => {
+                                const newMoneda = e.target.value;
+                                if (newMoneda !== monedaBase) {
+                                  setPendingCurrencyChanges((prev) => ({
+                                    ...prev,
+                                    [product.id_sku]: newMoneda,
+                                  }));
+                                } else {
+                                  // Revert: remove from pending if same as original
+                                  setPendingCurrencyChanges((prev) => {
+                                    const next = { ...prev };
+                                    delete next[product.id_sku];
+                                    return next;
+                                  });
+                                }
+                              }}
+                            >
+                              <option value="PEN">S/</option>
+                              <option value="USD">US$</option>
+                            </select>
                             <Input
                               type="number"
-                              className={`h-8 text-right w-full ${isDirty ? "bg-yellow-50 border-yellow-400" : ""}`}
+                              className={`h-8 text-right w-full ${pendingChanges[product.id_sku] !== undefined ? "bg-yellow-50 border-yellow-400" : ""}`}
                               value={costoMercado}
                               onChange={(e) => {
                                 const val = parseFloat(e.target.value);
@@ -694,9 +731,9 @@ export function ProductList({ active }: { active: boolean }) {
                         {isEditMode
                           ? "--"
                           : costoMercado.toLocaleString("es-PE", {
-                              style: "currency",
-                              currency: moneda,
-                            })}
+                            style: "currency",
+                            currency: moneda,
+                          })}
                       </span>
                     </div>
                   </div>

@@ -684,18 +684,18 @@ export default function CotizacionPrintPage({
           {/* === CLIENT SECTION === */}
           <section
             className={cn(
-              "mb-6 p-4 rounded-sm",
+              "mb-3 py-2 px-3 rounded-sm",
               isModern &&
               "border border-slate-200 bg-slate-50/50 print:bg-transparent print:border-slate-300",
-              isClassic && "border border-slate-300 bg-white shadow-sm p-6", // Card-like for Classic
+              isClassic && "border border-slate-300 bg-white shadow-sm py-2 px-4",
               isMinimalist && "pl-0",
             )}
           >
-            <div className="grid grid-cols-12 gap-4 text-sm">
+            <div className="grid grid-cols-12 gap-2 text-sm">
               <div className="col-span-8">
                 <p
                   className={cn(
-                    "text-[10px] uppercase text-slate-500 font-bold mb-1",
+                    "text-[10px] uppercase text-slate-500 font-bold mb-0",
                     isClassic && "tracking-widest text-black",
                   )}
                 >
@@ -703,8 +703,8 @@ export default function CotizacionPrintPage({
                 </p>
                 <p
                   className={cn(
-                    "font-bold text-lg text-slate-800",
-                    isClassic && "text-xl font-serif text-black uppercase",
+                    "font-bold text-base text-slate-800",
+                    isClassic && "text-lg font-serif text-black uppercase",
                   )}
                 >
                   {cotizacion.mst_clientes?.nombre_completo ||
@@ -716,7 +716,7 @@ export default function CotizacionPrintPage({
                 </p>
               </div>
               <div className="col-span-4 text-right">
-                <div className="mb-2">
+                <div className="mb-1">
                   <p className="text-[10px] uppercase text-slate-500 font-bold">
                     RUC / DNI
                   </p>
