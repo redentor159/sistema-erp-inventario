@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { cotizacionesApi } from "@/lib/api/cotizaciones";
 import { recetasApi } from "@/lib/api/recetas";
+import { ItemRenderer } from "@/components/trx/ItemRenderer";
 import { CatalogSkuSelector } from "@/components/mto/catalog-sku-selector";
 import { Button } from "@/components/ui/button";
 import {
@@ -191,7 +192,7 @@ export function CotizacionItemDialog({
       // Update only if different to avoid infinite loops
       if (
         item.opciones_seleccionadas.factor_flete !==
-          suggestedFactor.toString() ||
+        suggestedFactor.toString() ||
         item.opciones_seleccionadas.incluir_flete !== "true"
       ) {
         setItem((prev) => ({
@@ -507,6 +508,28 @@ export function CotizacionItemDialog({
                   </div>
                 </div>
 
+                {/* ===== PREVIEW SVG REACTIVO ===== */}
+                {item.id_modelo && item.ancho_mm > 0 && item.alto_mm > 0 && (() => {
+                  const selectedModelMeta = allModelos?.find((m: any) => m.id_modelo === item.id_modelo);
+                  const tipoDibujo = selectedModelMeta?.tipo_dibujo || "Fijo";
+                  const configHojas = selectedModelMeta?.config_hojas_default || "F";
+                  return (
+                    <div className="border rounded-lg p-4 bg-slate-50/50 flex flex-col items-center gap-2">
+                      <p className="text-xs text-muted-foreground font-medium">Vista Previa</p>
+                      <ItemRenderer
+                        anchoMm={item.ancho_mm}
+                        altoMm={item.alto_mm}
+                        colorCode={item.color_perfiles || "MAT"}
+                        tipoDibujo={tipoDibujo}
+                        configHojas={configHojas}
+                        showCotas={true}
+                        etiqueta={item.etiqueta_item || item.id_modelo}
+                        className="w-full max-w-[320px] h-[220px]"
+                      />
+                    </div>
+                  );
+                })()}
+
                 {/* Dynamic Options (Brazos, etc) */}
                 {item.id_modelo && recipesOptionsByModel[item.id_modelo] && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
@@ -651,7 +674,7 @@ export function CotizacionItemDialog({
                                       newOptions.factor_flete = "Otro";
                                       newOptions.factor_flete_otro =
                                         currentFactorStr !== "Otro" &&
-                                        currentFactorStr
+                                          currentFactorStr
                                           ? currentFactorStr
                                           : "";
                                     } else {

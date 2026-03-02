@@ -266,7 +266,7 @@ export const cotizacionesApi = {
   getRecetasIDs: async () => {
     const { data, error } = await supabase
       .from("mst_recetas_modelos")
-      .select("id_modelo, id_sistema")
+      .select("id_modelo, id_sistema, tipo_dibujo, config_hojas_default")
       .eq("activo", true)
       .order("id_modelo");
 

@@ -37,6 +37,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ClientCombobox } from "./client-combobox";
 import { DespiecePreview } from "@/components/trx/despiece-preview";
 import { CotizacionItemDialog } from "./cotizacion-item-dialog";
+import { ItemRenderer } from "@/components/trx/ItemRenderer";
 import { CatalogSkuSelector } from "@/components/mto/catalog-sku-selector";
 import { recetasApi } from "@/lib/api/recetas";
 import {
@@ -62,6 +63,7 @@ export function CotizacionDetail({ id }: { id: string }) {
   const [marcas, setMarcas] = useState<MstMarca[]>([]);
   const [acabados, setAcabados] = useState<any[]>([]); // Using any for simplicity or MstAcabado
   const [vidrios, setVidrios] = useState<any[]>([]);
+  const [allModelos, setAllModelos] = useState<any[]>([]);
 
   // Dialog State
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -312,6 +314,13 @@ export function CotizacionDetail({ id }: { id: string }) {
       try {
         const vidriosData = await cotizacionesApi.getVidrios();
         setVidrios(vidriosData || []);
+      } catch (err) {
+        console.error(err);
+      }
+
+      try {
+        const modelosData = await cotizacionesApi.getRecetasIDs();
+        setAllModelos(modelosData || []);
       } catch (err) {
         console.error(err);
       }
@@ -644,8 +653,8 @@ export function CotizacionDetail({ id }: { id: string }) {
                 value={
                   cotizacion.fecha_prometida
                     ? new Date(cotizacion.fecha_prometida)
-                        .toISOString()
-                        .split("T")[0]
+                      .toISOString()
+                      .split("T")[0]
                     : ""
                 }
                 onChange={(e) =>
@@ -745,7 +754,7 @@ export function CotizacionDetail({ id }: { id: string }) {
               <div className="text-xl font-mono text-slate-700">
                 {formatCurrency(
                   cotizacion._vc_precio_final_cliente -
-                    cotizacion._vc_precio_final_cliente / 1.18,
+                  cotizacion._vc_precio_final_cliente / 1.18,
                 )}
               </div>
             </div>
@@ -808,7 +817,24 @@ export function CotizacionDetail({ id }: { id: string }) {
                         />
                       </td>
                       <td className="p-3">
-                        <div className="flex items-start gap-2">
+                        <div className="flex items-start gap-3">
+                          {/* Thumbnail SVG */}
+                          {item.id_modelo !== "SERVICIO" && (() => {
+                            const modelMeta = allModelos?.find((m: any) => m.id_modelo === item.id_modelo);
+                            return (
+                              <div className="shrink-0 w-16 h-14 border rounded bg-white flex items-center justify-center">
+                                <ItemRenderer
+                                  anchoMm={item.ancho_mm || 1000}
+                                  altoMm={item.alto_mm || 1000}
+                                  colorCode={item.color_perfiles || "MAT"}
+                                  tipoDibujo={modelMeta?.tipo_dibujo || "Fijo"}
+                                  configHojas={modelMeta?.config_hojas_default || "F"}
+                                  showCotas={false}
+                                  className="w-full h-full"
+                                />
+                              </div>
+                            );
+                          })()}
                           {item.id_modelo !== "SERVICIO" && (
                             <Button
                               variant="ghost"
@@ -845,7 +871,7 @@ export function CotizacionDetail({ id }: { id: string }) {
                                     ([grupo, opts]) => {
                                       const currentVal =
                                         (item.opciones_seleccionadas as any)?.[
-                                          grupo
+                                        grupo
                                         ] || "";
 
                                       if (currentVal) {
@@ -971,7 +997,7 @@ export function CotizacionDetail({ id }: { id: string }) {
                                     ([grupo, opts]) => {
                                       const currentVal =
                                         (item.opciones_seleccionadas as any)?.[
-                                          grupo
+                                        grupo
                                         ] || "";
 
                                       return (
