@@ -58,6 +58,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToastHelper } from "@/lib/hooks/useToastHelper";
+import { ItemRenderer } from "@/components/trx/ItemRenderer";
 import {
   evaluateFormula,
   validateFormula,
@@ -330,6 +331,82 @@ export function RecipeEditor({ modelId }: RecipeEditorProps) {
                 ? `Guardar Receta (${Object.keys(pendingChanges).length})`
                 : "Guardado ✓"}
           </Button>
+        </div>
+      </div>
+
+      {/* ===== CONFIGURACIÓN VISUAL DEL MODELO ===== */}
+      <div className="px-4 py-2 border-b bg-gradient-to-r from-indigo-50 to-slate-50 shrink-0">
+        <div className="flex items-center gap-4 flex-wrap">
+          <span className="text-[10px] text-indigo-600 font-semibold tracking-wide">DIBUJO:</span>
+
+          {/* Selector Tipo Dibujo */}
+          <label className="flex items-center gap-1.5 text-[11px]">
+            <span className="font-medium text-slate-600">Tipo:</span>
+            <Select
+              value={modelo?.tipo_dibujo || "Fijo"}
+              onValueChange={async (v) => {
+                try {
+                  await recetasApi.updateModelo(modelId, { tipo_dibujo: v });
+                  qc.invalidateQueries({ queryKey: ["recetaModelo", modelId] });
+                } catch (e) { console.error(e); }
+              }}
+            >
+              <SelectTrigger className="h-6 w-[120px] text-[11px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Corrediza">Corrediza</SelectItem>
+                <SelectItem value="Proyectante">Proyectante</SelectItem>
+                <SelectItem value="Batiente">Batiente</SelectItem>
+                <SelectItem value="Fijo">Fijo</SelectItem>
+              </SelectContent>
+            </Select>
+          </label>
+
+          {/* Selector Config Hojas */}
+          <label className="flex items-center gap-1.5 text-[11px]">
+            <span className="font-medium text-slate-600">Hojas:</span>
+            <Select
+              value={modelo?.config_hojas_default || "F"}
+              onValueChange={async (v) => {
+                try {
+                  await recetasApi.updateModelo(modelId, { config_hojas_default: v });
+                  qc.invalidateQueries({ queryKey: ["recetaModelo", modelId] });
+                } catch (e) { console.error(e); }
+              }}
+            >
+              <SelectTrigger className="h-6 w-[100px] text-[11px] font-mono">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="F">F (Fijo)</SelectItem>
+                <SelectItem value="FF">FF (2 Fijos)</SelectItem>
+                <SelectItem value="CC">CC (2 Corr.)</SelectItem>
+                <SelectItem value="FC">FC</SelectItem>
+                <SelectItem value="CF">CF</SelectItem>
+                <SelectItem value="FCC">FCC</SelectItem>
+                <SelectItem value="CCF">CCF</SelectItem>
+                <SelectItem value="FCCF">FCCF (4 hojas)</SelectItem>
+                <SelectItem value="P">P (Proyectante)</SelectItem>
+                <SelectItem value="PP">PP (2 Proy.)</SelectItem>
+                <SelectItem value="A">A (Abatible)</SelectItem>
+                <SelectItem value="AA">AA (2 Abat.)</SelectItem>
+              </SelectContent>
+            </Select>
+          </label>
+
+          {/* Mini Preview SVG */}
+          <div className="ml-auto border rounded bg-white p-1 flex items-center justify-center" style={{ width: 80, height: 56 }}>
+            <ItemRenderer
+              anchoMm={preview.ancho}
+              altoMm={preview.alto}
+              colorCode="MAT"
+              tipoDibujo={modelo?.tipo_dibujo || "Fijo"}
+              configHojas={modelo?.config_hojas_default || "F"}
+              showCotas={false}
+              className="w-full h-full"
+            />
+          </div>
         </div>
       </div>
 

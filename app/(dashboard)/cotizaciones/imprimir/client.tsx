@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { cotizacionesApi } from "@/lib/api/cotizaciones";
 import { configApi } from "@/lib/api/config";
+import { ItemRenderer } from "@/components/trx/ItemRenderer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +32,7 @@ import {
 
 // Types
 type PrintTheme = "modern" | "classic" | "minimalist";
+type ImageSize = "sm" | "md" | "lg" | "xl";
 
 interface PrintConfig {
   showLogo: boolean;
@@ -41,7 +43,15 @@ interface PrintConfig {
   primaryColor: string;
   title: string;
   theme: PrintTheme;
+  imageSize: ImageSize;
 }
+
+const IMAGE_SIZE_CLASSES: Record<ImageSize, string> = {
+  sm: "w-14 h-14",
+  md: "w-20 h-20",
+  lg: "w-28 h-28",
+  xl: "w-40 h-40",
+};
 
 interface PrintTexts {
   terms: string;
@@ -61,6 +71,7 @@ export default function CotizacionPrintPage({
   // Data State
   const [cotizacion, setCotizacion] = useState<any>(null);
   const [globalConfig, setGlobalConfig] = useState<any>(null);
+  const [allModelos, setAllModelos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Editor State
@@ -73,6 +84,7 @@ export default function CotizacionPrintPage({
     primaryColor: "#2563eb",
     title: "COTIZACIÓN",
     theme: "modern",
+    imageSize: "md",
   });
 
   const [texts, setTexts] = useState<PrintTexts>({
@@ -86,13 +98,15 @@ export default function CotizacionPrintPage({
   useEffect(() => {
     const load = async () => {
       try {
-        const [cotRes, confRes] = await Promise.all([
+        const [cotRes, confRes, modelosRes] = await Promise.all([
           cotizacionesApi.getCotizacionById(id),
           configApi.getConfig(),
+          cotizacionesApi.getRecetasIDs(),
         ]);
 
         setCotizacion(cotRes);
         setGlobalConfig(confRes);
+        setAllModelos(modelosRes);
 
         // Initialize Editor State from Config
         setConfig((prev) => ({
@@ -308,6 +322,28 @@ export default function CotizacionPrintPage({
                       setConfig({ ...config, showPayment: c })
                     }
                   />
+                </div>
+              </div>
+
+              <div className="space-y-3 border p-4 rounded-lg bg-slate-50/50">
+                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                  Tamaño Imagen del Ítem
+                </h3>
+                <div className="flex gap-2">
+                  {(["sm", "md", "lg", "xl"] as ImageSize[]).map((size) => (
+                    <button
+                      key={size}
+                      className={cn(
+                        "flex-1 py-2 px-2 text-xs font-semibold rounded-md border transition-all",
+                        config.imageSize === size
+                          ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                          : "bg-white text-slate-600 border-slate-300 hover:border-blue-400",
+                      )}
+                      onClick={() => setConfig({ ...config, imageSize: size })}
+                    >
+                      {size === "sm" ? "S" : size === "md" ? "M" : size === "lg" ? "L" : "XL"}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -545,8 +581,8 @@ export default function CotizacionPrintPage({
                       Entrega:{" "}
                       {cotizacion.fecha_prometida
                         ? new Date(
-                            cotizacion.fecha_prometida,
-                          ).toLocaleDateString()
+                          cotizacion.fecha_prometida,
+                        ).toLocaleDateString()
                         : "A coordinar"}
                     </p>
                   </div>
@@ -628,8 +664,8 @@ export default function CotizacionPrintPage({
                       <strong>Entrega:</strong>{" "}
                       {cotizacion.fecha_prometida
                         ? new Date(
-                            cotizacion.fecha_prometida,
-                          ).toLocaleDateString()
+                          cotizacion.fecha_prometida,
+                        ).toLocaleDateString()
                         : "A coordinar"}
                     </p>
                     <p>
@@ -650,7 +686,7 @@ export default function CotizacionPrintPage({
             className={cn(
               "mb-6 p-4 rounded-sm",
               isModern &&
-                "border border-slate-200 bg-slate-50/50 print:bg-transparent print:border-slate-300",
+              "border border-slate-200 bg-slate-50/50 print:bg-transparent print:border-slate-300",
               isClassic && "border border-slate-300 bg-white shadow-sm p-6", // Card-like for Classic
               isMinimalist && "pl-0",
             )}
@@ -708,9 +744,9 @@ export default function CotizacionPrintPage({
                   className={cn(
                     "text-white print:text-white",
                     isClassic &&
-                      "text-black print:text-black border-y-2 border-black bg-white print:bg-white uppercase tracking-widest text-xs",
+                    "text-black print:text-black border-y-2 border-black bg-white print:bg-white uppercase tracking-widest text-xs",
                     isMinimalist &&
-                      "text-slate-700 bg-slate-100 print:bg-slate-100",
+                    "text-slate-700 bg-slate-100 print:bg-slate-100",
                   )}
                   style={{
                     backgroundColor: isClassic
@@ -721,12 +757,12 @@ export default function CotizacionPrintPage({
                     color: isClassic || isMinimalist ? "black" : "white",
                   }}
                 >
-                  <th className="p-3 text-center w-10 font-bold">#</th>
-                  <th className="p-3 text-left font-bold">DESCRIPCIÓN</th>
-                  <th className="p-3 text-center w-24 font-bold">MEDIDAS</th>
-                  <th className="p-3 text-center w-12 font-bold">CANT</th>
-                  <th className="p-3 text-right w-24 font-bold">P. UNIT</th>
-                  <th className="p-3 text-right w-24 font-bold">TOTAL</th>
+                  <th className="py-2 px-1.5 text-center w-10 font-bold">#</th>
+                  <th className="py-2 px-1.5 text-left font-bold">DESCRIPCIÓN</th>
+                  <th className="py-2 px-1.5 text-center w-24 font-bold">MEDIDAS</th>
+                  <th className="py-2 px-1.5 text-center w-12 font-bold">CANT</th>
+                  <th className="py-2 px-1.5 text-right w-24 font-bold">P. UNIT</th>
+                  <th className="py-2 px-1.5 text-right w-24 font-bold">TOTAL</th>
                 </tr>
               </thead>
               <tbody className="text-slate-700">
@@ -739,52 +775,75 @@ export default function CotizacionPrintPage({
                       isClassic && "border-slate-300",
                     )}
                   >
-                    <td className="p-3 text-center text-slate-500">
+                    <td className="py-1.5 px-1.5 text-center text-slate-500">
                       {index + 1}
                     </td>
-                    <td className="p-3">
-                      <div className="font-bold text-slate-900">
-                        {item.etiqueta_item}
-                      </div>
-                      {item.id_modelo !== "SERVICIO" ? (
-                        <div className="text-xs text-slate-500 flex flex-col gap-0.5 mt-1">
+                    <td className="py-1.5 px-1.5">
+                      {item.id_modelo !== "SERVICIO" ? (() => {
+                        const receta = allModelos.find((m) => m.id_modelo === item.id_modelo);
+                        return (
                           <div className="flex gap-3">
-                            <span>
-                              <span className="font-semibold">Vidrio:</span>{" "}
-                              {item.tipo_vidrio}
-                            </span>
-                            <span>
-                              <span className="font-semibold">Acabado:</span>{" "}
-                              {item.color_perfiles}
-                            </span>
+                            {/* SVG Column */}
+                            <div className={cn(IMAGE_SIZE_CLASSES[config.imageSize], "flex-shrink-0 bg-white border border-slate-200 rounded-sm overflow-hidden flex items-center justify-center p-0.5")}>
+                              <ItemRenderer
+                                anchoMm={item.ancho_mm || 1000}
+                                altoMm={item.alto_mm || 1000}
+                                colorCode={item.color_perfiles || "MAT"}
+                                tipoDibujo={receta?.tipo_dibujo || "F"}
+                                configHojas={receta?.config_hojas_default || "F"}
+                                showCotas={false}
+                                className="w-full h-full"
+                              />
+                            </div>
+                            {/* Text Details Column */}
+                            <div className="text-xs text-slate-500 flex flex-col justify-center">
+                              <div className="font-bold text-slate-900 text-sm mb-0.5 uppercase">
+                                {item.etiqueta_item}
+                              </div>
+                              <div className="flex gap-3">
+                                <span>
+                                  <span className="font-semibold">Vidrio:</span>{" "}
+                                  {item.tipo_vidrio}
+                                </span>
+                                <span>
+                                  <span className="font-semibold">Acabado:</span>{" "}
+                                  {item.color_perfiles}
+                                </span>
+                              </div>
+                              {item.ubicacion && (
+                                <span className="italic text-slate-400 mt-0.5">
+                                  Ubicación: {item.ubicacion}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          {item.ubicacion && (
-                            <span className="italic text-slate-400">
-                              Ubicación: {item.ubicacion}
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-xs text-slate-500 mt-1 italic">
-                          {item.ubicacion}
+                        );
+                      })() : (
+                        <div>
+                          <div className="font-bold text-slate-900 text-sm uppercase">
+                            {item.etiqueta_item}
+                          </div>
+                          <div className="text-xs text-slate-500 mt-0.5 italic">
+                            {item.ubicacion}
+                          </div>
                         </div>
                       )}
                     </td>
-                    <td className="p-3 text-center whitespace-nowrap text-xs">
+                    <td className="py-1.5 px-1.5 text-center whitespace-nowrap text-xs">
                       {item.id_modelo !== "SERVICIO"
                         ? `${item.ancho_mm} x ${item.alto_mm}`
                         : "-"}
                     </td>
-                    <td className="p-3 text-center font-semibold">
+                    <td className="py-1.5 px-1.5 text-center font-semibold">
                       {item.cantidad}
                     </td>
-                    <td className="p-3 text-right text-slate-600 font-mono">
+                    <td className="py-1.5 px-1.5 text-right text-slate-600 font-mono">
                       {formatCurrency(
                         item._vc_precio_unit_oferta_calc / item.cantidad,
                         quoteCurrency as any,
                       )}
                     </td>
-                    <td className="p-3 text-right font-bold text-slate-800 font-mono">
+                    <td className="py-1.5 px-1.5 text-right font-bold text-slate-800 font-mono">
                       {formatCurrency(
                         item._vc_subtotal_linea_calc,
                         quoteCurrency as any,
@@ -839,7 +898,7 @@ export default function CotizacionPrintPage({
               className={cn(
                 "w-[400px] p-4",
                 isModern &&
-                  "bg-slate-50 rounded border border-slate-200 print:bg-white print:border-slate-300",
+                "bg-slate-50 rounded border border-slate-200 print:bg-white print:border-slate-300",
                 isClassic && "border-2 border-slate-900 bg-white",
                 isMinimalist && "bg-transparent border-0 pr-0",
               )}
@@ -1010,7 +1069,7 @@ export default function CotizacionPrintPage({
                   className={cn(
                     "p-3 rounded mb-4 text-[10px]",
                     isModern &&
-                      "bg-slate-50 border border-slate-200 print:bg-white print:border-slate-300",
+                    "bg-slate-50 border border-slate-200 print:bg-white print:border-slate-300",
                     isClassic && "border-2 border-slate-900 bg-slate-50/50",
                     isMinimalist && "border-l-2 border-slate-200 pl-4",
                   )}
@@ -1034,16 +1093,16 @@ export default function CotizacionPrintPage({
                     {/* Dynamic Accounts */}
                     {(globalConfig?.cuenta_bcp_soles ||
                       globalConfig?.cci_soles) && (
-                      <div>
-                        <p className="font-bold">BCP Soles (S/.)</p>
-                        {globalConfig.cuenta_bcp_soles && (
-                          <p>Cta: {globalConfig.cuenta_bcp_soles}</p>
-                        )}
-                        {globalConfig.cci_soles && (
-                          <p>CCI: {globalConfig.cci_soles}</p>
-                        )}
-                      </div>
-                    )}
+                        <div>
+                          <p className="font-bold">BCP Soles (S/.)</p>
+                          {globalConfig.cuenta_bcp_soles && (
+                            <p>Cta: {globalConfig.cuenta_bcp_soles}</p>
+                          )}
+                          {globalConfig.cci_soles && (
+                            <p>CCI: {globalConfig.cci_soles}</p>
+                          )}
+                        </div>
+                      )}
 
                     {(globalConfig?.cuenta_bcp_dolares ||
                       globalConfig?.cci_dolares) &&
@@ -1062,16 +1121,16 @@ export default function CotizacionPrintPage({
                     {/* BBVA Accounts */}
                     {(globalConfig?.cuenta_bbva_soles ||
                       globalConfig?.cci_bbva_soles) && (
-                      <div className="mt-2 pt-2 border-t border-dashed border-slate-300">
-                        <p className="font-bold">BBVA Soles (S/.)</p>
-                        {globalConfig.cuenta_bbva_soles && (
-                          <p>Cta: {globalConfig.cuenta_bbva_soles}</p>
-                        )}
-                        {globalConfig.cci_bbva_soles && (
-                          <p>CCI: {globalConfig.cci_bbva_soles}</p>
-                        )}
-                      </div>
-                    )}
+                        <div className="mt-2 pt-2 border-t border-dashed border-slate-300">
+                          <p className="font-bold">BBVA Soles (S/.)</p>
+                          {globalConfig.cuenta_bbva_soles && (
+                            <p>Cta: {globalConfig.cuenta_bbva_soles}</p>
+                          )}
+                          {globalConfig.cci_bbva_soles && (
+                            <p>CCI: {globalConfig.cci_bbva_soles}</p>
+                          )}
+                        </div>
+                      )}
 
                     {(globalConfig?.cuenta_bbva_dolares ||
                       globalConfig?.cci_bbva_dolares) &&
@@ -1193,6 +1252,6 @@ export default function CotizacionPrintPage({
           }
         }
       `}</style>
-    </div>
+    </div >
   );
 }

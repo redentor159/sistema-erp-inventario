@@ -12,6 +12,8 @@ export interface RecetaModelo {
   descripcion: string | null;
   activo: boolean;
   created_at?: string;
+  tipo_dibujo?: string | null;
+  config_hojas_default?: string | null;
   // join
   mst_series_equivalencias?: { nombre_comercial: string } | null;
 }

@@ -16,13 +16,13 @@ export default function DashboardLayout({
         {/* Main Content */}
         <main className="flex-1 flex flex-col overflow-y-auto">
           {/* Mobile Header */}
-          <header className="md:hidden flex items-center h-14 px-4 border-b bg-white dark:bg-gray-800 shrink-0">
+          <header className="md:hidden flex items-center h-14 px-4 border-b bg-white dark:bg-gray-800 shrink-0 print:hidden">
             <MobileSidebar />
             <span className="ml-3 font-bold text-lg tracking-tight">
               ERP Yahiro
             </span>
           </header>
-          <div className="p-4 md:p-8 flex-1">{children}</div>
+          <div className="p-4 md:p-8 flex-1 print:p-0">{children}</div>
         </main>
       </div>
     </AuthGuard>
