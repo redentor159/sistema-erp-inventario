@@ -129,19 +129,19 @@ const MermaidChart = ({ chart }: { chart: string }) => {
 // Tipo extendido para soporte de categorías/separadores
 type DocItem =
   | {
-      id: string;
-      title: string;
-      path: string;
-      category?: string;
-      isHeader?: false;
-    }
+    id: string;
+    title: string;
+    path: string;
+    category?: string;
+    isHeader?: false;
+  }
   | {
-      id: string;
-      isHeader: true;
-      title: string;
-      path?: never;
-      category?: never;
-    };
+    id: string;
+    isHeader: true;
+    title: string;
+    path?: never;
+    category?: never;
+  };
 
 const DOCS_LIST: DocItem[] = [
   // ── ÍNDICE ──────────────────────────────────────────────
@@ -308,6 +308,18 @@ const DOCS_LIST: DocItem[] = [
     path: "/docs/13_CONTINGENCIA_RECUPERACION.md",
     category: "tecnico",
   },
+  {
+    id: "14",
+    title: "14 Guía Definitiva Producción",
+    path: "/docs/14_GUIA_DEFINITIVA_PRODUCCION.md",
+    category: "tecnico",
+  },
+  {
+    id: "15",
+    title: "15 Guía Mantenimiento DevOps",
+    path: "/docs/15_GUIA_MANTENIMIENTO_DevOps.md",
+    category: "tecnico",
+  },
 
   // ── OPERACIONES ──────────────────────────────────────────
   { id: "h-ops", isHeader: true, title: "⚙️ Operaciones y Soporte" },
@@ -315,6 +327,12 @@ const DOCS_LIST: DocItem[] = [
     id: "handoff",
     title: "Handoff Maestro",
     path: "/docs/HANDOFF_MAESTRO.md",
+    category: "ops",
+  },
+  {
+    id: "supervivencia",
+    title: "Manual Supervivencia Producción",
+    path: "/docs/05_MANUAL_SUPERVIVENCIA_PRODUCCION.md",
     category: "ops",
   },
   {
@@ -333,6 +351,18 @@ const DOCS_LIST: DocItem[] = [
     id: "mig",
     title: "Plan Migración Masiva",
     path: "/docs/PLAN_MIGRACION_MASIVA.md",
+    category: "ops",
+  },
+  {
+    id: "mig-guide",
+    title: "Guía de Migración",
+    path: "/docs/migration_guide.md",
+    category: "ops",
+  },
+  {
+    id: "mig-prompt",
+    title: "Prompt Migración Datos",
+    path: "/docs/prompt_para_migracion_datos.md",
     category: "ops",
   },
 ];
@@ -467,11 +497,10 @@ export function HelpPanel({ collapsed }: { collapsed?: boolean }) {
                     <button
                       key={doc.id}
                       onClick={() => setSelectedDoc(doc)}
-                      className={`w-full text-left px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors flex items-center gap-2 ${
-                        isSelected
+                      className={`w-full text-left px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors flex items-center gap-2 ${isSelected
                           ? "bg-[#0969da] text-white"
                           : "text-[#24292f] hover:bg-[#f3f4f6]"
-                      }`}
+                        }`}
                     >
                       <FileText
                         className={`h-3.5 w-3.5 shrink-0 ${isSelected ? "text-blue-200" : "text-[#57606a]"}`}

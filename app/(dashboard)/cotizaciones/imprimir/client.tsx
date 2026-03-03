@@ -839,7 +839,7 @@ export default function CotizacionPrintPage({
                     </td>
                     <td className="py-1.5 px-1.5 text-right text-slate-600 font-mono">
                       {formatCurrency(
-                        item._vc_precio_unit_oferta_calc / item.cantidad,
+                        item._vc_precio_unit_oferta_calc,
                         quoteCurrency as any,
                       )}
                     </td>

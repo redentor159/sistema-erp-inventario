@@ -545,8 +545,8 @@ export default function CotizacionPrintPage({
                       Entrega:{" "}
                       {cotizacion.fecha_prometida
                         ? new Date(
-                            cotizacion.fecha_prometida,
-                          ).toLocaleDateString()
+                          cotizacion.fecha_prometida,
+                        ).toLocaleDateString()
                         : "A coordinar"}
                     </p>
                   </div>
@@ -628,8 +628,8 @@ export default function CotizacionPrintPage({
                       <strong>Entrega:</strong>{" "}
                       {cotizacion.fecha_prometida
                         ? new Date(
-                            cotizacion.fecha_prometida,
-                          ).toLocaleDateString()
+                          cotizacion.fecha_prometida,
+                        ).toLocaleDateString()
                         : "A coordinar"}
                     </p>
                     <p>
@@ -650,7 +650,7 @@ export default function CotizacionPrintPage({
             className={cn(
               "mb-6 p-4 rounded-sm",
               isModern &&
-                "border border-slate-200 bg-slate-50/50 print:bg-transparent print:border-slate-300",
+              "border border-slate-200 bg-slate-50/50 print:bg-transparent print:border-slate-300",
               isClassic && "border border-slate-300 bg-white shadow-sm p-6", // Card-like for Classic
               isMinimalist && "pl-0",
             )}
@@ -708,9 +708,9 @@ export default function CotizacionPrintPage({
                   className={cn(
                     "text-white print:text-white",
                     isClassic &&
-                      "text-black print:text-black border-y-2 border-black bg-white print:bg-white uppercase tracking-widest text-xs",
+                    "text-black print:text-black border-y-2 border-black bg-white print:bg-white uppercase tracking-widest text-xs",
                     isMinimalist &&
-                      "text-slate-700 bg-slate-100 print:bg-slate-100",
+                    "text-slate-700 bg-slate-100 print:bg-slate-100",
                   )}
                   style={{
                     backgroundColor: isClassic
@@ -780,7 +780,7 @@ export default function CotizacionPrintPage({
                     </td>
                     <td className="p-3 text-right text-slate-600 font-mono">
                       {formatCurrency(
-                        item._vc_precio_unit_oferta_calc / item.cantidad,
+                        item._vc_precio_unit_oferta_calc,
                         quoteCurrency as any,
                       )}
                     </td>
@@ -839,7 +839,7 @@ export default function CotizacionPrintPage({
               className={cn(
                 "w-[400px] p-4",
                 isModern &&
-                  "bg-slate-50 rounded border border-slate-200 print:bg-white print:border-slate-300",
+                "bg-slate-50 rounded border border-slate-200 print:bg-white print:border-slate-300",
                 isClassic && "border-2 border-slate-900 bg-white",
                 isMinimalist && "bg-transparent border-0 pr-0",
               )}
@@ -1010,7 +1010,7 @@ export default function CotizacionPrintPage({
                   className={cn(
                     "p-3 rounded mb-4 text-[10px]",
                     isModern &&
-                      "bg-slate-50 border border-slate-200 print:bg-white print:border-slate-300",
+                    "bg-slate-50 border border-slate-200 print:bg-white print:border-slate-300",
                     isClassic && "border-2 border-slate-900 bg-slate-50/50",
                     isMinimalist && "border-l-2 border-slate-200 pl-4",
                   )}
@@ -1034,16 +1034,16 @@ export default function CotizacionPrintPage({
                     {/* Dynamic Accounts */}
                     {(globalConfig?.cuenta_bcp_soles ||
                       globalConfig?.cci_soles) && (
-                      <div>
-                        <p className="font-bold">BCP Soles (S/.)</p>
-                        {globalConfig.cuenta_bcp_soles && (
-                          <p>Cta: {globalConfig.cuenta_bcp_soles}</p>
-                        )}
-                        {globalConfig.cci_soles && (
-                          <p>CCI: {globalConfig.cci_soles}</p>
-                        )}
-                      </div>
-                    )}
+                        <div>
+                          <p className="font-bold">BCP Soles (S/.)</p>
+                          {globalConfig.cuenta_bcp_soles && (
+                            <p>Cta: {globalConfig.cuenta_bcp_soles}</p>
+                          )}
+                          {globalConfig.cci_soles && (
+                            <p>CCI: {globalConfig.cci_soles}</p>
+                          )}
+                        </div>
+                      )}
 
                     {(globalConfig?.cuenta_bcp_dolares ||
                       globalConfig?.cci_dolares) &&
@@ -1062,16 +1062,16 @@ export default function CotizacionPrintPage({
                     {/* BBVA Accounts */}
                     {(globalConfig?.cuenta_bbva_soles ||
                       globalConfig?.cci_bbva_soles) && (
-                      <div className="mt-2 pt-2 border-t border-dashed border-slate-300">
-                        <p className="font-bold">BBVA Soles (S/.)</p>
-                        {globalConfig.cuenta_bbva_soles && (
-                          <p>Cta: {globalConfig.cuenta_bbva_soles}</p>
-                        )}
-                        {globalConfig.cci_bbva_soles && (
-                          <p>CCI: {globalConfig.cci_bbva_soles}</p>
-                        )}
-                      </div>
-                    )}
+                        <div className="mt-2 pt-2 border-t border-dashed border-slate-300">
+                          <p className="font-bold">BBVA Soles (S/.)</p>
+                          {globalConfig.cuenta_bbva_soles && (
+                            <p>Cta: {globalConfig.cuenta_bbva_soles}</p>
+                          )}
+                          {globalConfig.cci_bbva_soles && (
+                            <p>CCI: {globalConfig.cci_bbva_soles}</p>
+                          )}
+                        </div>
+                      )}
 
                     {(globalConfig?.cuenta_bbva_dolares ||
                       globalConfig?.cci_bbva_dolares) &&
