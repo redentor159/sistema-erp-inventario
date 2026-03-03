@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   FileSpreadsheet,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -160,6 +161,13 @@ export function AppSidebar() {
           label="Exportar Datos"
           collapsed={collapsed}
           active={pathname === "/export"}
+        />
+        <NavItem
+          href="/hojas-conteo"
+          icon={ClipboardList}
+          label="Hojas de Conteo"
+          collapsed={collapsed}
+          active={pathname === "/hojas-conteo"}
         />
       </nav>
 
