@@ -303,9 +303,10 @@ type ColDef = { header: string; width: number; key: keyof CountSheetRow | "num" 
 function buildColumns(config: CountSheetConfig): ColDef[] {
     const cols: ColDef[] = [
         { header: "#", width: 5, key: "num" },
-        { header: "SKU", width: 24, key: "id_sku" },
-        { header: "DESCRIPCIÓN COMPLETA", width: 52, key: "nombre_completo" },
+        { header: "SKU", width: 22, key: "id_sku" },
+        { header: "DESCRIPCIÓN COMPLETA", width: 42, key: "nombre_completo" },
         { header: "U.M.", width: 7, key: "unidad_medida" },
+        { header: "ALMACÉN", width: 12, key: "nombre_almacen" as keyof CountSheetRow },
     ];
 
     if (!config.conteo_ciego) {
@@ -329,6 +330,7 @@ function buildDataRow(
         row.id_sku,
         row.nombre_completo,
         row.unidad_medida ?? "",
+        row.nombre_almacen ?? "",
     ];
 
     if (!config.conteo_ciego) {
@@ -350,13 +352,13 @@ function buildDataRow(
         };
 
         // Stock column — right align + number format
-        if (!config.conteo_ciego && colNum === 5) {
+        if (!config.conteo_ciego && colNum === 6) {
             cell.alignment = { ...cell.alignment, horizontal: "right" };
             cell.numFmt = "#,##0.##";
         }
 
         // Conteo físico  & Observaciones columns — writeable style
-        const writeStart = config.conteo_ciego ? 5 : 6;
+        const writeStart = config.conteo_ciego ? 6 : 7;
         if (colNum >= writeStart) {
             cell.border = {
                 bottom: { style: "medium", color: { argb: "FF94A3B8" } },

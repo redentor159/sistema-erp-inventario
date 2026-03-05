@@ -251,43 +251,44 @@ export const catApi = {
 
   // Bulk update (supports price + currency changes)
   updatePreciosMasivos: async (
-    updates: { id_sku: string; costo_mercado_unit?: number; moneda_reposicion?: string }[],
+    updates: { id_sku: string; costo_mercado_unit?: number; moneda_reposicion?: string; id_almacen?: string }[],
   ) => {
-    // Always use iterative update to support mixed price/currency changes
-    const promises = updates.map((u) => {
+    for (const u of updates) {
       const updateFields: Record<string, any> = {
         fecha_act_precio: new Date().toISOString(),
       };
       if (u.costo_mercado_unit !== undefined) updateFields.costo_mercado_unit = u.costo_mercado_unit;
       if (u.moneda_reposicion !== undefined) updateFields.moneda_reposicion = u.moneda_reposicion;
-      return supabase
+      if (u.id_almacen !== undefined) updateFields.id_almacen = u.id_almacen;
+
+      const { error } = await supabase
         .from("cat_productos_variantes")
         .update(updateFields)
         .eq("id_sku", u.id_sku);
-    });
-    const results = await Promise.all(promises);
-    const firstError = results.find((r) => r.error)?.error;
-    if (firstError) throw firstError;
+
+      if (error) throw error;
+    }
     return true;
   },
 
   updatePreciosMasivosClient: async (
-    updates: { id_sku: string; costo_mercado_unit?: number; moneda_reposicion?: string }[],
+    updates: { id_sku: string; costo_mercado_unit?: number; moneda_reposicion?: string; id_almacen?: string }[],
   ) => {
-    const promises = updates.map((u) => {
+    for (const u of updates) {
       const updateFields: Record<string, any> = {
         fecha_act_precio: new Date().toISOString(),
       };
       if (u.costo_mercado_unit !== undefined) updateFields.costo_mercado_unit = u.costo_mercado_unit;
       if (u.moneda_reposicion !== undefined) updateFields.moneda_reposicion = u.moneda_reposicion;
-      return supabase
+      if (u.id_almacen !== undefined) updateFields.id_almacen = u.id_almacen;
+
+      const { error } = await supabase
         .from("cat_productos_variantes")
         .update(updateFields)
         .eq("id_sku", u.id_sku);
-    });
-    const results = await Promise.all(promises);
-    const firstError = results.find((r) => r.error)?.error;
-    if (firstError) throw firstError;
+
+      if (error) throw error;
+    }
     return true;
   },
 
@@ -336,6 +337,15 @@ export const catApi = {
       .from("mst_series_equivalencias")
       .select("*")
       .order("nombre_comercial");
+    if (error) throw error;
+    return data;
+  },
+
+  getAlmacenes: async () => {
+    const { data, error } = await supabase
+      .from("mst_almacenes")
+      .select("*")
+      .order("nombre_almacen");
     if (error) throw error;
     return data;
   },

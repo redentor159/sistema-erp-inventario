@@ -193,9 +193,10 @@ function getColLayouts(config: CountSheetConfig, isRetazos: boolean): ColLayout[
 
     const cols: ColLayout[] = [
         { label: "#", widthPct: "4%", align: "center" },
-        { label: "SKU", widthPct: "17%" },
-        { label: "DESCRIPCIÓN COMPLETA", widthPct: config.conteo_ciego ? "44%" : "30%" },
-        { label: "U.M.", widthPct: "6%", align: "center" },
+        { label: "SKU", widthPct: "16%" },
+        { label: "DESCRIPCIÓN COMPLETA", widthPct: config.conteo_ciego ? "30%" : "21%" },
+        { label: "U.M.", widthPct: "5%", align: "center" },
+        { label: "ALMACÉN", widthPct: config.conteo_ciego ? "14%" : "12%" },
     ];
 
     if (!config.conteo_ciego) {
@@ -238,13 +239,14 @@ function getCellValue(
         case 1: return row.id_sku;
         case 2: return row.nombre_completo;
         case 3: return row.unidad_medida ?? "";
-        case 4:
+        case 4: return row.nombre_almacen ?? "";
+        case 5:
             if (extraStockCol) return row.stock_actual != null ? row.stock_actual.toLocaleString("es-PE", { maximumFractionDigits: 2 }) : "0";
             return ""; // writeable (conteo)
-        case 5:
+        case 6:
             if (extraStockCol) return ""; // writeable (conteo)
             return ""; // writeable (obs)
-        case 6:
+        case 7:
             return ""; // writeable (obs; only exists when stock col is shown)
         default: return "";
     }

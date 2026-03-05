@@ -28,6 +28,7 @@ export const productoVarianteSchema = z.object({
   id_marca: z.string().min(1, "Marca es requerida"), // TEXT FK required
   id_material: z.string().min(1, "Material es requerido"), // TEXT FK required
   id_acabado: z.string().min(1, "Acabado es requerido"), // TEXT FK required
+  id_almacen: z.string().optional().nullable(), // TEXT FK optional
 
   // === DATOS GENERALES ===
   cod_proveedor: z.string().optional().nullable(), // TEXT nullable

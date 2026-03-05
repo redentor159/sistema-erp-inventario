@@ -49,6 +49,7 @@ export type CountSheetRow = {
     nombre_marca: string | null;
     nombre_material: string | null;
     nombre_acabado: string | null;
+    nombre_almacen: string | null;
     stock_actual: number;
     stock_minimo: number;
     punto_pedido: number;
@@ -186,6 +187,7 @@ export async function fetchCountSheetData(
         "nombre_marca",
         "nombre_material",
         "nombre_acabado",
+        "nombre_almacen",
         "stock_actual",
         "stock_minimo",
         "punto_pedido",
@@ -223,6 +225,7 @@ async function fetchRetazosData(): Promise<CountSheetRow[]> {
         nombre_marca: r.nombre_marca ?? null,
         nombre_material: null,
         nombre_acabado: r.nombre_acabado ?? null,
+        nombre_almacen: null,
         stock_actual: 0,
         stock_minimo: 0,
         punto_pedido: 0,
@@ -267,7 +270,7 @@ async function fetchAbcData(config: CountSheetConfig): Promise<CountSheetRow[]> 
         const { data, error: e2 } = await supabase
             .from("mvw_stock_realtime")
             .select(
-                "id_sku, nombre_completo, unidad_medida, nombre_familia, id_sistema, sistema_nombre, nombre_marca, nombre_material, nombre_acabado, stock_actual, stock_minimo, punto_pedido",
+                "id_sku, nombre_completo, unidad_medida, nombre_familia, id_sistema, sistema_nombre, nombre_marca, nombre_material, nombre_acabado, nombre_almacen, stock_actual, stock_minimo, punto_pedido",
             )
             .in("id_sku", chunk);
         if (e2) throw e2;
@@ -402,6 +405,7 @@ function mapStockRow(r: any): CountSheetRow {
         nombre_marca: r.nombre_marca ?? null,
         nombre_material: r.nombre_material ?? null,
         nombre_acabado: r.nombre_acabado ?? null,
+        nombre_almacen: r.nombre_almacen ?? null,
         stock_actual: stock,
         stock_minimo: minimo,
         punto_pedido: pedido,

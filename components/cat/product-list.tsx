@@ -23,7 +23,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -71,8 +71,12 @@ export function ProductList({ active }: { active: boolean }) {
     queryKey: ["mstSistemas"],
     queryFn: catApi.getSistemas,
   });
+  const { data: almacenes } = useQuery({
+    queryKey: ["mstAlmacenes"],
+    queryFn: catApi.getAlmacenes,
+  });
 
-  const [searchInput, setSearchInput] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState("");
   const [familiaFilter, setFamiliaFilter] = useState("ALL");
   const [marcaFilter, setMarcaFilter] = useState("ALL");
@@ -92,10 +96,13 @@ export function ProductList({ active }: { active: boolean }) {
 
   // --- BULK EDIT STATE ---
   const [isEditMode, setIsEditMode] = useState(false);
-  const [pendingChanges, setPendingChanges] = useState<Record<string, number>>(
+  const [pendingChanges, setPendingChanges] = useState<Record<string, string>>(
     {},
   );
   const [pendingCurrencyChanges, setPendingCurrencyChanges] = useState<Record<string, string>>(
+    {},
+  );
+  const [pendingAlmacenChanges, setPendingAlmacenChanges] = useState<Record<string, string>>(
     {},
   );
 
@@ -153,6 +160,7 @@ export function ProductList({ active }: { active: boolean }) {
       toast({ title: "Precios actualizados masivamente", variant: "default" });
       setPendingChanges({});
       setPendingCurrencyChanges({});
+      setPendingAlmacenChanges({});
       setIsEditMode(false);
     },
     onError: (error) => {
@@ -168,11 +176,16 @@ export function ProductList({ active }: { active: boolean }) {
     const allSkus = new Set([
       ...Object.keys(pendingChanges),
       ...Object.keys(pendingCurrencyChanges),
+      ...Object.keys(pendingAlmacenChanges),
     ]);
     const updates = Array.from(allSkus).map((id_sku) => {
-      const upd: { id_sku: string; costo_mercado_unit?: number; moneda_reposicion?: string } = { id_sku };
-      if (pendingChanges[id_sku] !== undefined) upd.costo_mercado_unit = pendingChanges[id_sku];
+      const upd: { id_sku: string; costo_mercado_unit?: number; moneda_reposicion?: string; id_almacen?: string } = { id_sku };
+      if (pendingChanges[id_sku] !== undefined) {
+        const parsed = parseFloat(pendingChanges[id_sku]);
+        upd.costo_mercado_unit = isNaN(parsed) ? 0 : parsed;
+      }
       if (pendingCurrencyChanges[id_sku] !== undefined) upd.moneda_reposicion = pendingCurrencyChanges[id_sku];
+      if (pendingAlmacenChanges[id_sku] !== undefined) upd.id_almacen = pendingAlmacenChanges[id_sku];
       return upd;
     });
     if (updates.length === 0) {
@@ -183,7 +196,7 @@ export function ProductList({ active }: { active: boolean }) {
   };
 
   const clearFilters = () => {
-    setSearchInput("");
+    if (searchInputRef.current) searchInputRef.current.value = "";
     setSearch("");
     setFamiliaFilter("ALL");
     setMarcaFilter("ALL");
@@ -208,13 +221,13 @@ export function ProductList({ active }: { active: boolean }) {
             <div className="relative flex-1">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
+                ref={searchInputRef}
                 placeholder="Buscar SKU o nombre..."
                 className="pl-8"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
+                defaultValue={search}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    setSearch(searchInput);
+                    setSearch(searchInputRef.current?.value ?? "");
                     setPage(0);
                   }
                 }}
@@ -223,7 +236,7 @@ export function ProductList({ active }: { active: boolean }) {
             <Button
               variant="secondary"
               onClick={() => {
-                setSearch(searchInput);
+                setSearch(searchInputRef.current?.value ?? "");
                 setPage(0);
               }}
             >
@@ -242,12 +255,14 @@ export function ProductList({ active }: { active: boolean }) {
                     className="bg-green-600 hover:bg-green-700 text-white"
                     onClick={handleSaveBulk}
                     disabled={
-                      (Object.keys(pendingChanges).length === 0 && Object.keys(pendingCurrencyChanges).length === 0) ||
+                      (Object.keys(pendingChanges).length === 0 &&
+                        Object.keys(pendingCurrencyChanges).length === 0 &&
+                        Object.keys(pendingAlmacenChanges).length === 0) ||
                       bulkUpdateMutation.isPending
                     }
                   >
                     <Save className="mr-2 h-4 w-4" />
-                    Guardar ({Object.keys(pendingChanges).length + Object.keys(pendingCurrencyChanges).length})
+                    Guardar ({Object.keys(pendingChanges).length + Object.keys(pendingCurrencyChanges).length + Object.keys(pendingAlmacenChanges).length})
                   </Button>
                   <Button
                     variant="ghost"
@@ -255,6 +270,7 @@ export function ProductList({ active }: { active: boolean }) {
                       setIsEditMode(false);
                       setPendingChanges({});
                       setPendingCurrencyChanges({});
+                      setPendingAlmacenChanges({});
                     }}
                   >
                     <XCircle className="mr-2 h-4 w-4" />
@@ -439,6 +455,7 @@ export function ProductList({ active }: { active: boolean }) {
                 <TableHead>Producto</TableHead>
                 <TableHead>Familia / Marca</TableHead>
                 <TableHead>Acabado</TableHead>
+                <TableHead>Almacén</TableHead>
                 <TableHead className="text-right w-[140px]">
                   {isEditMode ? "Costo (Edit)" : "Costo Mercado"}
                 </TableHead>
@@ -515,6 +532,38 @@ export function ProductList({ active }: { active: boolean }) {
                           {product.nombre_acabado || "-"}
                         </span>
                       </TableCell>
+                      <TableCell>
+                        {isEditMode ? (
+                          <select
+                            className={`text-[10px] w-full bg-transparent border rounded px-1 py-1 cursor-pointer hover:bg-slate-50 focus:outline-none focus:ring-1 focus:ring-blue-400 ${pendingAlmacenChanges[product.id_sku] !== undefined ? "bg-yellow-50 border-yellow-400 font-bold" : "border-slate-200"}`}
+                            value={pendingAlmacenChanges[product.id_sku] !== undefined ? pendingAlmacenChanges[product.id_sku] : (product.id_almacen || "")}
+                            onChange={(e) => {
+                              const newAlmacen = e.target.value;
+                              if (newAlmacen !== (product.id_almacen || "")) {
+                                setPendingAlmacenChanges((prev) => ({
+                                  ...prev,
+                                  [product.id_sku]: newAlmacen,
+                                }));
+                              } else {
+                                setPendingAlmacenChanges((prev) => {
+                                  const next = { ...prev };
+                                  delete next[product.id_sku];
+                                  return next;
+                                });
+                              }
+                            }}
+                          >
+                            <option value="">Sin Asignar</option>
+                            {almacenes?.map((a: any) => (
+                              <option key={a.id_almacen} value={a.id_almacen}>{a.nombre_almacen}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                            {product.nombre_almacen || "Sin Asignar"}
+                          </span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-right text-xs font-mono p-1">
                         {isEditMode ? (
                           <div className="flex items-center gap-1">
@@ -545,10 +594,21 @@ export function ProductList({ active }: { active: boolean }) {
                             <Input
                               type="number"
                               className={`h-8 text-right w-full ${pendingChanges[product.id_sku] !== undefined ? "bg-yellow-50 border-yellow-400" : ""}`}
-                              value={costoMercado}
+                              value={pendingChanges[product.id_sku] !== undefined ? pendingChanges[product.id_sku] : costoMercado}
                               onChange={(e) => {
-                                const val = parseFloat(e.target.value);
-                                if (!isNaN(val)) {
+                                const val = e.target.value;
+                                if (val === "" || val === String(costoMercado)) {
+                                  // Revert or empty
+                                  setPendingChanges((prev) => {
+                                    const next = { ...prev };
+                                    if (val === String(costoMercado)) {
+                                      delete next[product.id_sku];
+                                    } else {
+                                      next[product.id_sku] = val; // Store empty string temporarily
+                                    }
+                                    return next;
+                                  });
+                                } else {
                                   setPendingChanges((prev) => ({
                                     ...prev,
                                     [product.id_sku]: val,
@@ -717,11 +777,43 @@ export function ProductList({ active }: { active: boolean }) {
                   <div className="flex justify-between items-center py-2 bg-slate-50 dark:bg-slate-900/50 rounded-md px-3 border border-slate-100 dark:border-slate-800">
                     <div className="flex flex-col">
                       <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">
-                        Acabado
+                        Acabado | Almacén
                       </span>
-                      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                        {product.nombre_acabado || "-"}
-                      </span>
+                      {isEditMode ? (
+                        <div className="flex items-center gap-1 mt-1">
+                          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                            {product.nombre_acabado || "-"} |
+                          </span>
+                          <select
+                            className={`text-[10px] w-24 bg-transparent border rounded px-1 py-1 cursor-pointer hover:bg-slate-50 focus:outline-none focus:ring-1 focus:ring-blue-400 ${pendingAlmacenChanges[product.id_sku] !== undefined ? "bg-yellow-50 border-yellow-400 font-bold" : "border-slate-200"}`}
+                            value={pendingAlmacenChanges[product.id_sku] !== undefined ? pendingAlmacenChanges[product.id_sku] : (product.id_almacen || "")}
+                            onChange={(e) => {
+                              const newAlmacen = e.target.value;
+                              if (newAlmacen !== (product.id_almacen || "")) {
+                                setPendingAlmacenChanges((prev) => ({
+                                  ...prev,
+                                  [product.id_sku]: newAlmacen,
+                                }));
+                              } else {
+                                setPendingAlmacenChanges((prev) => {
+                                  const next = { ...prev };
+                                  delete next[product.id_sku];
+                                  return next;
+                                });
+                              }
+                            }}
+                          >
+                            <option value="">Sin Asignar</option>
+                            {almacenes?.map((a: any) => (
+                              <option key={a.id_almacen} value={a.id_almacen}>{a.nombre_almacen}</option>
+                            ))}
+                          </select>
+                        </div>
+                      ) : (
+                        <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                          {product.nombre_acabado || "-"} | {product.nombre_almacen || "N/A"}
+                        </span>
+                      )}
                     </div>
                     <div className="flex flex-col text-right">
                       <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">

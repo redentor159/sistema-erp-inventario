@@ -59,6 +59,10 @@ export function ProductFormCmp({ onSuccess, initialData }: ProductFormProps) {
     queryKey: ["mstAcabados"],
     queryFn: catApi.getAcabados,
   });
+  const { data: almacenes } = useQuery({
+    queryKey: ["mstAlmacenes"],
+    queryFn: catApi.getAlmacenes,
+  });
 
   const form = useForm<ProductoVarianteForm>({
     resolver: zodResolver(productoVarianteSchema) as any,
@@ -69,6 +73,7 @@ export function ProductFormCmp({ onSuccess, initialData }: ProductFormProps) {
       id_marca: initialData?.id_marca || "",
       id_material: initialData?.id_material || "",
       id_acabado: initialData?.id_acabado || "",
+      id_almacen: initialData?.id_almacen || "",
 
       // === Datos Generales ===
       cod_proveedor: initialData?.cod_proveedor || "",
@@ -349,6 +354,33 @@ export function ProductFormCmp({ onSuccess, initialData }: ProductFormProps) {
                       {marcas?.map((m: any) => (
                         <SelectItem key={m.id_marca} value={m.id_marca}>
                           {m.nombre_marca} ({m.id_marca})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="id_almacen"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Almacén</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value || undefined}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {almacenes?.map((a: any) => (
+                        <SelectItem key={a.id_almacen} value={a.id_almacen}>
+                          {a.nombre_almacen}
                         </SelectItem>
                       ))}
                     </SelectContent>
