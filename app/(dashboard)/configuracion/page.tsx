@@ -1,15 +1,20 @@
 import { ConfigGeneralFormCmp } from "@/components/mst/config-general-form";
+import { Settings2 } from "lucide-react";
 
 export default function SettingsPage() {
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="flex-1 space-y-6 p-6">
       <div className="flex items-center justify-between space-y-2">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-primary">
-            Configuración General
-          </h2>
-          <p className="text-muted-foreground">
-            Ajustes globales del sistema, impuestos y variables financieras.
+          <div className="flex items-center gap-2 mb-1">
+            <Settings2 className="h-6 w-6 text-slate-600" />
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+              Configuración General
+            </h2>
+          </div>
+          <p className="text-muted-foreground mt-1">
+            Gestione la identidad de su empresa, parámetros financieros y
+            variables globales.
           </p>
         </div>
       </div>

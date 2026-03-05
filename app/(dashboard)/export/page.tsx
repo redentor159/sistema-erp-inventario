@@ -21,6 +21,7 @@ import {
   ShoppingCart,
   Database,
   Filter,
+  BarChart2,
 } from "lucide-react";
 
 import { exportDataToExcelType } from "@/lib/export/excel-export";
@@ -63,12 +64,15 @@ export default function ExportPage() {
   };
 
   return (
-    <div className="space-y-6 p-6 max-w-7xl mx-auto">
+    <div className="space-y-6 p-6">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900">
-            Generador de Reportes
-          </h2>
+          <div className="flex items-center gap-2 mb-1">
+            <BarChart2 className="h-6 w-6 text-slate-600" />
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+              Generador de Reportes
+            </h2>
+          </div>
           <p className="text-muted-foreground mt-1">
             Exportación de datos estructurados multi-hoja, optimizados para
             Power BI y Excel Avanzado.

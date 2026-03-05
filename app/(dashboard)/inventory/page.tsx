@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { trxApi } from "@/lib/api/trx";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { Warehouse } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -27,13 +28,16 @@ export default function InventoryPage() {
   // Kardex Query moved to KardexList component
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="flex-1 space-y-6 p-6">
       <div className="flex items-center justify-between space-y-2">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-primary">
-            Gestión de Inventario
-          </h2>
-          <p className="text-muted-foreground">
+          <div className="flex items-center gap-2 mb-1">
+            <Warehouse className="h-6 w-6 text-slate-600" />
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+              Gestión de Inventario
+            </h2>
+          </div>
+          <p className="text-muted-foreground mt-1">
             Control de stock, registro de compras y salidas de material.
           </p>
         </div>

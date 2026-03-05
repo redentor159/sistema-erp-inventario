@@ -38,15 +38,22 @@ export default function DashboardPage() {
   ] as const;
 
   return (
-    <div className="flex flex-col space-y-4 h-[calc(100vh-100px)]">
-      <div className="flex flex-col md:flex-row md:items-baseline gap-2 md:gap-4 border-b pb-2">
-        <h2 className="text-xl font-bold tracking-tight">Cockpit MTO</h2>
-        <p className="text-sm text-muted-foreground">
-          Tablero de Inteligencia Operativa y Control de Producción.
-        </p>
+    <div className="flex flex-col flex-1 space-y-6 p-6 min-h-0">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-100 pb-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <LayoutDashboard className="h-6 w-6 text-slate-600" />
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+              Panel Principal
+            </h2>
+          </div>
+          <p className="text-muted-foreground mt-1">
+            Tablero de Inteligencia Operativa y Control de Producción.
+          </p>
+        </div>
       </div>
 
-      <div className="flex flex-1 gap-6 overflow-hidden">
+      <div className="flex flex-1 gap-6 overflow-hidden min-h-0">
         {/* Sidebar Navigation */}
         <aside className="w-64 flex-none hidden md:block border-r pr-4 space-y-2">
           {navItems.map((item) => (

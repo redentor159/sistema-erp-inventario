@@ -22,7 +22,7 @@ export default function DashboardLayout({
               ERP Yahiro
             </span>
           </header>
-          <div className="p-4 md:p-8 flex-1 print:p-0">{children}</div>
+          <div className="flex-1 flex flex-col print:p-0">{children}</div>
         </main>
       </div>
     </AuthGuard>

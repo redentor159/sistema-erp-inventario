@@ -13,6 +13,7 @@ import {
   HelpCircle,
   Copy,
   Clipboard,
+  Factory,
 } from "lucide-react";
 import { KanbanBoard } from "@/components/production/kanban-board";
 import { WorkOrderDialog } from "@/components/production/work-order-dialog";
@@ -305,14 +306,17 @@ export default function ProductionPage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
-    <div className="flex flex-col min-h-screen space-y-4 pb-10">
+    <div className="flex flex-col min-h-screen space-y-4 pb-10 p-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">
-            Tablero de Producción
-          </h2>
-          <p className="text-muted-foreground flex items-center gap-2">
+          <div className="flex items-center gap-2 mb-1">
+            <Factory className="h-6 w-6 text-slate-600" />
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+              Tablero de Producción
+            </h2>
+          </div>
+          <p className="text-muted-foreground mt-1 flex items-center gap-2">
             Gestión Visual
             <Button
               variant="ghost"

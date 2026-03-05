@@ -156,11 +156,11 @@ function SectionAccordion({
 }) {
     const [open, setOpen] = useState(defaultOpen);
     return (
-        <div className="border border-slate-200 rounded-lg overflow-hidden">
+        <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm bg-white">
             <button
                 type="button"
                 onClick={() => setOpen(!open)}
-                className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+                className="w-full flex items-center justify-between px-4 py-3 bg-white hover:bg-slate-50 border-b border-slate-100 transition-colors text-left"
             >
                 <span className="text-sm font-semibold text-slate-700">{title}</span>
                 {open ? (
@@ -284,17 +284,17 @@ export default function HojasConteoPage() {
     };
 
     return (
-        <div className="space-y-4 max-w-7xl mx-auto">
+        <div className="space-y-6 p-6">
             {/* ── Page Header ── */}
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
                         <ClipboardList className="h-6 w-6 text-slate-600" />
-                        <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+                        <h2 className="text-3xl font-bold tracking-tight text-slate-900">
                             Hojas de Conteo Físico
                         </h2>
                     </div>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-muted-foreground mt-1">
                         Genera hojas de conteo ultra-compactas en PDF y Excel para el operario de almacén.
                     </p>
                 </div>
@@ -304,206 +304,209 @@ export default function HojasConteoPage() {
             </div>
 
             {/* ── Main Grid ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
 
                 {/* ══ Left: Quick Presets + Summary ══════════════════════════════════ */}
-                <div className="space-y-3">
-                    <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-4">
-                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
-                            🚀 Modos Rápidos
-                        </h3>
-                        <div className="space-y-2">
-                            {PRESETS.map((preset) => {
-                                const isActive = config.modo === preset.id;
-                                const Icon = preset.icon;
-                                return (
-                                    <div key={preset.id}>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                patch({
-                                                    modo: preset.id,
-                                                    agrupar_por: preset.id === "RETAZOS" ? null : config.agrupar_por,
-                                                });
-                                            }}
-                                            className={`w-full text-left p-3 rounded-lg border-2 transition-all ${isActive
-                                                ? `${preset.activeBg} ${preset.activeBorder}`
-                                                : `bg-white ${preset.borderCls}`
-                                                }`}
-                                        >
-                                            <div className="flex items-center gap-2">
-                                                <Icon
-                                                    className="h-4 w-4 flex-shrink-0"
-                                                    style={{ color: isActive ? preset.accent : "#94A3B8" }}
-                                                />
-                                                <span
-                                                    className="text-xs font-semibold"
-                                                    style={{ color: isActive ? preset.accent : "#334155" }}
-                                                >
-                                                    {preset.label}
-                                                </span>
-                                                {isActive && (
-                                                    <span className={`ml-auto text-xs px-1.5 py-0.5 rounded-full font-medium ${preset.badgeCls}`}>
-                                                        Activo
+                <div className="space-y-4">
+                    <div className="border border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden">
+                        <div className="pb-3 border-b border-slate-100 px-4 pt-4">
+                            <h3 className="text-lg font-semibold flex items-center gap-2">
+                                🚀 Modos Rápidos
+                            </h3>
+                        </div>
+                        <div className="pt-4 px-4 pb-4">
+                            <div className="space-y-2">
+                                {PRESETS.map((preset) => {
+                                    const isActive = config.modo === preset.id;
+                                    const Icon = preset.icon;
+                                    return (
+                                        <div key={preset.id}>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    patch({
+                                                        modo: preset.id,
+                                                        agrupar_por: preset.id === "RETAZOS" ? null : config.agrupar_por,
+                                                    });
+                                                }}
+                                                className={`w-full text-left p-3 rounded-lg border-2 transition-all ${isActive
+                                                    ? `${preset.activeBg} ${preset.activeBorder}`
+                                                    : `bg-white ${preset.borderCls}`
+                                                    }`}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <Icon
+                                                        className="h-4 w-4 flex-shrink-0"
+                                                        style={{ color: isActive ? preset.accent : "#94A3B8" }}
+                                                    />
+                                                    <span
+                                                        className="text-xs font-semibold"
+                                                        style={{ color: isActive ? preset.accent : "#334155" }}
+                                                    >
+                                                        {preset.label}
                                                     </span>
+                                                    {isActive && (
+                                                        <span className={`ml-auto text-xs px-1.5 py-0.5 rounded-full font-medium ${preset.badgeCls}`}>
+                                                            Activo
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {isActive && (
+                                                    <p className="text-xs text-slate-500 mt-1 ml-6">
+                                                        {preset.desc}
+                                                    </p>
                                                 )}
-                                            </div>
+                                            </button>
+
+                                            {/* Inline sub-options per preset */}
                                             {isActive && (
-                                                <p className="text-xs text-slate-500 mt-1 ml-6">
-                                                    {preset.desc}
-                                                </p>
-                                            )}
-                                        </button>
-
-                                        {/* Inline sub-options per preset */}
-                                        {isActive && (
-                                            <div className="bg-slate-50 border border-slate-200 border-t-0 rounded-b-lg px-3 py-2 space-y-2">
-                                                {preset.id === "POR_SISTEMA" && (
-                                                    <div>
-                                                        <FieldLabel>Serie / Sistema</FieldLabel>
-                                                        <select
-                                                            className="w-full text-xs border border-slate-200 rounded-md px-2 py-1.5 bg-white focus:ring-1 focus:ring-blue-500"
-                                                            value={config.id_sistema ?? ""}
-                                                            onChange={(e) => patch({ id_sistema: e.target.value })}
-                                                        >
-                                                            <option value="">— Seleccione una serie —</option>
-                                                            {(masterData?.sistemas ?? []).map((s) => (
-                                                                <option key={s.id_sistema} value={s.id_sistema}>
-                                                                    {s.nombre_comercial}
-                                                                </option>
-                                                            ))}
-                                                        </select>
-                                                    </div>
-                                                )}
-
-                                                {preset.id === "POR_FAMILIA" && (
-                                                    <>
-                                                        <div className="flex items-center gap-3">
-                                                            <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    className="h-3 w-3"
-                                                                    checked={!!config.todas_familias}
-                                                                    onChange={(e) => patch({ todas_familias: e.target.checked })}
-                                                                />
-                                                                Todas las familias
-                                                            </label>
-                                                            <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    className="h-3 w-3"
-                                                                    checked={!!config.incluir_sin_familia}
-                                                                    onChange={(e) => patch({ incluir_sin_familia: e.target.checked })}
-                                                                />
-                                                                Incluir sin familia
-                                                            </label>
-                                                        </div>
-                                                        {!config.todas_familias && (
-                                                            <div>
-                                                                <FieldLabel>Familia específica</FieldLabel>
-                                                                <select
-                                                                    className="w-full text-xs border border-slate-200 rounded-md px-2 py-1.5 bg-white focus:ring-1 focus:ring-green-500"
-                                                                    value={config.id_familia ?? ""}
-                                                                    onChange={(e) => patch({ id_familia: e.target.value || null })}
-                                                                >
-                                                                    <option value="">— Seleccione familia —</option>
-                                                                    {(masterData?.familias ?? []).map((f) => (
-                                                                        <option key={f.id_familia} value={f.id_familia}>
-                                                                            {f.nombre_familia}
-                                                                        </option>
-                                                                    ))}
-                                                                </select>
-                                                            </div>
-                                                        )}
-                                                    </>
-                                                )}
-
-                                                {preset.id === "POR_ABC" && (
-                                                    <>
+                                                <div className="bg-slate-50 border border-slate-200 border-t-0 rounded-b-lg px-3 py-2 space-y-2">
+                                                    {preset.id === "POR_SISTEMA" && (
                                                         <div>
-                                                            <FieldLabel>Clase(s) ABC</FieldLabel>
-                                                            <div className="flex gap-2">
-                                                                {["A", "B", "C"].map((cls) => (
-                                                                    <ToggleChip
-                                                                        key={cls}
-                                                                        label={`Clase ${cls}`}
-                                                                        active={(config.clasificacion_abc ?? []).includes(cls)}
-                                                                        onClick={() => toggleAbcClass(cls)}
-                                                                        colorCls={
-                                                                            cls === "A" ? "bg-violet-600 text-white" :
-                                                                                cls === "B" ? "bg-violet-400 text-white" :
-                                                                                    "bg-violet-200 text-violet-800"
-                                                                        }
-                                                                    />
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                        <div>
-                                                            <FieldLabel>Período de análisis</FieldLabel>
+                                                            <FieldLabel>Serie / Sistema</FieldLabel>
                                                             <select
-                                                                className="w-full text-xs border border-slate-200 rounded-md px-2 py-1.5 bg-white focus:ring-1 focus:ring-violet-500"
-                                                                value={config.dias_analisis ?? 90}
-                                                                onChange={(e) => patch({ dias_analisis: Number(e.target.value) })}
+                                                                className="w-full text-xs border border-slate-200 rounded-md px-2 py-1.5 bg-white focus:ring-1 focus:ring-blue-500"
+                                                                value={config.id_sistema ?? ""}
+                                                                onChange={(e) => patch({ id_sistema: e.target.value })}
                                                             >
-                                                                {[30, 60, 90, 180, 365].map((d) => (
-                                                                    <option key={d} value={d}>Últimos {d} días</option>
+                                                                <option value="">— Seleccione una serie —</option>
+                                                                {(masterData?.sistemas ?? []).map((s) => (
+                                                                    <option key={s.id_sistema} value={s.id_sistema}>
+                                                                        {s.nombre_comercial}
+                                                                    </option>
                                                                 ))}
                                                             </select>
                                                         </div>
-                                                    </>
-                                                )}
+                                                    )}
 
-                                                {preset.id === "STOCK_CRITICO" && (
-                                                    <div className="space-y-2">
-                                                        <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
-                                                            <input
-                                                                type="checkbox"
-                                                                className="h-3 w-3"
-                                                                checked={!!config.incluir_negativos}
-                                                                onChange={(e) => patch({ incluir_negativos: e.target.checked })}
-                                                            />
-                                                            Incluir stock negativo
-                                                        </label>
-                                                        <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
-                                                            <input
-                                                                type="checkbox"
-                                                                className="h-3 w-3"
-                                                                checked={!!config.incluir_bajo_minimo}
-                                                                onChange={(e) => patch({ incluir_bajo_minimo: e.target.checked })}
-                                                            />
-                                                            Incluir bajo mínimo
-                                                        </label>
-                                                    </div>
-                                                )}
+                                                    {preset.id === "POR_FAMILIA" && (
+                                                        <>
+                                                            <div className="flex items-center gap-3">
+                                                                <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        className="h-3 w-3"
+                                                                        checked={!!config.todas_familias}
+                                                                        onChange={(e) => patch({ todas_familias: e.target.checked })}
+                                                                    />
+                                                                    Todas las familias
+                                                                </label>
+                                                                <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        className="h-3 w-3"
+                                                                        checked={!!config.incluir_sin_familia}
+                                                                        onChange={(e) => patch({ incluir_sin_familia: e.target.checked })}
+                                                                    />
+                                                                    Incluir sin familia
+                                                                </label>
+                                                            </div>
+                                                            {!config.todas_familias && (
+                                                                <div>
+                                                                    <FieldLabel>Familia específica</FieldLabel>
+                                                                    <select
+                                                                        className="w-full text-xs border border-slate-200 rounded-md px-2 py-1.5 bg-white focus:ring-1 focus:ring-green-500"
+                                                                        value={config.id_familia ?? ""}
+                                                                        onChange={(e) => patch({ id_familia: e.target.value || null })}
+                                                                    >
+                                                                        <option value="">— Seleccione familia —</option>
+                                                                        {(masterData?.familias ?? []).map((f) => (
+                                                                            <option key={f.id_familia} value={f.id_familia}>
+                                                                                {f.nombre_familia}
+                                                                            </option>
+                                                                        ))}
+                                                                    </select>
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    )}
 
-                                                {preset.id === "RETAZOS" && (
-                                                    <p className="text-xs text-amber-700 bg-amber-50 rounded px-2 py-1 border border-amber-100">
-                                                        💡 Lista todos los retazos con estado <strong>DISPONIBLE</strong> para verificar longitud y ubicación.
-                                                    </p>
-                                                )}
+                                                    {preset.id === "POR_ABC" && (
+                                                        <>
+                                                            <div>
+                                                                <FieldLabel>Clase(s) ABC</FieldLabel>
+                                                                <div className="flex gap-2">
+                                                                    {["A", "B", "C"].map((cls) => (
+                                                                        <ToggleChip
+                                                                            key={cls}
+                                                                            label={`Clase ${cls}`}
+                                                                            active={(config.clasificacion_abc ?? []).includes(cls)}
+                                                                            onClick={() => toggleAbcClass(cls)}
+                                                                            colorCls={
+                                                                                cls === "A" ? "bg-violet-600 text-white" :
+                                                                                    cls === "B" ? "bg-violet-400 text-white" :
+                                                                                        "bg-violet-200 text-violet-800"
+                                                                            }
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <FieldLabel>Período de análisis</FieldLabel>
+                                                                <select
+                                                                    className="w-full text-xs border border-slate-200 rounded-md px-2 py-1.5 bg-white focus:ring-1 focus:ring-violet-500"
+                                                                    value={config.dias_analisis ?? 90}
+                                                                    onChange={(e) => patch({ dias_analisis: Number(e.target.value) })}
+                                                                >
+                                                                    {[30, 60, 90, 180, 365].map((d) => (
+                                                                        <option key={d} value={d}>Últimos {d} días</option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                        </>
+                                                    )}
 
-                                                {preset.id === "CUSTOM" && (
-                                                    <p className="text-xs text-teal-700 bg-teal-50 rounded px-2 py-1 border border-teal-100">
-                                                        ⚙️ Configure los filtros avanzados en el panel derecho (sección B).
-                                                    </p>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
+                                                    {preset.id === "STOCK_CRITICO" && (
+                                                        <div className="space-y-2">
+                                                            <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    className="h-3 w-3"
+                                                                    checked={!!config.incluir_negativos}
+                                                                    onChange={(e) => patch({ incluir_negativos: e.target.checked })}
+                                                                />
+                                                                Incluir stock negativo
+                                                            </label>
+                                                            <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    className="h-3 w-3"
+                                                                    checked={!!config.incluir_bajo_minimo}
+                                                                    onChange={(e) => patch({ incluir_bajo_minimo: e.target.checked })}
+                                                                />
+                                                                Incluir bajo mínimo
+                                                            </label>
+                                                        </div>
+                                                    )}
+
+                                                    {preset.id === "RETAZOS" && (
+                                                        <p className="text-xs text-amber-700 bg-amber-50 rounded px-2 py-1 border border-amber-100">
+                                                            💡 Lista todos los retazos con estado <strong>DISPONIBLE</strong> para verificar longitud y ubicación.
+                                                        </p>
+                                                    )}
+
+                                                    {preset.id === "CUSTOM" && (
+                                                        <p className="text-xs text-teal-700 bg-teal-50 rounded px-2 py-1 border border-teal-100">
+                                                            ⚙️ Configure los filtros avanzados en el panel derecho (sección B).
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
 
                     {/* Summary Card */}
-                    <div
-                        className="bg-white border-2 rounded-xl shadow-sm p-4"
-                        style={{ borderColor: activePreset.accent }}
-                    >
-                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
-                            📊 Resumen del Conteo
-                        </h3>
-                        <div className="space-y-2">
+                    <div className="border border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden">
+                        <div className="pb-3 border-b border-slate-100 px-4 pt-4">
+                            <h3 className="text-lg font-semibold flex items-center gap-2">
+                                📊 Resumen del Conteo
+                            </h3>
+                        </div>
+                        <div className="space-y-2 px-4 pt-4">
                             <SummaryRow label="Modo activo" value={activePreset.label} />
                             <SummaryRow
                                 label="Productos estimados"
@@ -554,13 +557,12 @@ export default function HojasConteoPage() {
                         )}
 
                         {/* Action buttons */}
-                        <div className="mt-4 space-y-2">
+                        <div className="mt-4 space-y-2 pb-4">
                             <button
                                 type="button"
                                 disabled={!!loadingAction}
                                 onClick={() => handleGenerate("pdf")}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-60"
-                                style={{ backgroundColor: activePreset.accent }}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-60 bg-slate-700 hover:bg-slate-800"
                             >
                                 {loadingAction === "pdf" ? (
                                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -573,12 +575,7 @@ export default function HojasConteoPage() {
                                 type="button"
                                 disabled={!!loadingAction}
                                 onClick={() => handleGenerate("xlsx")}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold border-2 transition-all disabled:opacity-60"
-                                style={{
-                                    color: activePreset.accent,
-                                    borderColor: activePreset.accent,
-                                    backgroundColor: "white",
-                                }}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold border-2 border-slate-300 text-slate-700 hover:border-slate-400 bg-white transition-all disabled:opacity-60"
                             >
                                 {loadingAction === "xlsx" ? (
                                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -592,7 +589,7 @@ export default function HojasConteoPage() {
                 </div>
 
                 {/* ══ Right: Advanced Configuration ══════════════════════════════════ */}
-                <div className="space-y-3">
+                <div className="space-y-4">
 
                     {/* Section A: Opciones Generales */}
                     <SectionAccordion title="A.  Opciones Generales del Documento" defaultOpen>

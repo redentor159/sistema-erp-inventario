@@ -169,7 +169,7 @@ export function RecipeModelList({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b space-y-3">
+      <div className="p-4 border-b border-slate-100 space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-sm text-slate-700">Modelos</h3>
           <Button

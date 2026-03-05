@@ -290,7 +290,7 @@ export function RecipeEditor({ modelId }: RecipeEditorProps) {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b bg-slate-50 shrink-0">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-white shrink-0">
         <div>
           <h2 className="text-base font-bold">
             {modelo?.nombre_comercial || modelId}
