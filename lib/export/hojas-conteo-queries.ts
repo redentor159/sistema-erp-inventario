@@ -350,6 +350,10 @@ function applyStockFilters(query: any, config: CountSheetConfig): any {
             if (config.sistemas && config.sistemas.length > 0) {
                 query = query.in("id_sistema", config.sistemas);
             }
+            // familias: stored/filtered by nombre_familia (column exposed by the view)
+            if (config.familias && config.familias.length > 0) {
+                query = query.in("nombre_familia", config.familias);
+            }
             if (config.stock_min !== null && config.stock_min !== undefined) {
                 query = query.gte("stock_actual", config.stock_min);
             }
