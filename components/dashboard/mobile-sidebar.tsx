@@ -24,6 +24,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { UserNav } from "@/components/dashboard/user-nav";
+import { NavItem } from "@/components/dashboard/nav-item";
 
 export function MobileSidebar() {
   const pathname = usePathname();
@@ -143,35 +144,5 @@ export function MobileSidebar() {
         </div>
       </SheetContent>
     </Sheet>
-  );
-}
-
-function NavItem({
-  href,
-  icon: Icon,
-  label,
-  active,
-  onClick,
-}: {
-  href: string;
-  icon: any;
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className={cn(
-        "flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-colors",
-        active
-          ? "bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-white"
-          : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700",
-      )}
-    >
-      <Icon className="h-5 w-5 mr-3" />
-      <span>{label}</span>
-    </Link>
   );
 }

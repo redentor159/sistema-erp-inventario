@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/dashboard/user-nav";
+import { NavItem } from "@/components/dashboard/nav-item";
 import { HelpPanel } from "@/components/dashboard/help-panel";
 
 export function AppSidebar() {
@@ -171,36 +172,5 @@ export function AppSidebar() {
 
       <UserNav collapsed={collapsed} />
     </aside>
-  );
-}
-
-function NavItem({
-  href,
-  icon: Icon,
-  label,
-  collapsed,
-  active,
-}: {
-  href: string;
-  icon: any;
-  label: string;
-  collapsed: boolean;
-  active: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={cn(
-        "flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors",
-        active
-          ? "bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-white"
-          : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700",
-        collapsed ? "justify-center" : "",
-      )}
-      title={collapsed ? label : undefined}
-    >
-      <Icon className={cn("h-5 w-5", !collapsed && "mr-3")} />
-      {!collapsed && <span>{label}</span>}
-    </Link>
   );
 }
