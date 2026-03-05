@@ -55,6 +55,13 @@ import {
   Save,
   ChevronDown,
   ChevronRight,
+  Layout,
+  Copy,
+  Nut,
+  Settings,
+  Maximize,
+  Wrench,
+  Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToastHelper } from "@/lib/hooks/useToastHelper";
@@ -70,37 +77,37 @@ import {
 // ═══════════════════════════════════════════════════════════════════
 
 const SECCIONES = [
-  { key: "MARCO", label: "Marco", icon: "🗂️", mode: "perfil" as const },
-  { key: "HOJAS", label: "Hojas", icon: "📄", mode: "perfil" as const },
+  { key: "MARCO", label: "Marco", icon: Layout, mode: "perfil" as const },
+  { key: "HOJAS", label: "Hojas", icon: Copy, mode: "perfil" as const },
   {
     key: "ACCESORIOS_MARCO",
     label: "Accesorios en Marco",
-    icon: "🔩",
+    icon: Nut,
     mode: "accesorio" as const,
   },
   {
     key: "ACCESORIOS_HOJAS",
     label: "Accesorios en Hojas",
-    icon: "⚙️",
+    icon: Settings,
     mode: "accesorio" as const,
   },
   {
     key: "INTERIOR",
     label: "Interior / Vidrio",
-    icon: "🪟",
+    icon: Maximize,
     mode: "perfil" as const,
   },
-  { key: "CRUCES", label: "Cruces", icon: "✚", mode: "perfil" as const },
+  { key: "CRUCES", label: "Cruces", icon: Plus, mode: "perfil" as const },
   {
     key: "ACCESORIOS_CRUCES",
     label: "Accesorios en Cruces",
-    icon: "🔧",
+    icon: Wrench,
     mode: "accesorio" as const,
   },
   {
     key: "GENERAL",
     label: "General / Servicios",
-    icon: "📦",
+    icon: Package,
     mode: "accesorio" as const,
   },
 ];
@@ -525,7 +532,7 @@ function SectionBlock({
             ) : (
               <ChevronRight className="h-3.5 w-3.5" />
             )}
-            {sec.icon} {sec.label}
+            <sec.icon className="h-4 w-4 text-slate-500" /> {sec.label}
             <span className="text-[10px] bg-slate-200 text-slate-600 px-1.5 rounded-full ml-1">
               {lines.length}
             </span>
@@ -1336,7 +1343,7 @@ function AddDialog({
             {isPerfil ? "Agregar Perfil" : "Agregar Accesorio"}
           </DialogTitle>
           <DialogDescription>
-            Sección: {secDef?.icon} {secDef?.label}
+            Sección: {secDef?.icon && <secDef.icon className="h-3.5 w-3.5 inline-block mr-1 text-slate-500 mb-0.5" />} {secDef?.label}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">

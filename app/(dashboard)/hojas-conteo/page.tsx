@@ -20,6 +20,8 @@ import {
     EyeOff,
     Loader2,
     CheckCircle2,
+    Zap,
+    BarChart2,
 } from "lucide-react";
 
 import {
@@ -311,7 +313,8 @@ export default function HojasConteoPage() {
                     <div className="border border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden">
                         <div className="pb-3 border-b border-slate-100 px-4 pt-4">
                             <h3 className="text-lg font-semibold flex items-center gap-2">
-                                🚀 Modos Rápidos
+                                <Zap className="h-5 w-5 text-slate-500" />
+                                Modos Rápidos
                             </h3>
                         </div>
                         <div className="pt-4 px-4 pb-4">
@@ -481,13 +484,13 @@ export default function HojasConteoPage() {
 
                                                     {preset.id === "RETAZOS" && (
                                                         <p className="text-xs text-amber-700 bg-amber-50 rounded px-2 py-1 border border-amber-100">
-                                                            💡 Lista todos los retazos con estado <strong>DISPONIBLE</strong> para verificar longitud y ubicación.
+                                                            Lista todos los retazos con estado <strong>DISPONIBLE</strong> para verificar longitud y ubicación.
                                                         </p>
                                                     )}
 
                                                     {preset.id === "CUSTOM" && (
                                                         <p className="text-xs text-teal-700 bg-teal-50 rounded px-2 py-1 border border-teal-100">
-                                                            ⚙️ Configure los filtros avanzados en el panel derecho (sección B).
+                                                            Configure los filtros avanzados en el panel derecho (sección B).
                                                         </p>
                                                     )}
                                                 </div>
@@ -503,7 +506,8 @@ export default function HojasConteoPage() {
                     <div className="border border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden">
                         <div className="pb-3 border-b border-slate-100 px-4 pt-4">
                             <h3 className="text-lg font-semibold flex items-center gap-2">
-                                📊 Resumen del Conteo
+                                <BarChart2 className="h-5 w-5 text-slate-500" />
+                                Resumen del Conteo
                             </h3>
                         </div>
                         <div className="space-y-2 px-4 pt-4">
@@ -557,7 +561,7 @@ export default function HojasConteoPage() {
                         )}
 
                         {/* Action buttons */}
-                        <div className="mt-4 space-y-2 pb-4">
+                        <div className="mt-4 space-y-2 pb-4 px-4">
                             <button
                                 type="button"
                                 disabled={!!loadingAction}
@@ -627,16 +631,16 @@ export default function HojasConteoPage() {
                         </div>
 
                         {/* Conteo Ciego Toggle */}
-                        <div className="flex items-start justify-between gap-4 mt-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                            <div>
+                        <div className="flex items-center justify-between gap-4 mt-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <div className="flex-1 min-w-0">
                                 <div className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                                    {config.conteo_ciego ? <EyeOff className="h-4 w-4 text-slate-500" /> : <Eye className="h-4 w-4 text-slate-500" />}
+                                    {config.conteo_ciego ? <EyeOff className="h-4 w-4 text-slate-500 flex-shrink-0" /> : <Eye className="h-4 w-4 text-slate-500 flex-shrink-0" />}
                                     Modo Conteo Ciego
                                 </div>
                                 <p className="text-xs text-slate-500 mt-0.5">
                                     {config.conteo_ciego
-                                        ? "✅ Activo — La columna «Stock Sistema» está OCULTA. El operario cuenta sin sesgo."
-                                        : "ℹ️ Desactivado — Se mostrará la columna «Stock Sistema» en el documento."}
+                                        ? "Activo — La columna «Stock Sistema» está OCULTA."
+                                        : "Desactivado — Se mostrará la columna «Stock Sistema» en el documento."}
                                 </p>
                             </div>
                             <button
@@ -646,7 +650,7 @@ export default function HojasConteoPage() {
                                     }`}
                             >
                                 <span
-                                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${config.conteo_ciego ? "translate-x-5" : "translate-x-0.5"
+                                    className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${config.conteo_ciego ? "translate-x-5" : "translate-x-0"
                                         }`}
                                 />
                             </button>
