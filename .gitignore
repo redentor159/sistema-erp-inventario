@@ -47,3 +47,11 @@ _EMERGENCIA_SUPABASE/
 # Pruebas e2e temporales
 playwright-report/
 test-results/
+
+# ====================================================================
+# Entornos de IA y Agent Skills (Windsurf, Cursor, Cline)
+# ====================================================================
+.agents/
+.agent/
+.cursor/
+.windsurf/

@@ -121,10 +121,10 @@ function makeStyles(accentColor: string) {
             alignItems: "center",
         },
         tableRowAlt: {
-            backgroundColor: "#F8FAFC",
+            backgroundColor: "#F3F3F3",  // very light gray stripe — minimal ink
         },
         tableRowCritical: {
-            backgroundColor: "#FEF2F2",
+            backgroundColor: "#FFFFFF",  // white — no red ink wasted
         },
         cell: {
             fontSize: 7,
@@ -376,8 +376,7 @@ function CountSheetDoc({ rows, config, accentColor }: CountSheetDocProps) {
                                     key={`row-${row.id_sku}-${row.id_retazo ?? idx}`}
                                     style={[
                                         styles.tableRow,
-                                        isAlt && !isCritical ? styles.tableRowAlt : {},
-                                        isCritical ? styles.tableRowCritical : {},
+                                        isAlt ? styles.tableRowAlt : {},
                                     ]}
                                     wrap={false}
                                 >
