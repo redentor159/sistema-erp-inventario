@@ -138,30 +138,23 @@ export const cotizacionesApi = {
     return data;
   },
 
-  /**
-   * Agrega una linea (Ventana/Ítem) a la cotización.
-   */
   addLineItem: async (idCotizacion: string, item: any) => {
-    const { data, error } = await supabase
-      .from("trx_cotizaciones_detalle")
-      .insert({
-        id_cotizacion: idCotizacion,
-        id_modelo: item.id_modelo,
-        color_perfiles: item.color_perfiles,
-        cantidad: item.cantidad,
-        ancho_mm: item.ancho_mm,
-        alto_mm: item.alto_mm,
-        tipo_vidrio: item.tipo_vidrio,
-        tipo_cierre: item.tipo_cierre,
-        etiqueta_item: item.etiqueta_item,
-        ubicacion: item.ubicacion,
-        opciones_seleccionadas: item.opciones_seleccionadas || {},
-      })
-      .select()
-      .single();
+    const { data: idLineaCot, error } = await supabase.rpc("fn_agregar_linea_cotizacion", {
+      p_id_cotizacion: idCotizacion,
+      p_id_modelo: item.id_modelo,
+      p_color_perfiles: item.color_perfiles,
+      p_cantidad: item.cantidad,
+      p_ancho_mm: item.ancho_mm,
+      p_alto_mm: item.alto_mm,
+      p_tipo_vidrio: item.tipo_vidrio,
+      p_tipo_cierre: item.tipo_cierre,
+      p_etiqueta_item: item.etiqueta_item,
+      p_ubicacion: item.ubicacion,
+      p_opciones_seleccionadas: item.opciones_seleccionadas || {},
+    });
 
     if (error) throw error;
-    return data;
+    return { id_linea_cot: idLineaCot };
   },
 
   /**

@@ -177,19 +177,11 @@ export const kanbanApi = {
 
   // Archive All Finished
   archiveAllFinished: async () => {
-    // We get all orders in 'column-finalizado'
-    const { data: finishedOrders, error: fetchError } = await supabase
-      .from("trx_kanban_orders")
-      .select("*")
-      .eq("column_id", "column-finalizado");
+    // Usar la RPC de lote atómico en base de datos
+    const { data: count, error } = await supabase.rpc("fn_archive_kanban_batch");
 
-    if (fetchError) throw fetchError;
-    if (!finishedOrders?.length) return;
-
-    // Loop and archive (ideally use a batch RPC, but keeping it simple for now)
-    for (const order of finishedOrders) {
-      await kanbanApi.archiveOrder(order.id, "Archivado", "column-finalizado");
-    }
+    if (error) throw error;
+    return count;
   },
 
   // Get History for Stats

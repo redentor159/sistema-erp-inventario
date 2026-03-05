@@ -256,7 +256,7 @@ export function CotizacionDetail({ id }: { id: string }) {
       } else {
         // CREATE PRODUCT
         const newLine = await cotizacionesApi.addLineItem(id, itemData);
-        await cotizacionesApi.triggerDespiece(newLine.id_linea_cot);
+        // Despiece ya se generó atómicamente en BD gracias a la RPC
 
         // Brief delay to ensure DB propagation
         await new Promise((r) => setTimeout(r, 800));
