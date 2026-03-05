@@ -64,6 +64,8 @@ import {
   Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 import { useToastHelper } from "@/lib/hooks/useToastHelper";
 import { ItemRenderer } from "@/components/trx/ItemRenderer";
 import {
@@ -130,6 +132,7 @@ interface RecipeEditorProps {
 
 export function RecipeEditor({ modelId }: RecipeEditorProps) {
   const toast = useToastHelper();
+  const { toast: rawToast } = useToast();
   const qc = useQueryClient();
   const [preview, setPreview] = useState<FormulaVariables>(DEFAULT_PREVIEW);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -256,23 +259,34 @@ export function RecipeEditor({ modelId }: RecipeEditorProps) {
   );
 
   const deleteLine = useCallback(
-    async (r: RecetaLinea) => {
-      if (!confirm(`¿Eliminar "${r.nombre_componente}"?`)) return;
-      try {
-        await recetasApi.deleteRecetaLinea(r.id_receta);
-        // Also remove any pending changes for this line
-        setPendingChanges((prev) => {
-          const next = { ...prev };
-          delete next[r.id_receta];
-          return next;
-        });
-        qc.invalidateQueries({ queryKey: ["recetasLineas", modelId] });
-        toast.success("Eliminado", r.nombre_componente);
-      } catch (e: any) {
-        toast.error("Error", e.message);
-      }
+    (r: RecetaLinea) => {
+      rawToast({
+        title: `¿Eliminar "${r.nombre_componente}"?`,
+        action: (
+          <ToastAction
+            altText="Eliminar"
+            onClick={async () => {
+              try {
+                await recetasApi.deleteRecetaLinea(r.id_receta);
+                // Also remove any pending changes for this line
+                setPendingChanges((prev) => {
+                  const next = { ...prev };
+                  delete next[r.id_receta];
+                  return next;
+                });
+                qc.invalidateQueries({ queryKey: ["recetasLineas", modelId] });
+                toast.success("Eliminado", r.nombre_componente);
+              } catch (e: any) {
+                toast.error("Error", e.message);
+              }
+            }}
+          >
+            Sí, Eliminar
+          </ToastAction>
+        ),
+      });
     },
-    [modelId, qc, toast],
+    [modelId, qc, toast, rawToast],
   );
 
   // ── Empty state ──

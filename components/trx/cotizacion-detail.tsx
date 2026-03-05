@@ -48,8 +48,14 @@ import {
 } from "@/types/cotizaciones";
 import { MstCliente, MstMarca, MstAcabado, CatProductoVariante } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 
-import { CotizacionDespieceDialog } from "./cotizacion-despiece-dialog";
+import dynamic from "next/dynamic";
+
+const CotizacionDespieceDialog = dynamic(
+  () => import("./cotizacion-despiece-dialog").then((mod) => mod.CotizacionDespieceDialog),
+  { ssr: false }
+);
 
 export function CotizacionDetail({ id }: { id: string }) {
   const router = useRouter();
@@ -100,23 +106,32 @@ export function CotizacionDetail({ id }: { id: string }) {
   };
 
   // Handlers
-  async function handleCloneCotizacion() {
-    if (!confirm("¿Duplicar esta cotización?")) return;
-    try {
-      const newId = await cotizacionesApi.clonarCotizacion(id);
-      toast({
-        title: "Éxito",
-        description: "Cotización duplicada correctamente",
-      });
-      router.push(`/cotizaciones/detalle?id=${newId}`);
-    } catch (e) {
-      console.error(e);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudo duplicar la cotización",
-      });
-    }
+  function handleCloneCotizacion() {
+    toast({
+      title: "¿Duplicar cotización?",
+      description: "Se creará una copia exacta de esta cotización.",
+      action: (
+        <ToastAction altText="Duplicar" onClick={async () => {
+          try {
+            const newId = await cotizacionesApi.clonarCotizacion(id);
+            toast({
+              title: "Éxito",
+              description: "Cotización duplicada correctamente",
+            });
+            router.push(`/cotizaciones/detalle?id=${newId}`);
+          } catch (e) {
+            console.error(e);
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "No se pudo duplicar la cotización",
+            });
+          }
+        }}>
+          Sí, duplicar
+        </ToastAction>
+      ),
+    });
   }
 
   async function handleCloneItem(idLinea: string) {
@@ -137,67 +152,66 @@ export function CotizacionDetail({ id }: { id: string }) {
     }
   }
 
-  async function handleBulkUpdate(updates: any) {
-    if (!confirm(`¿Actualizar ${selectedItems.length} ítems?`)) return;
-    try {
-      setLoading(true);
-      await cotizacionesApi.updateLineItems(selectedItems, updates);
-      // Refresh to update prices if needed (despiece might need regen?
-      // Update only updates columns. To regen despiece we might need to trigger it for all.
-      // For now let's just reload. Despiece might use OLD values if not re-triggered.
-      // Logic improvement: allow API to trigger despiece after update.
-      // But for now color change doesn't always affect despiece price unless it's a different price?
-      // Yes it does. "Color" implies different material SKU.
-      // We should loop and trigger despiece?
-      // Or `updateLineItems` API could trigger it?
-      // The API I wrote is just a simple update.
-      // I'll stick to simple update for now, but warned user in prompt "Recalculando...".
-      // Actually, color change REQUIRES despiece recalc to find new profiles.
-
-      // Ejecutar despiece en paralelo para mejor performance
-      await Promise.all(
-        selectedItems.map((id) => cotizacionesApi.triggerDespiece(id)),
-      );
-
-      // Wait for DB propagation
-      await new Promise((r) => setTimeout(r, 800));
-
-      await load();
-      setSelectedItems([]);
-      toast({
-        title: "Éxito",
-        description: `${selectedItems.length} ítems actualizados correctamente`,
-      });
-    } catch (e) {
-      console.error(e);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudieron actualizar los ítems",
-      });
-    } finally {
-      setLoading(false);
-    }
+  function handleBulkUpdate(updates: any) {
+    toast({
+      title: `¿Actualizar ${selectedItems.length} ítems?`,
+      action: (
+        <ToastAction altText="Actualizar" onClick={async () => {
+          try {
+            setLoading(true);
+            await cotizacionesApi.updateLineItems(selectedItems, updates);
+            await Promise.all(
+              selectedItems.map((itemId) => cotizacionesApi.triggerDespiece(itemId)),
+            );
+            await load();
+            setSelectedItems([]);
+            toast({
+              title: "Éxito",
+              description: `${selectedItems.length} ítems actualizados correctamente`,
+            });
+          } catch (e) {
+            console.error(e);
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "No se pudieron actualizar los ítems",
+            });
+          } finally {
+            setLoading(false);
+          }
+        }}>
+          Sí, actualizar
+        </ToastAction>
+      ),
+    });
   }
 
   // Reload function
-  async function handleDeleteItem(idLinea: string) {
-    if (!confirm("¿Seguro que desea eliminar este ítem?")) return;
-    try {
-      await cotizacionesApi.deleteLineItem(idLinea);
-      toast({
-        title: "Eliminado",
-        description: "Ítem eliminado correctamente",
-      });
-      load();
-    } catch (e) {
-      console.error(e);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudo eliminar el ítem",
-      });
-    }
+  function handleDeleteItem(idLinea: string) {
+    toast({
+      title: "¿Seguro que desea eliminar este ítem?",
+      action: (
+        <ToastAction altText="Eliminar" onClick={async () => {
+          try {
+            await cotizacionesApi.deleteLineItem(idLinea);
+            toast({
+              title: "Eliminado",
+              description: "Ítem eliminado correctamente",
+            });
+            load();
+          } catch (e) {
+            console.error(e);
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "No se pudo eliminar el ítem",
+            });
+          }
+        }}>
+          Sí, eliminar
+        </ToastAction>
+      ),
+    });
   }
 
   async function handleItemSaved(itemData: any) {
@@ -341,7 +355,7 @@ export function CotizacionDetail({ id }: { id: string }) {
           items.map((i) => cotizacionesApi.triggerDespiece(i.id_linea_cot)),
         );
         // Brief delay to ensure DB propagation
-        await new Promise((r) => setTimeout(r, 800));
+        load();
       }
 
       toast({
@@ -455,34 +469,40 @@ export function CotizacionDetail({ id }: { id: string }) {
         <div className="flex items-center gap-2">
           <Select
             value={cotizacion.estado}
-            onValueChange={async (newVal) => {
+            onValueChange={(newVal) => {
               let confirmMsg = `¿Cambiar estado a ${newVal}?`;
               if (newVal === "Finalizada")
-                confirmMsg =
-                  "¿Confirmar ENTREGA FINAL y registrar fecha de hoy?";
+                confirmMsg = "¿Confirmar ENTREGA FINAL y registrar fecha de hoy?";
 
-              if (!confirm(confirmMsg)) return;
+              toast({
+                title: confirmMsg,
+                action: (
+                  <ToastAction altText="Cambiar" onClick={async () => {
+                    let motivo = undefined;
+                    if (newVal === "Rechazada") {
+                      motivo = prompt("Motivo del rechazo (Opcional):") || undefined;
+                    }
 
-              let motivo = undefined;
-              if (newVal === "Rechazada") {
-                motivo = prompt("Motivo del rechazo (Opcional):") || undefined;
-              }
-
-              try {
-                await cotizacionesApi.updateEstado(id, newVal, motivo);
-                toast({
-                  title: "Estado Actualizado",
-                  description: `La cotización ahora está ${newVal}`,
-                });
-                load();
-              } catch (e: any) {
-                console.error(e);
-                toast({
-                  variant: "destructive",
-                  title: "Error",
-                  description: "No se pudo cambiar el estado",
-                });
-              }
+                    try {
+                      await cotizacionesApi.updateEstado(id, newVal, motivo);
+                      toast({
+                        title: "Estado Actualizado",
+                        description: `La cotización ahora está ${newVal}`,
+                      });
+                      load();
+                    } catch (e: any) {
+                      console.error(e);
+                      toast({
+                        variant: "destructive",
+                        title: "Error",
+                        description: "No se pudo cambiar el estado",
+                      });
+                    }
+                  }}>
+                    Sí, cambiar
+                  </ToastAction>
+                ),
+              });
             }}
           >
             <SelectTrigger className="w-[140px] h-9 bg-background border-input text-foreground font-medium">
@@ -579,9 +599,10 @@ export function CotizacionDetail({ id }: { id: string }) {
             size="sm"
             variant="secondary"
             onClick={() => {
-              alert(
-                "La MARCA se define a nivel global de la cotización (panel izquierdo).\nNo es posible mezclar marcas en una misma cotización por ahora.",
-              );
+              toast({
+                title: "Atención",
+                description: "La MARCA se define a nivel global de la cotización (panel izquierdo). No es posible mezclar marcas en una misma cotización por ahora.",
+              });
             }}
           >
             Cambiar Marca

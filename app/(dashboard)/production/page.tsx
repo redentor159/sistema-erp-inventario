@@ -15,7 +15,12 @@ import {
   Clipboard,
   Factory,
 } from "lucide-react";
-import { KanbanBoard } from "@/components/production/kanban-board";
+import dynamic from "next/dynamic";
+
+const KanbanBoard = dynamic(
+  () => import("@/components/production/kanban-board").then((mod) => mod.KanbanBoard),
+  { ssr: false }
+);
 import { WorkOrderDialog } from "@/components/production/work-order-dialog";
 import { ExportModal } from "@/components/production/export-modal";
 import { StatsModal } from "@/components/production/stats-modal";

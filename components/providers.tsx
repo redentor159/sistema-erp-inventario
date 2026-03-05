@@ -9,6 +9,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
+            // staleTime: 0 is correct globally for ERP (always fresh data)
+            // Master data queries (clientes, productos) SHOULD override this
+            // in their specific useQuery hooks (e.g., staleTime: 1000 * 60 * 5)
             staleTime: 0,
             refetchOnWindowFocus: true,
           },

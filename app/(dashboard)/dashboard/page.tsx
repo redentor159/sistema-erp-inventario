@@ -6,10 +6,20 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
-// Components (We will create these next)
-import { SheetExecutive } from "@/components/dashboard/sheet-executive";
-import { SheetAnalytics } from "@/components/dashboard/sheet-analytics";
-import { SheetCommercial } from "@/components/dashboard/sheet-commercial";
+import dynamic from "next/dynamic";
+
+const SheetExecutive = dynamic(
+  () => import("@/components/dashboard/sheet-executive").then((mod) => mod.SheetExecutive),
+  { ssr: false, loading: () => <div className="p-8 text-center text-muted-foreground">Cargando métricas...</div> }
+);
+const SheetAnalytics = dynamic(
+  () => import("@/components/dashboard/sheet-analytics").then((mod) => mod.SheetAnalytics),
+  { ssr: false, loading: () => <div className="p-8 text-center text-muted-foreground">Cargando gráficos...</div> }
+);
+const SheetCommercial = dynamic(
+  () => import("@/components/dashboard/sheet-commercial").then((mod) => mod.SheetCommercial),
+  { ssr: false, loading: () => <div className="p-8 text-center text-muted-foreground">Cargando embudo...</div> }
+);
 
 export default function DashboardPage() {
   const [activeView, setActiveView] = useState<
