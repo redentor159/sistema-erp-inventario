@@ -159,7 +159,7 @@ export function EntradaFormCmp({ onSuccess }: EntradaFormProps) {
                     <SelectContent>
                       {proveedores?.map((p: any) => (
                         <SelectItem key={p.id_proveedor} value={p.id_proveedor}>
-                          {p.razon_social} ({p.ruc})
+                          {p.nombre_comercial || p.razon_social} ({p.ruc})
                         </SelectItem>
                       ))}
                     </SelectContent>

@@ -5,12 +5,6 @@ import { Check, ChevronsUpDown, Loader2, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
-  Command,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -34,10 +28,21 @@ export function InlineProductCombobox({
   const [results, setResults] = React.useState<any[]>([]);
   const [selectedName, setSelectedName] = React.useState("");
   const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const listRef = React.useRef<HTMLDivElement>(null);
 
   const handleSearch = async (text: string) => {
     if (!text.trim()) {
-      setResults([]);
+      // If empty, load initial products
+      setLoading(true);
+      try {
+        const { data } = await catApi.getProductos({ pageSize: 50 });
+        setResults(data || []);
+      } catch (err) {
+        console.error("Error cargando productos:", err);
+      } finally {
+        setLoading(false);
+      }
       return;
     }
     setLoading(true);
@@ -78,10 +83,11 @@ export function InlineProductCombobox({
       setResults([]);
       return;
     }
+    // Focus input after popover opens
+    setTimeout(() => inputRef.current?.focus(), 0);
     if (query) return; // ya tiene búsqueda activa
     setLoading(true);
     try {
-      // Supabase ordena por orden_prioridad (stock primero) por defecto
       const { data } = await catApi.getProductos({ pageSize: 50 });
       setResults(data || []);
     } catch (err) {
@@ -116,10 +122,11 @@ export function InlineProductCombobox({
         align="start"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        {/* Input propio para que no tenga el comportamiento de Command */}
+        {/* Search input - plain HTML, no cmdk */}
         <div className="flex items-center gap-2 px-3 py-2 border-b">
           <Search className="h-4 w-4 text-muted-foreground shrink-0" />
           <input
+            ref={inputRef}
             autoFocus
             value={query}
             onChange={handleInputChange}
@@ -131,63 +138,66 @@ export function InlineProductCombobox({
           )}
         </div>
 
-        <Command shouldFilter={false}>
-          <CommandList className="max-h-[300px] overflow-y-auto overflow-x-hidden">
-            {!loading && query && results.length === 0 && (
-              <div className="py-6 text-center text-sm text-muted-foreground">
-                Sin resultados para &quot;{query}&quot;.
-              </div>
-            )}
-            {!loading && !query && results.length === 0 && (
-              <div className="py-6 text-center text-sm text-muted-foreground">
-                Escribe para buscar productos
-              </div>
-            )}
-            <CommandGroup>
-              {results.map((product) => (
-                <CommandItem
-                  key={product.id_sku}
-                  value={product.id_sku}
-                  onSelect={() => handleSelect(product)}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleSelect(product);
-                  }}
-                  className={cn(
-                    "cursor-pointer pointer-events-auto",
-                    value === product.id_sku && "bg-primary/20 font-bold",
-                  )}
-                >
-                  <Check
+        {/* Results list - plain HTML, fully scrollable and clickable */}
+        <div
+          ref={listRef}
+          className="max-h-[300px] overflow-y-auto overflow-x-hidden p-1"
+          onWheel={(e) => {
+            // Prevent Radix Portal from swallowing wheel events
+            const el = listRef.current;
+            if (!el) return;
+            e.stopPropagation();
+            el.scrollTop += e.deltaY;
+          }}
+        >
+          {!loading && query && results.length === 0 && (
+            <div className="py-6 text-center text-sm text-muted-foreground">
+              Sin resultados para &quot;{query}&quot;.
+            </div>
+          )}
+          {!loading && !query && results.length === 0 && (
+            <div className="py-6 text-center text-sm text-muted-foreground">
+              Escribe para buscar productos
+            </div>
+          )}
+          {results.map((product) => (
+            <div
+              key={product.id_sku}
+              onClick={() => handleSelect(product)}
+              className={cn(
+                "flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm cursor-pointer select-none",
+                "hover:bg-accent hover:text-accent-foreground",
+                "transition-colors",
+                value === product.id_sku && "bg-primary/20 font-bold",
+              )}
+            >
+              <Check
+                className={cn(
+                  "h-4 w-4 text-primary shrink-0",
+                  value === product.id_sku ? "opacity-100" : "opacity-0",
+                )}
+              />
+              <div className="flex flex-col w-full min-w-0">
+                <span className="font-medium truncate">
+                  {product.nombre_completo}
+                </span>
+                <div className="flex justify-between text-xs text-muted-foreground mt-0.5">
+                  <span>SKU: {product.id_sku}</span>
+                  <span
                     className={cn(
-                      "mr-2 h-4 w-4 text-primary shrink-0",
-                      value === product.id_sku ? "opacity-100" : "opacity-0",
+                      "font-medium",
+                      Number(product.stock_actual) > 0
+                        ? "text-green-600"
+                        : "text-red-500",
                     )}
-                  />
-                  <div className="flex flex-col w-full min-w-0">
-                    <span className="font-medium truncate">
-                      {product.nombre_completo}
-                    </span>
-                    <div className="flex justify-between text-xs text-muted-foreground mt-0.5">
-                      <span>SKU: {product.id_sku}</span>
-                      <span
-                        className={cn(
-                          "font-medium",
-                          Number(product.stock_actual) > 0
-                            ? "text-green-600"
-                            : "text-red-500",
-                        )}
-                      >
-                        Stock: {Number(product.stock_actual).toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
+                  >
+                    Stock: {Number(product.stock_actual).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </PopoverContent>
     </Popover>
   );
