@@ -382,7 +382,6 @@ export function CotizacionDetail({ id }: { id: string }) {
 
   useEffect(() => {
     load();
-    load();
   }, [id]);
 
   // --- Dynamic Options Logic (Brazo, etc) ---

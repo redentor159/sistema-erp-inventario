@@ -354,8 +354,6 @@ export const cotizacionesApi = {
 
     if (error) throw error;
     return true;
-    if (error) throw error;
-    return true;
   },
 
   deleteCotizacion: async (id: string) => {

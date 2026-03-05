@@ -37,17 +37,6 @@ export const trxApi = {
     return { data, count }; // Return object with data and count
   },
 
-  // Get current stock (simple aggregation)
-  // Note: In a real heavy app, this should be a Materialized View or RPC
-  getStockActual: async () => {
-    // Using a custom RPC would be better, but for now we fetch all logic
-    // OR we assume we can sum quantity grouped by SKU.
-    // Let's rely on a view or just fetching movements for now.
-    // Actually, let's fetch 'cat_productos_variantes' and maybe we add a 'stock' logic later.
-    // For now, let's just return the movements and calculate locally or create a View.
-    return [];
-  },
-
   // --- ENTRADAS (COMPRAS) ---
   createEntrada: async (entrada: EntradaForm) => {
     // 1. Create Header
@@ -152,7 +141,6 @@ export const trxApi = {
 
     if (detailsError) throw detailsError;
 
-    // DB Trigger handles Kardex update
     // DB Trigger handles Kardex update
     return header;
   },
