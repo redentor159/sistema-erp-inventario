@@ -465,47 +465,6 @@ export default function ProductionPage() {
           updateConfig({ wip_limits: settings.wip_limits });
           setIsSettingsOpen(false);
         }}
-        onResetCards={async () => {
-          await kanbanApi.deleteAllCards();
-          queryClient.invalidateQueries({ queryKey: ["kanbanBoard"] });
-          toast({
-            title: "Tarjetas Eliminadas",
-            description: "El tablero ha sido limpiado.",
-          });
-          setIsSettingsOpen(false);
-        }}
-        onResetAll={async () => {
-          await kanbanApi.resetEverything();
-          queryClient.invalidateQueries({ queryKey: ["kanbanBoard"] });
-          queryClient.invalidateQueries({ queryKey: ["kanbanHistory"] });
-          toast({
-            title: "Sistema Reiniciado",
-            description: "Se ha eliminado todo el historial y tarjetas.",
-          });
-          setIsSettingsOpen(false);
-        }}
-        onGenerateDemo={async () => {
-          try {
-            toast({
-              title: "Generando datos...",
-              description: "Esto puede tardar unos segundos.",
-            });
-            await kanbanApi.generateDemoData();
-            queryClient.invalidateQueries({ queryKey: ["kanbanHistory"] });
-            toast({
-              title: "Datos Generados",
-              description: "Se han creado 5 años de historial.",
-            });
-            setIsSettingsOpen(false);
-          } catch (error) {
-            console.error("Error generating demo data:", error);
-            toast({
-              variant: "destructive",
-              title: "Error Generando Datos",
-              description: "Revisa la consola para más detalles.",
-            });
-          }
-        }}
       />
 
       <HistoryModal

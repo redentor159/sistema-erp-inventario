@@ -31,12 +31,12 @@ export default function ResetPasswordPage() {
 
         // Enfoque clásico para asegurarse por si acaso (sin ser tan estricto al inicio por velocidad en re-render)
         const checkSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                // Como NextJS hidratará 2 veces, daremos un margen de .5s antes de botar al usuario
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                // Give hydration margin before redirecting
                 setTimeout(async () => {
-                    const { data: { session: delayedSession } } = await supabase.auth.getSession();
-                    if (!delayedSession) router.push("/login?error=Invalid_or_expired_recovery_link");
+                    const { data: { user: delayedUser } } = await supabase.auth.getUser();
+                    if (!delayedUser) router.push("/login?error=Invalid_or_expired_recovery_link");
                 }, 500);
             }
         };

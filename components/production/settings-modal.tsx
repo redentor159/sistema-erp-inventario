@@ -18,9 +18,6 @@ interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (settings: { company_name?: string; wip_limits?: any }) => void;
-  onResetCards: () => void;
-  onResetAll: () => void;
-  onGenerateDemo: () => void;
   currentCompanyName: string;
   currentWipLimits: { [key: string]: number };
 }
@@ -29,9 +26,6 @@ export function SettingsModal({
   isOpen,
   onClose,
   onSave,
-  onResetCards,
-  onResetAll,
-  onGenerateDemo,
   currentCompanyName,
   currentWipLimits,
 }: SettingsModalProps) {
@@ -110,66 +104,6 @@ export function SettingsModal({
                   }
                 />
               </div>
-            </div>
-          </div>
-
-          {/* Reset Options */}
-          <div className="space-y-4 border-t pt-4">
-            <h4 className="font-medium text-center">
-              Opciones de Restablecimiento
-            </h4>
-            <p className="text-sm text-center text-muted-foreground pb-2">
-              Selecciona cómo deseas restablecer el tablero:
-            </p>
-
-            <Button
-              className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold"
-              onClick={() => {
-                if (
-                  confirm(
-                    "¿Estás seguro? Se eliminarán todas las tarjetas activas, pero se conservará el historial.",
-                  )
-                ) {
-                  onResetCards();
-                }
-              }}
-            >
-              Borrar Solo Tarjetas
-            </Button>
-
-            <Button
-              variant="destructive"
-              className="w-full font-semibold"
-              onClick={() => {
-                if (
-                  confirm(
-                    "¡ATENCIÓN! Esto eliminará TODO (Tarjetas + Historial). ¿Estás completamente seguro?",
-                  )
-                ) {
-                  onResetAll();
-                }
-              }}
-            >
-              Empezar de 0 (Reiniciar Todo)
-            </Button>
-
-            <div className="pt-2 flex justify-center">
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs text-muted-foreground"
-                onClick={() => {
-                  if (
-                    confirm(
-                      "¿Generar datos de prueba (5 años)? Esto es útil para ver los gráficos.",
-                    )
-                  ) {
-                    onGenerateDemo();
-                  }
-                }}
-              >
-                Simular 5 Años de Datos
-              </Button>
             </div>
           </div>
         </div>

@@ -34,9 +34,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       });
     }
 
-    // Initial session check
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
+    // Initial session check — getUser() validates JWT against server
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
         router.replace("/login");
       } else {
         setChecked(true);

@@ -16,7 +16,7 @@ import {
   ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/dashboard/user-nav";
 import { HelpPanel } from "@/components/dashboard/help-panel";
@@ -24,17 +24,11 @@ import { HelpPanel } from "@/components/dashboard/help-panel";
 export function AppSidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(pathname === "/production");
-  const [prevPathname, setPrevPathname] = useState(pathname);
 
   // Auto-collapse on production page
-  if (pathname !== prevPathname) {
-    setPrevPathname(pathname);
-    if (pathname === "/production") {
-      setCollapsed(true);
-    } else {
-      setCollapsed(false);
-    }
-  }
+  useEffect(() => {
+    setCollapsed(pathname === "/production");
+  }, [pathname]);
 
   return (
     <aside

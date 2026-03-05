@@ -25,7 +25,7 @@ export const trxApi = {
     }
 
     if (filters?.search) {
-      const s = filters.search;
+      const s = filters.search.replace(/[,%._()]/g, "");
       query = query.or(
         `id_sku.ilike.%${s}%,producto_nombre.ilike.%${s}%,entidad_nombre.ilike.%${s}%,nro_documento.ilike.%${s}%,comentarios.ilike.%${s}%`,
       );
@@ -92,7 +92,7 @@ export const trxApi = {
       .limit(50);
 
     if (filters?.search) {
-      const s = filters.search;
+      const s = filters.search.replace(/[,%._()]/g, "");
       // Filter on nested provider name is hard in one go without flattened view.
       // For now, filter on columns we have directly + explicit relation hint if possible,
       // but standard Supabase .or() with nested tables is tricky.
@@ -153,7 +153,7 @@ export const trxApi = {
       .limit(50);
 
     if (filters?.search) {
-      const s = filters.search;
+      const s = filters.search.replace(/[,%._()]/g, "");
       // Note: id_destinatario might become name if valid, but checking raw values
       query = query.or(
         `comentario.ilike.%${s}%,id_destinatario.ilike.%${s}%,tipo_salida.ilike.%${s}%`,

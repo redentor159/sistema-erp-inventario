@@ -291,41 +291,20 @@ export function CotizacionDetail({ id }: { id: string }) {
       setCotizacion(quoteData);
       setItems(quoteData.detalles || []);
 
-      // 2. Fetch Master Data (Non-critical locally handled)
-      try {
-        const clientsData = await cotizacionesApi.getClientes();
-        setClientes(clientsData || []);
-      } catch (err) {
-        console.error("Error fetching clients:", err);
-      }
+      // 2. Fetch Master Data in parallel (independent fetches)
+      const [clientsResult, brandsResult, colorsResult, vidriosResult, modelosResult] = await Promise.allSettled([
+        cotizacionesApi.getClientes(),
+        cotizacionesApi.getMarcas(),
+        cotizacionesApi.getAcabados(),
+        cotizacionesApi.getVidrios(),
+        cotizacionesApi.getRecetasIDs(),
+      ]);
 
-      try {
-        const brandsData = await cotizacionesApi.getMarcas();
-        setMarcas(brandsData || []);
-      } catch (err) {
-        console.error("Error fetching brands:", err);
-      }
-
-      try {
-        const colorsData = await cotizacionesApi.getAcabados();
-        setAcabados(colorsData || []);
-      } catch (err) {
-        console.error(err);
-      }
-
-      try {
-        const vidriosData = await cotizacionesApi.getVidrios();
-        setVidrios(vidriosData || []);
-      } catch (err) {
-        console.error(err);
-      }
-
-      try {
-        const modelosData = await cotizacionesApi.getRecetasIDs();
-        setAllModelos(modelosData || []);
-      } catch (err) {
-        console.error(err);
-      }
+      if (clientsResult.status === "fulfilled") setClientes(clientsResult.value || []);
+      if (brandsResult.status === "fulfilled") setMarcas(brandsResult.value || []);
+      if (colorsResult.status === "fulfilled") setAcabados(colorsResult.value || []);
+      if (vidriosResult.status === "fulfilled") setVidrios(vidriosResult.value || []);
+      if (modelosResult.status === "fulfilled") setAllModelos(modelosResult.value || []);
     } catch (e: any) {
       console.error("Error General Load:", e);
       toast({
