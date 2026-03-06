@@ -15,6 +15,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectGroup,
+  SelectLabel
 } from "@/components/ui/select";
 import {
   Dialog,
@@ -400,18 +402,78 @@ export function RecipeEditor({ modelId }: RecipeEditorProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="F">F (Fijo)</SelectItem>
-                <SelectItem value="FF">FF (2 Fijos)</SelectItem>
-                <SelectItem value="CC">CC (2 Corr.)</SelectItem>
-                <SelectItem value="FC">FC</SelectItem>
-                <SelectItem value="CF">CF</SelectItem>
-                <SelectItem value="FCC">FCC</SelectItem>
-                <SelectItem value="CCF">CCF</SelectItem>
-                <SelectItem value="FCCF">FCCF (4 hojas)</SelectItem>
-                <SelectItem value="P">P (Proyectante)</SelectItem>
-                <SelectItem value="PP">PP (2 Proy.)</SelectItem>
-                <SelectItem value="A">A (Abatible)</SelectItem>
-                <SelectItem value="AA">AA (2 Abat.)</SelectItem>
+                {/* Opciones Generales (Fijos puros) - Aplican a cualquier tipo como baseline o si es tipo Fijo */}
+                {(modelo?.tipo_dibujo === "Fijo" || !modelo?.tipo_dibujo) && (
+                  <SelectGroup>
+                    <SelectLabel>Fijos puros</SelectLabel>
+                    <SelectItem value="F">F (1 Fijo)</SelectItem>
+                    <SelectItem value="FF">FF (2 Fijos)</SelectItem>
+                    <SelectItem value="FFF">FFF (3 Fijos)</SelectItem>
+                    <SelectItem value="FFFF">FFFF (4 Fijos)</SelectItem>
+                    <SelectItem value="V_FF">V_FF (2 Fijos Vert.)</SelectItem>
+                  </SelectGroup>
+                )}
+
+                {/* Opciones Corrediza */}
+                {modelo?.tipo_dibujo === "Corrediza" && (
+                  <SelectGroup>
+                    <SelectLabel>Corredizas Base</SelectLabel>
+                    <SelectItem value="CC">CC (2 Corr.)</SelectItem>
+                    <SelectItem value="FC">FC (Fijo-Corr.)</SelectItem>
+                    <SelectItem value="CF">CF (Corr.-Fijo)</SelectItem>
+                    <SelectItem value="FCC">FCC (Telescópica Der)</SelectItem>
+                    <SelectItem value="CCF">CCF (Telescópica Izq)</SelectItem>
+                    <SelectLabel>Corredizas 3+ Hojas</SelectLabel>
+                    <SelectItem value="CCC">CCC (3 Corr.)</SelectItem>
+                    <SelectItem value="FCF">FCF (Centro Móvil)</SelectItem>
+                    <SelectItem value="CFC">CFC (Centro Fijo)</SelectItem>
+                    <SelectItem value="FCCF">FCCF (4 hojas OXXO)</SelectItem>
+                    <SelectItem value="CCCC">CCCC (4 Corr.)</SelectItem>
+                    <SelectItem value="CFFC">CFFC</SelectItem>
+                    <SelectItem value="CCCCCC">CCCCCC (6 hojas)</SelectItem>
+                    <SelectItem value="FCCCCF">FCCCCF (6 hojas)</SelectItem>
+                    <SelectLabel>Verticales (Guillotinas)</SelectLabel>
+                    <SelectItem value="V_GDOBLE">G_DOBLE (Guillotina)</SelectItem>
+                    <SelectItem value="V_GSIMP">G_SIMP (Guill. Simple)</SelectItem>
+                  </SelectGroup>
+                )}
+
+                {/* Opciones Proyectante */}
+                {modelo?.tipo_dibujo === "Proyectante" && (
+                  <SelectGroup>
+                    <SelectLabel>Proyectante Base</SelectLabel>
+                    <SelectItem value="P">P / P_SUP (Proy. Superior)</SelectItem>
+                    <SelectItem value="P_INF">P_INF (Banderola)</SelectItem>
+                    <SelectItem value="PP">PP (2 Proyectantes)</SelectItem>
+                    <SelectLabel>Mixtas Horizontales</SelectLabel>
+                    <SelectItem value="PF">PF (Proy-Fijo)</SelectItem>
+                    <SelectItem value="FP">FP (Fijo-Proy)</SelectItem>
+                    <SelectItem value="PFP">PFP (Proy-Fijo-Proy)</SelectItem>
+                    <SelectItem value="FPF">FPF (Fijo-Proy-Fijo)</SelectItem>
+                    <SelectLabel>Mixtas Verticales (Tragaluces)</SelectLabel>
+                    <SelectItem value="V_FP">V_FP (Tragaluz Fijo-Proy)</SelectItem>
+                    <SelectItem value="V_PF">V_PF (Tragaluz Proy-Fijo)</SelectItem>
+                  </SelectGroup>
+                )}
+
+                {/* Opciones Batiente */}
+                {modelo?.tipo_dibujo === "Batiente" && (
+                  <SelectGroup>
+                    <SelectLabel>Abatibles Base</SelectLabel>
+                    <SelectItem value="A">A / A_DER (Abat. Derecha)</SelectItem>
+                    <SelectItem value="A_IZQ">A_IZQ (Abat. Izquierda)</SelectItem>
+                    <SelectItem value="AA">AA (Dos Abatibles)</SelectItem>
+                    <SelectLabel>Mixtas Abatibles</SelectLabel>
+                    <SelectItem value="AF">AF (Abatible-Fijo)</SelectItem>
+                    <SelectItem value="FA">FA (Fijo-Abatible)</SelectItem>
+                    <SelectItem value="AFA">AFA</SelectItem>
+                    <SelectItem value="FAA">FAA</SelectItem>
+                    <SelectItem value="FAAF">FAAF</SelectItem>
+                    <SelectItem value="AAFAA">AAFAA</SelectItem>
+                    <SelectLabel>Especiales</SelectLabel>
+                    <SelectItem value="OB">OB (Oscilobatiente)</SelectItem>
+                  </SelectGroup>
+                )}
               </SelectContent>
             </Select>
           </label>
