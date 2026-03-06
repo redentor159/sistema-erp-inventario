@@ -354,7 +354,7 @@ function buildDataRow(
         // Stock column — right align + number format
         if (!config.conteo_ciego && colNum === 6) {
             cell.alignment = { ...cell.alignment, horizontal: "right" };
-            cell.numFmt = "#,##0.##";
+            cell.numFmt = '#,##0.00_ ;[Red]-#,##0.00_ ;"-"';
         }
 
         // Conteo físico  & Observaciones columns — writeable style

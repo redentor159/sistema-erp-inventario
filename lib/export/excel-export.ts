@@ -220,13 +220,30 @@ async function generateCommercialExcel(
     prodData.forEach((row: any) => sheetProd.addRow(row));
   }
 
+  const currencyFormat = '"S/"#,##0.00;[Red]-"S/"#,##0.00;"-"';
+  [14, 15, 16, 17, 18, 19, 20, 21, 22].forEach(c => { sheetHeaders.getColumn(c).numFmt = currencyFormat; });
+  [13, 14, 15, 16, 17].forEach(c => { sheetDetails.getColumn(c).numFmt = currencyFormat; });
+  [13, 14].forEach(c => { sheetBom.getColumn(c).numFmt = currencyFormat; });
+
+  if (headersData.length > 0) {
+    const totalRow = sheetHeaders.getRow(headersData.length + 2);
+    totalRow.getCell(13).value = "TOTAL (S/):";
+    [14, 15, 16, 17, 18, 19, 22].forEach(c => {
+      totalRow.getCell(c).value = { formula: `SUM(${sheetHeaders.getColumn(c).letter}2:${sheetHeaders.getColumn(c).letter}${headersData.length + 1})` };
+    });
+    totalRow.font = { bold: true };
+  }
+
   [sheetHeaders, sheetDetails, sheetBom, sheetProd].forEach((s) => {
-    s.getRow(1).font = { bold: true };
+    s.views = [{ state: "frozen", ySplit: 1, xSplit: 0 }];
+    s.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: s.columnCount } };
+    s.getRow(1).font = { bold: true, color: { argb: "FF0F172A" } };
     s.getRow(1).fill = {
       type: "pattern",
       pattern: "solid",
-      fgColor: { argb: "FFD9E1F2" },
+      fgColor: { argb: "FFF8FAFC" },
     };
+    s.getRow(1).border = { bottom: { style: "medium", color: { argb: "FFCBD5E1" } } };
   });
 }
 
@@ -304,13 +321,31 @@ async function generateInventoryExcel(workbook: ExcelJS.Workbook) {
     zombieData.forEach((row: any) => sheetZombie.addRow(row));
   }
 
+  const currencyFormat = '"S/"#,##0.00;[Red]-"S/"#,##0.00;"-"';
+  const qtyFormat = '#,##0.00_ ;-#,##0.00_ ;"-"';
+
+  [9, 10, 11].forEach(c => { sheetStock.getColumn(c).numFmt = currencyFormat; });
+  [6, 7, 8].forEach(c => { sheetStock.getColumn(c).numFmt = qtyFormat; });
+  sheetOffcuts.getColumn(7).numFmt = currencyFormat;
+  [4, 5].forEach(c => { sheetZombie.getColumn(c).numFmt = currencyFormat; });
+
+  if (stockData.length > 0) {
+    const totalRow = sheetStock.getRow(stockData.length + 2);
+    totalRow.getCell(10).value = "INVERSIÓN TOTAL:";
+    totalRow.getCell(11).value = { formula: `SUM(K2:K${stockData.length + 1})` };
+    totalRow.font = { bold: true };
+  }
+
   [sheetStock, sheetOffcuts, sheetZombie].forEach((s) => {
-    s.getRow(1).font = { bold: true };
+    s.views = [{ state: "frozen", ySplit: 1, xSplit: 0 }];
+    s.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: s.columnCount } };
+    s.getRow(1).font = { bold: true, color: { argb: "FF0F172A" } };
     s.getRow(1).fill = {
       type: "pattern",
       pattern: "solid",
-      fgColor: { argb: "FFE2EFDA" },
+      fgColor: { argb: "FFF8FAFC" },
     };
+    s.getRow(1).border = { bottom: { style: "medium", color: { argb: "FFCBD5E1" } } };
   });
 }
 
@@ -347,12 +382,28 @@ async function generateMovementsExcel(
   const data = await fetchAllRows(query);
   data.forEach((row: any) => sheet.addRow(row));
 
-  sheet.getRow(1).font = { bold: true };
+  const currencyFormat = '"S/"#,##0.00;[Red]-"S/"#,##0.00;"-"';
+  const qtyFormat = '#,##0.00_ ;-#,##0.00_ ;"-"';
+
+  sheet.getColumn(6).numFmt = qtyFormat;
+  [7, 8].forEach(c => sheet.getColumn(c).numFmt = currencyFormat);
+
+  if (data.length > 0) {
+    const totalRow = sheet.getRow(data.length + 2);
+    totalRow.getCell(7).value = "COSTO TOTAL (S/):";
+    totalRow.getCell(8).value = { formula: `SUM(H2:H${data.length + 1})` };
+    totalRow.font = { bold: true };
+  }
+
+  sheet.views = [{ state: "frozen", ySplit: 1, xSplit: 0 }];
+  sheet.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: sheet.columnCount } };
+  sheet.getRow(1).font = { bold: true, color: { argb: "FF0F172A" } };
   sheet.getRow(1).fill = {
     type: "pattern",
     pattern: "solid",
-    fgColor: { argb: "FFFCE4D6" },
+    fgColor: { argb: "FFF8FAFC" },
   };
+  sheet.getRow(1).border = { bottom: { style: "medium", color: { argb: "FFCBD5E1" } } };
 }
 
 // --- 4. MASTER DATA EXPORT (NEW) ---
@@ -361,20 +412,26 @@ async function generateMasterDataExcel(workbook: ExcelJS.Workbook) {
   sheetCat.columns = [
     { header: "id_sku", key: "id_sku", width: 20 },
     { header: "nombre_completo", key: "nombre_completo", width: 40 },
+    { header: "id_plantilla", key: "id_plantilla", width: 20 },
     { header: "id_marca", key: "id_marca", width: 15 },
     { header: "id_material", key: "id_material", width: 15 },
     { header: "id_acabado", key: "id_acabado", width: 15 },
-    { header: "id_sistema", key: "id_sistema", width: 15 },
+    { header: "cod_proveedor", key: "cod_proveedor", width: 20 },
+    { header: "id_almacen", key: "id_almacen", width: 15 },
+    { header: "unidad_medida", key: "unidad_medida", width: 10 },
     { header: "costo_mercado_unit", key: "costo_mercado_unit", width: 15 },
+    { header: "moneda_reposicion", key: "moneda_reposicion", width: 10 },
+    { header: "fecha_act_precio", key: "fecha_act_precio", width: 20 },
+    { header: "es_templado", key: "es_templado", width: 10 },
+    { header: "espesor_mm", key: "espesor_mm", width: 10 },
+    { header: "costo_flete_m2", key: "costo_flete_m2", width: 15 },
+    { header: "stock_minimo", key: "stock_minimo", width: 15 },
+    { header: "punto_pedido", key: "punto_pedido", width: 15 },
+    { header: "tiempo_reposicion_dias", key: "tiempo_reposicion_dias", width: 20 },
     { header: "lote_econ_compra", key: "lote_econ_compra", width: 15 },
-    {
-      header: "tiempo_reposicion_dias",
-      key: "tiempo_reposicion_dias",
-      width: 20,
-    },
+    { header: "demanda_promedio_diaria", key: "demanda_promedio_diaria", width: 20 },
   ];
-  const queryCatData = supabase.from("cat_productos_variantes").select("*");
-  const catData = await fetchAllRows(queryCatData);
+  const catData = await fetchAllRows(supabase.from("cat_productos_variantes").select("*"));
   catData?.forEach((row: any) => sheetCat.addRow(row));
 
   const sheetClients = workbook.addWorksheet("Dim_Clientes");
@@ -382,10 +439,11 @@ async function generateMasterDataExcel(workbook: ExcelJS.Workbook) {
     { header: "id_cliente", key: "id_cliente", width: 20 },
     { header: "ruc", key: "ruc", width: 15 },
     { header: "nombre_completo", key: "nombre_completo", width: 40 },
+    { header: "telefono", key: "telefono", width: 15 },
+    { header: "direccion_obra_principal", key: "direccion_obra_principal", width: 40 },
     { header: "tipo_cliente", key: "tipo_cliente", width: 15 },
   ];
-  const queryCData = supabase.from("mst_clientes").select("*");
-  const cData = await fetchAllRows(queryCData);
+  const cData = await fetchAllRows(supabase.from("mst_clientes").select("*"));
   cData?.forEach((row: any) => sheetClients.addRow(row));
 
   const sheetProv = workbook.addWorksheet("Dim_Proveedores");
@@ -393,29 +451,129 @@ async function generateMasterDataExcel(workbook: ExcelJS.Workbook) {
     { header: "id_proveedor", key: "id_proveedor", width: 20 },
     { header: "ruc", key: "ruc", width: 15 },
     { header: "razon_social", key: "razon_social", width: 40 },
+    { header: "nombre_comercial", key: "nombre_comercial", width: 40 },
+    { header: "contacto_vendedor", key: "contacto_vendedor", width: 30 },
+    { header: "telefono_pedidos", key: "telefono_pedidos", width: 20 },
+    { header: "email_pedidos", key: "email_pedidos", width: 30 },
     { header: "dias_credito", key: "dias_credito", width: 15 },
+    { header: "moneda_predeterminada", key: "moneda_predeterminada", width: 20 },
   ];
-  const queryPData = supabase.from("mst_proveedores").select("*");
-  const pData = await fetchAllRows(queryPData);
+  const pData = await fetchAllRows(supabase.from("mst_proveedores").select("*"));
   pData?.forEach((row: any) => sheetProv.addRow(row));
 
-  const sheetPlantillas = workbook.addWorksheet("Dim_Sistemas_Familias");
+  const sheetPlantillas = workbook.addWorksheet("Dim_Familias");
   sheetPlantillas.columns = [
     { header: "id_familia", key: "id_familia", width: 20 },
     { header: "nombre_familia", key: "nombre_familia", width: 40 },
-    { header: "prefijo", key: "prefijo", width: 15 },
-    { header: "categoria", key: "categoria", width: 15 },
+    { header: "categoria_odoo", key: "categoria_odoo", width: 20 },
   ];
-  const queryFamData = supabase.from("mst_familias").select("*");
-  const famData = await fetchAllRows(queryFamData);
+  const famData = await fetchAllRows(supabase.from("mst_familias").select("*"));
   famData?.forEach((row: any) => sheetPlantillas.addRow(row));
 
-  [sheetClients, sheetProv, sheetCat, sheetPlantillas].forEach((s) => {
-    s.getRow(1).font = { bold: true };
+  const sheetSist = workbook.addWorksheet("Dim_Sistemas");
+  sheetSist.columns = [
+    { header: "id_sistema", key: "id_sistema", width: 20 },
+    { header: "nombre_comercial", key: "nombre_comercial", width: 30 },
+    { header: "cod_corrales", key: "cod_corrales", width: 15 },
+    { header: "cod_eduholding", key: "cod_eduholding", width: 15 },
+    { header: "cod_hpd", key: "cod_hpd", width: 15 },
+    { header: "cod_limatambo", key: "cod_limatambo", width: 15 },
+    { header: "uso_principal", key: "uso_principal", width: 20 },
+  ];
+  const sistData = await fetchAllRows(supabase.from("mst_series_equivalencias").select("*"));
+  sistData?.forEach((row: any) => sheetSist.addRow(row));
+
+  const sheetPlant = workbook.addWorksheet("Dim_Plantillas");
+  sheetPlant.columns = [
+    { header: "id_plantilla", key: "id_plantilla", width: 20 },
+    { header: "nombre_generico", key: "nombre_generico", width: 40 },
+    { header: "id_familia", key: "id_familia", width: 20 },
+    { header: "id_sistema", key: "id_sistema", width: 20 },
+    { header: "largo_estandar_mm", key: "largo_estandar_mm", width: 15 },
+    { header: "peso_teorico_kg", key: "peso_teorico_kg", width: 15 },
+    { header: "imagen_ref", key: "imagen_ref", width: 30 },
+  ];
+  const plantData = await fetchAllRows(supabase.from("cat_plantillas").select("*"));
+  plantData?.forEach((row: any) => sheetPlant.addRow(row));
+
+  const sheetMod = workbook.addWorksheet("Dim_Recetas_Modelos");
+  sheetMod.columns = [
+    { header: "id_modelo", key: "id_modelo", width: 25 },
+    { header: "id_sistema", key: "id_sistema", width: 20 },
+    { header: "nombre_comercial", key: "nombre_comercial", width: 40 },
+    { header: "num_hojas", key: "num_hojas", width: 10 },
+    { header: "descripcion", key: "descripcion", width: 40 },
+    { header: "activo", key: "activo", width: 10 },
+    { header: "tipo_dibujo", key: "tipo_dibujo", width: 20 },
+    { header: "config_hojas_default", key: "config_hojas_default", width: 20 },
+  ];
+  const modData = await fetchAllRows(supabase.from("mst_recetas_modelos").select("*"));
+  modData?.forEach((row: any) => sheetMod.addRow(row));
+
+  const sheetIng = workbook.addWorksheet("Dim_Recetas_Ing");
+  sheetIng.columns = [
+    { header: "id_receta", key: "id_receta", width: 36 },
+    { header: "id_modelo", key: "id_modelo", width: 25 },
+    { header: "id_plantilla", key: "id_plantilla", width: 20 },
+    { header: "id_material_receta", key: "id_material_receta", width: 15 },
+    { header: "id_acabado_receta", key: "id_acabado_receta", width: 15 },
+    { header: "id_marca_receta", key: "id_marca_receta", width: 15 },
+    { header: "id_sistema", key: "id_sistema", width: 15 },
+    { header: "nombre_componente", key: "nombre_componente", width: 40 },
+    { header: "tipo", key: "tipo", width: 15 },
+    { header: "seccion", key: "seccion", width: 15 },
+    { header: "orden_visual", key: "orden_visual", width: 10 },
+    { header: "cantidad_base", key: "cantidad_base", width: 15 },
+    { header: "factor_cantidad_ancho", key: "factor_cantidad_ancho", width: 15 },
+    { header: "factor_cantidad_alto", key: "factor_cantidad_alto", width: 15 },
+    { header: "factor_corte_ancho", key: "factor_corte_ancho", width: 15 },
+    { header: "factor_corte_alto", key: "factor_corte_alto", width: 15 },
+    { header: "constante_corte_mm", key: "constante_corte_mm", width: 15 },
+    { header: "angulo", key: "angulo", width: 10 },
+    { header: "condicion", key: "condicion", width: 15 },
+    { header: "formula_cantidad", key: "formula_cantidad", width: 30 },
+    { header: "formula_perfil", key: "formula_perfil", width: 30 },
+    { header: "grupo_opcion", key: "grupo_opcion", width: 15 },
+  ];
+  const ingData = await fetchAllRows(supabase.from("mst_recetas_ingenieria").select("*"));
+  ingData?.forEach((row: any) => sheetIng.addRow(row));
+
+  const sheetAlm = workbook.addWorksheet("Dim_Almacenes");
+  sheetAlm.columns = [{ header: "id_almacen", key: "id_almacen", width: 20 }, { header: "nombre_almacen", key: "nombre_almacen", width: 40 }];
+  const almData = await fetchAllRows(supabase.from("mst_almacenes").select("*"));
+  almData?.forEach((row: any) => sheetAlm.addRow(row));
+
+  const sheetMarc = workbook.addWorksheet("Dim_Marcas");
+  sheetMarc.columns = [{ header: "id_marca", key: "id_marca", width: 20 }, { header: "nombre_marca", key: "nombre_marca", width: 40 }, { header: "pais_origen", key: "pais_origen", width: 20 }];
+  const marcData = await fetchAllRows(supabase.from("mst_marcas").select("*"));
+  marcData?.forEach((row: any) => sheetMarc.addRow(row));
+
+  const sheetAcab = workbook.addWorksheet("Dim_Acabados");
+  sheetAcab.columns = [{ header: "id_acabado", key: "id_acabado", width: 20 }, { header: "nombre_acabado", key: "nombre_acabado", width: 40 }, { header: "sufijo_sku", key: "sufijo_sku", width: 15 }];
+  const acabData = await fetchAllRows(supabase.from("mst_acabados_colores").select("*"));
+  acabData?.forEach((row: any) => sheetAcab.addRow(row));
+
+  const sheetMat = workbook.addWorksheet("Dim_Materiales");
+  sheetMat.columns = [{ header: "id_material", key: "id_material", width: 20 }, { header: "nombre_material", key: "nombre_material", width: 40 }, { header: "odoo_code", key: "odoo_code", width: 20 }];
+  const matData = await fetchAllRows(supabase.from("mst_materiales").select("*"));
+  matData?.forEach((row: any) => sheetMat.addRow(row));
+
+  const currencyFormat = '"S/"#,##0.00;[Red]-"S/"#,##0.00;"-"';
+  sheetCat.getColumn(10).numFmt = currencyFormat;
+  sheetCat.getColumn(15).numFmt = currencyFormat;
+
+  [
+    sheetCat, sheetClients, sheetProv, sheetPlantillas, sheetSist,
+    sheetPlant, sheetMod, sheetIng, sheetAlm, sheetMarc, sheetAcab, sheetMat
+  ].forEach((s) => {
+    s.views = [{ state: "frozen", ySplit: 1, xSplit: 0 }];
+    s.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: s.columnCount } };
+    s.getRow(1).font = { bold: true, color: { argb: "FF0F172A" } };
     s.getRow(1).fill = {
       type: "pattern",
       pattern: "solid",
-      fgColor: { argb: "FFFFF2CC" },
+      fgColor: { argb: "FFF8FAFC" },
     };
+    s.getRow(1).border = { bottom: { style: "medium", color: { argb: "FFCBD5E1" } } };
   });
 }

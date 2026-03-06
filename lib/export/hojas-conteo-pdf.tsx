@@ -13,8 +13,26 @@ import type { CountSheetConfig, CountSheetRow } from "./hojas-conteo-queries";
 import { getModeLabel } from "./hojas-conteo-excel";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Fonts — use built-in Helvetica (no external font fetch needed)
+// Fonts — Loading premium Sans-Serif (Roboto)
 // ─────────────────────────────────────────────────────────────────────────────
+
+Font.register({
+    family: "Roboto",
+    fonts: [
+        {
+            src: "https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-regular-webfont.ttf",
+            fontWeight: "normal",
+        },
+        {
+            src: "https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-medium-webfont.ttf",
+            fontWeight: "medium",
+        },
+        {
+            src: "https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-bold-webfont.ttf",
+            fontWeight: "bold",
+        },
+    ],
+});
 
 const COLORS = {
     POR_SISTEMA: "#2563EB",
@@ -33,12 +51,12 @@ const COLORS = {
 function makeStyles(accentColor: string) {
     return StyleSheet.create({
         page: {
-            paddingTop: 14,
-            paddingBottom: 14,
-            paddingLeft: 14,
-            paddingRight: 14,
-            fontSize: 7,
-            fontFamily: "Helvetica",
+            paddingTop: 20,
+            paddingBottom: 24,
+            paddingLeft: 20,
+            paddingRight: 20,
+            fontSize: 7.5,
+            fontFamily: "Roboto",
         },
         // ── Page header ──────────────────────────────────────────────────────────
         pageHeader: {
@@ -54,14 +72,14 @@ function makeStyles(accentColor: string) {
             flex: 1,
         },
         pageHeaderTitle: {
-            fontSize: 11,
-            fontFamily: "Helvetica-Bold",
-            color: "#1E293B",
+            fontSize: 13,
+            fontWeight: "bold",
+            color: "#0F172A",
         },
         pageHeaderSubtitle: {
-            fontSize: 7,
+            fontSize: 8,
             color: "#64748B",
-            marginTop: 1,
+            marginTop: 2,
         },
         pageHeaderRight: {
             alignItems: "flex-end",
@@ -78,11 +96,11 @@ function makeStyles(accentColor: string) {
             borderRadius: 2,
         },
         metaItem: {
-            fontSize: 6.5,
+            fontSize: 7.5,
             color: "#475569",
         },
         metaLabel: {
-            fontFamily: "Helvetica-Bold",
+            fontWeight: "bold",
             color: "#334155",
         },
         signatureRow: {
@@ -108,16 +126,16 @@ function makeStyles(accentColor: string) {
         },
         tableHeaderCell: {
             color: "#FFFFFF",
-            fontFamily: "Helvetica-Bold",
-            fontSize: 6.5,
-            paddingHorizontal: 2,
-            paddingVertical: 1,
+            fontWeight: "bold",
+            fontSize: 7,
+            paddingHorizontal: 4,
+            paddingVertical: 2,
         },
         tableRow: {
             flexDirection: "row",
-            borderBottomWidth: 0.3,
+            borderBottomWidth: 0.5,
             borderBottomColor: "#E2E8F0",
-            minHeight: 12,
+            minHeight: 14,
             alignItems: "center",
         },
         tableRowAlt: {
@@ -127,9 +145,9 @@ function makeStyles(accentColor: string) {
             backgroundColor: "#FFFFFF",  // white — no red ink wasted
         },
         cell: {
-            fontSize: 7,
-            paddingHorizontal: 2,
-            paddingVertical: 1.5,
+            fontSize: 7.5,
+            paddingHorizontal: 4,
+            paddingVertical: 2.5,
         },
         cellWriteable: {
             borderBottomWidth: 1.2,
@@ -145,8 +163,8 @@ function makeStyles(accentColor: string) {
             borderLeftColor: accentColor,
         },
         groupSeparatorText: {
-            fontSize: 7,
-            fontFamily: "Helvetica-Bold",
+            fontSize: 8,
+            fontWeight: "bold",
             color: accentColor,
             textTransform: "uppercase",
         },

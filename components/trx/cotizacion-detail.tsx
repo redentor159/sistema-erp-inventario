@@ -302,6 +302,10 @@ export function CotizacionDetail({ id }: { id: string }) {
         throw err;
       }
 
+      if (quoteData && quoteData.detalles) {
+        quoteData.detalles.sort((a: any, b: any) => (a.etiqueta_item || "").localeCompare(b.etiqueta_item || "", undefined, { numeric: true, sensitivity: 'base' }));
+      }
+
       setCotizacion(quoteData);
       setItems(quoteData.detalles || []);
 
