@@ -121,7 +121,9 @@ export function SalidaFormCmp({ onSuccess }: SalidaFormProps) {
     const igvInfo = config ? Number(config.igv) || 0.18 : 0.18;
 
     if (tipo === "VENTA") {
-      const base = Math.max(pmp, mercado);
+      // El cliente requiere explícitamente que las VENTAS usen COSTO DE MERCADO, 
+      // ignorando el PMP, por el riesgo de descapitalización.
+      const base = mercado > 0 ? mercado : pmp;
 
       let finalPrice = base * (1 + margen);
       if (incluirIgv) {
@@ -130,7 +132,7 @@ export function SalidaFormCmp({ onSuccess }: SalidaFormProps) {
 
       return Number(finalPrice.toFixed(2));
     } else {
-      // PRODUCCION, AJUSTE = Cost
+      // PRODUCCION, AJUSTE = Cost (PMP) contable para kardex
       return Number(pmp.toFixed(2));
     }
   };

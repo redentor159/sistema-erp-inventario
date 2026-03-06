@@ -234,6 +234,64 @@ export const catApi = {
     if (error) throw error;
   },
 
+  getProductosConPrecios: async () => {
+    const { data, error } = await supabase
+      .from("cat_productos_variantes")
+      .select(`
+        id_sku,
+        costo_mercado_unit,
+        moneda_reposicion,
+        fecha_act_precio
+      `);
+
+    if (error) {
+      console.error("Error fetching precios para exportación:", error);
+      throw error;
+    }
+    return data;
+  },
+
+  getUltimasComprasDeSKU: async (id_sku: string) => {
+    // Busca las ultimas 5 entradas de tipo COMPRA para este sku
+    const { data, error } = await supabase
+      .from('trx_entradas_detalle')
+      .select(`
+        id_linea_entrada,
+        cantidad,
+        costo_unitario,
+        total_linea,
+        trx_entradas_cabecera!inner(
+          fecha_registro,
+          moneda,
+          tipo_cambio,
+          id_proveedor,
+          tipo_entrada,
+          nro_documento_fisico,
+          mst_proveedores(razon_social)
+        )
+      `)
+      .eq('id_sku', id_sku)
+      .eq('trx_entradas_cabecera.tipo_entrada', 'COMPRA')
+      .order('trx_entradas_cabecera(fecha_registro)', { ascending: false })
+      .limit(5);
+
+    if (error) throw error;
+    return data;
+  },
+
+  getRetazosDisponiblesDeSKU: async (id_sku: string) => {
+    // Tráe los retazos disponibles para este SKU asumiendo que es su "id_sku_padre"
+    const { data, error } = await supabase
+      .from('dat_retazos_disponibles')
+      .select('*')
+      .eq('id_sku_padre', id_sku)
+      .eq('estado', 'DISPONIBLE')
+      .order('longitud_mm', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  },
+
   updatePrecioMercado: async (id_sku: string, costo_mercado_unit: number) => {
     const { data, error } = await supabase
       .from("cat_productos_variantes")

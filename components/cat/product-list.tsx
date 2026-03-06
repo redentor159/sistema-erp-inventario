@@ -24,6 +24,33 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect, useRef } from "react";
+import { format, differenceInDays, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
+
+const PriceFreshnessBadge = ({ dateString }: { dateString?: string }) => {
+  if (!dateString) {
+    return (
+      <div className="flex items-center gap-1 mt-0.5 justify-end">
+        <span className="w-2 h-2 rounded-full bg-red-500" title="Sin fecha de actualización" />
+        <span className="text-[9px] text-muted-foreground whitespace-nowrap">Sin actualizar</span>
+      </div>
+    );
+  }
+
+  const date = parseISO(dateString);
+  const days = differenceInDays(new Date(), date);
+
+  let colorClass = "bg-green-500";
+  if (days > 30) colorClass = "bg-red-500";
+  else if (days > 15) colorClass = "bg-orange-500";
+
+  return (
+    <div className="flex items-center gap-1 mt-0.5 justify-end" title={`Actualizado hace ${days} días`}>
+      <span className={`w-2 h-2 rounded-full ${colorClass}`} />
+      <span className="text-[9px] text-muted-foreground whitespace-nowrap">{format(date, "dd MMM", { locale: es })}</span>
+    </div>
+  );
+};
 import {
   Dialog,
   DialogContent,
@@ -618,12 +645,15 @@ export function ProductList({ active }: { active: boolean }) {
                             />
                           </div>
                         ) : (
-                          <span>
-                            {costoMercado.toLocaleString("es-PE", {
-                              style: "currency",
-                              currency: moneda,
-                            })}
-                          </span>
+                          <div className="flex flex-col items-end">
+                            <span>
+                              {costoMercado.toLocaleString("es-PE", {
+                                style: "currency",
+                                currency: moneda,
+                              })}
+                            </span>
+                            <PriceFreshnessBadge dateString={product.fecha_act_precio} />
+                          </div>
                         )}
                       </TableCell>
                       <TableCell
@@ -815,7 +845,7 @@ export function ProductList({ active }: { active: boolean }) {
                         </span>
                       )}
                     </div>
-                    <div className="flex flex-col text-right">
+                    <div className="flex flex-col text-right items-end">
                       <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">
                         Costo Merc.
                       </span>
@@ -827,6 +857,7 @@ export function ProductList({ active }: { active: boolean }) {
                             currency: moneda,
                           })}
                       </span>
+                      {!isEditMode && <PriceFreshnessBadge dateString={product.fecha_act_precio} />}
                     </div>
                   </div>
 
