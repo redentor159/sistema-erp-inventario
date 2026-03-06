@@ -80,7 +80,8 @@ BEGIN
                 ubicacion,
                 tipo_cierre,
                 tipo_vidrio,
-                subtotal_linea
+                subtotal_linea,
+                opciones_seleccionadas
             ) VALUES (
                 v_id_cotizacion,
                 v_item->>'id_modelo',
@@ -92,7 +93,8 @@ BEGIN
                 v_item->>'ubicacion',
                 v_item->>'tipo_cierre',
                 v_item->>'tipo_vidrio',
-                (v_item->>'subtotal_linea')::numeric
+                (v_item->>'subtotal_linea')::numeric,
+                COALESCE(v_item->'opciones_seleccionadas', '{}'::jsonb)
             ) RETURNING id_linea_cot INTO v_id_linea;
 
             -- Generar el despiece para esta línea. Si esto falla, TODA la transacción hace rollback.
