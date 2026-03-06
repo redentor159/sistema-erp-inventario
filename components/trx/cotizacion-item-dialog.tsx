@@ -351,7 +351,7 @@ export function CotizacionItemDialog({
             <TabsContent value="producto" className="space-y-4 py-4">
               <div className="grid gap-4">
                 {/* Fila 1: Sistema y Modelo */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label>Sistema / Serie *</Label>
                     <Select
@@ -400,7 +400,7 @@ export function CotizacionItemDialog({
                 </div>
 
                 {/* Fila 1b: Etiqueta y Ubicacion */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label>Etiqueta / Nombre</Label>
                     <Input
@@ -424,7 +424,7 @@ export function CotizacionItemDialog({
                 </div>
 
                 {/* Fila 2: Dimensiones */}
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="grid gap-2">
                     <Label>Ancho (mm)</Label>
                     <Input
@@ -459,7 +459,7 @@ export function CotizacionItemDialog({
                 </div>
 
                 {/* Fila 3: Acabados */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label>Color Aluminio *</Label>
                     <Select
@@ -762,7 +762,7 @@ export function CotizacionItemDialog({
                       placeholder="Ej: Instalación de Ventanas 2do Piso"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="grid gap-2">
                       <Label>Cantidad</Label>
                       <Input

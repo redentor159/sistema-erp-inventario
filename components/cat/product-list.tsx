@@ -243,8 +243,8 @@ export function ProductList({ active }: { active: boolean }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4">
-        <div className="flex justify-between items-center gap-4">
-          <div className="flex w-full max-w-md gap-2">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="flex w-full md:max-w-md gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -361,7 +361,7 @@ export function ProductList({ active }: { active: boolean }) {
               setPage(0);
             }}
           >
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-full min-w-[140px] flex-1 sm:flex-none sm:w-[160px]">
               <SelectValue placeholder="Familia" />
             </SelectTrigger>
             <SelectContent>
@@ -381,7 +381,7 @@ export function ProductList({ active }: { active: boolean }) {
               setPage(0);
             }}
           >
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-full min-w-[140px] flex-1 sm:flex-none sm:w-[160px]">
               <SelectValue placeholder="Marca" />
             </SelectTrigger>
             <SelectContent>
@@ -401,7 +401,7 @@ export function ProductList({ active }: { active: boolean }) {
               setPage(0);
             }}
           >
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-full min-w-[140px] flex-1 sm:flex-none sm:w-[160px]">
               <SelectValue placeholder="Material" />
             </SelectTrigger>
             <SelectContent>
@@ -421,7 +421,7 @@ export function ProductList({ active }: { active: boolean }) {
               setPage(0);
             }}
           >
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-full min-w-[140px] flex-1 sm:flex-none sm:w-[160px]">
               <SelectValue placeholder="Sistema" />
             </SelectTrigger>
             <SelectContent>
@@ -441,7 +441,7 @@ export function ProductList({ active }: { active: boolean }) {
               setPage(0);
             }}
           >
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-full min-w-[140px] flex-1 sm:flex-none sm:w-[160px]">
               <SelectValue placeholder="Acabado" />
             </SelectTrigger>
             <SelectContent>

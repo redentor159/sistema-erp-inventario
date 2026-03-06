@@ -77,7 +77,7 @@ export function ProductDetailSheet({
   return (
     <Sheet>
       <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent className="w-[400px] sm:w-[540px] flex flex-col p-0 h-full overflow-hidden">
+      <SheetContent className="w-full max-w-[95vw] sm:max-w-[540px] flex flex-col p-0 h-full overflow-hidden">
         <div className="p-6 pb-2">
           <SheetHeader>
             <SheetTitle className="text-xl">{product.id_sku}</SheetTitle>
@@ -128,7 +128,7 @@ export function ProductDetailSheet({
 
         <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0" value={activeTab} onValueChange={setActiveTab}>
           <div className="px-6 relative">
-            <TabsList className="grid w-full grid-cols-4 bg-transparent border-b rounded-none h-10 p-0 mb-4">
+            <TabsList className="flex w-full overflow-x-auto whitespace-nowrap scrollbar-hide bg-transparent border-b rounded-none h-10 p-0 mb-4">
               <TabsTrigger 
                 value="general" 
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none!"
@@ -160,7 +160,7 @@ export function ProductDetailSheet({
             
             {/* 1. GENERAL PESTAÑA */}
             <TabsContent value="general" className="mt-0 space-y-4">
-              <div className="grid grid-cols-2 gap-y-4 text-sm mt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 text-sm mt-2">
                 <div>
                   <p className="text-xs text-muted-foreground">Familia</p>
                   <p className="font-medium">{product.nombre_familia || "-"}</p>
@@ -210,7 +210,7 @@ export function ProductDetailSheet({
 
             {/* 2. COSTOS PESTAÑA */}
             <TabsContent value="costos" className="mt-0 space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-3 border rounded-md">
                    <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">Costo Mercado</p>
                    <p className="text-xl font-bold">
@@ -292,7 +292,7 @@ export function ProductDetailSheet({
                     <p className="text-xs font-semibold mb-4 border-b pb-2">
                       Equivalencias del Sistema ({product.id_sistema})
                     </p>
-                    <div className="grid grid-cols-2 gap-4 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                       <div>
                         <span className="text-[10px] text-muted-foreground block mb-1 uppercase tracking-wider font-semibold">
                           Corrales

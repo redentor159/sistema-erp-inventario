@@ -572,7 +572,7 @@ export function CotizacionDetail({ id }: { id: string }) {
           <Select
             onValueChange={(val) => handleBulkUpdate({ color_perfiles: val })}
           >
-            <SelectTrigger className="w-[180px] h-8">
+            <SelectTrigger className="w-full sm:w-[180px] h-8">
               <SelectValue placeholder="Cambiar Color" />
             </SelectTrigger>
             <SelectContent>
@@ -587,7 +587,7 @@ export function CotizacionDetail({ id }: { id: string }) {
           <Select
             onValueChange={(val) => handleBulkUpdate({ tipo_vidrio: val })}
           >
-            <SelectTrigger className="w-[200px] h-8">
+            <SelectTrigger className="w-full sm:w-[200px] h-8">
               <SelectValue placeholder="Cambiar Vidrio" />
             </SelectTrigger>
             <SelectContent>
@@ -623,9 +623,9 @@ export function CotizacionDetail({ id }: { id: string }) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Panel: General Info */}
-        <Card className="md:col-span-1 h-fit">
+        <Card className="lg:col-span-1 h-fit">
           <CardHeader>
             <CardTitle>Información General</CardTitle>
           </CardHeader>
@@ -797,7 +797,7 @@ export function CotizacionDetail({ id }: { id: string }) {
         </Card>
 
         {/* Right Panel: Items & Engineering */}
-        <Card className="md:col-span-2 flex flex-col h-auto">
+        <Card className="lg:col-span-2 flex flex-col h-auto">
           <CardHeader className="flex flex-row items-center justify-between py-3">
             <CardTitle>Ítems de Cotización</CardTitle>
             <Button
@@ -1018,7 +1018,7 @@ export function CotizacionDetail({ id }: { id: string }) {
                               if (!itemOptions) return null;
 
                               return (
-                                <div className="mb-2 grid grid-cols-2 gap-4 max-w-2xl bg-white p-2 rounded border border-blue-100">
+                                <div className="mb-2 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl bg-white p-2 rounded border border-blue-100">
                                   {Object.entries(itemOptions).map(
                                     ([grupo, opts]) => {
                                       const currentVal =
