@@ -1,95 +1,55 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vitest';
+import { evaluateFormula, validateFormula, previewFormula, FormulaVariables } from '../../lib/utils/formula-engine';
 
-// Math formulas isolated for testing
-const calcularPeso = (largoMm: number, pesoTeoricoKg: number) => {
-    return (largoMm / 1000) * pesoTeoricoKg
-}
+describe('Motor de Fórmulas (formula-engine.ts)', () => {
+    const vars: FormulaVariables = { ancho: 2000, alto: 1500, hojas: 2, crucesH: 0, crucesV: 0 };
 
-const calcularRendimiento = (largoEstandarMm: number, largoCorteMm: number) => {
-    if (largoCorteMm === 0) return 0
-    return Math.floor(largoEstandarMm / largoCorteMm)
-}
+    describe('evaluateFormula()', () => {
+        it('debe evaluar matemáticas básicas correctamente', () => {
+            expect(evaluateFormula('2 + 2', vars).value).toBe(4);
+            expect(evaluateFormula('10 - 5', vars).value).toBe(5);
+            expect(evaluateFormula('4 * 5', vars).value).toBe(20);
+            expect(evaluateFormula('20 / 4', vars).value).toBe(5);
+        });
 
-const calcularCostoItem = (cantidad: number, precioUnit: number) => {
-    return Number((cantidad * precioUnit).toFixed(2))
-}
+        it('debe respetar el orden de precedencia (paréntesis)', () => {
+            expect(evaluateFormula('2 + 3 * 4', vars).value).toBe(14);
+            expect(evaluateFormula('(2 + 3) * 4', vars).value).toBe(20);
+        });
 
-const parseDimensions = (text: string) => {
-    const match = text.match(/(\d+(?:\.\d+)?)\s*[xX]\s*(\d+(?:\.\d+)?)/)
-    if (match) {
-        return { w: parseFloat(match[1]), h: parseFloat(match[2]) }
-    }
-    return null
-}
+        it('debe reemplazar variables correctamente', () => {
+            expect(evaluateFormula('ancho / hojas', vars).value).toBe(1000);
+            expect(evaluateFormula('alto + 100', vars).value).toBe(1600);
+        });
 
-describe('Fórmulas Matemáticas de Ingeniería y Cotización', () => {
+        it('debe ejecutar funciones integradas (min, max, ceil, floor, round, abs)', () => {
+            expect(evaluateFormula('min(ancho, alto)', vars).value).toBe(1500);
+            expect(evaluateFormula('max(ancho, alto)', vars).value).toBe(2000);
+            expect(evaluateFormula('ceil(3.1)', vars).value).toBe(4);
+            expect(evaluateFormula('floor(3.9)', vars).value).toBe(3);
+            expect(evaluateFormula('round(3.5)', vars).value).toBe(4);
+            expect(evaluateFormula('abs(-150)', vars).value).toBe(150);
+        });
 
-    describe('calcularPeso()', () => {
-        it('debe calcular correctamente el peso para un corte', () => {
-            // Ejemplo: Perfil de peso teórico 1.2kg/m y cortamos 500mm
-            expect(calcularPeso(500, 1.2)).toBe(0.6)
-        })
+        it('debe manejar errores de fórmula sin romper', () => {
+            expect(evaluateFormula('ancho / 0', vars).error).toBe('División por cero');
+            expect(evaluateFormula('variableReTrucha + 2', vars).error).toContain('Variable desconocida');
+            expect(evaluateFormula('min(1)', vars).error).toContain('requiere al menos 2 argumentos');
+            expect(evaluateFormula('(', vars).error).toContain('Expresión incompleta');
+        });
+    });
 
-        it('debe devolver 0 si el largo es 0', () => {
-            expect(calcularPeso(0, 1.2)).toBe(0)
-        })
+    describe('validateFormula()', () => {
+        it('debe validar si una fórmula es correcta semánticamente', () => {
+            expect(validateFormula('ancho * 2').valid).toBe(true);
+            expect(validateFormula('ancho * ).').valid).toBe(false);
+        });
+    });
 
-        it('debe lidiar con números decimales complejos', () => {
-            expect(calcularPeso(750.5, 0.854)).toBeCloseTo(0.6409, 4)
-        })
-    })
-
-    describe('calcularRendimiento()', () => {
-        it('debe calcular cortes enteros exactos', () => {
-            // Perfil de 6000mm, cortes de 1500mm = 4 cortes
-            expect(calcularRendimiento(6000, 1500)).toBe(4)
-        })
-
-        it('debe ignorar el remanente (floor)', () => {
-            // Perfil de 6000mm, cortes de 1400mm = 4 cortes (sobran 400mm)
-            expect(calcularRendimiento(6000, 1400)).toBe(4)
-        })
-
-        it('debe prevenir división por cero', () => {
-            expect(calcularRendimiento(6000, 0)).toBe(0)
-        })
-    })
-
-    describe('calcularCostoItem()', () => {
-        it('debe calcular el costo total con redondeo a 2 decimales', () => {
-            expect(calcularCostoItem(3, 15.55)).toBe(46.65)
-        })
-
-        it('debe redondear correctamente montos como 10.334', () => {
-            expect(calcularCostoItem(1, 10.334)).toBe(10.33)
-        })
-
-        it('debe redondear correctamente montos como 10.336', () => {
-            expect(calcularCostoItem(1, 10.336)).toBe(10.34)
-        })
-
-        it('debe manejar 0s', () => {
-            expect(calcularCostoItem(0, 50.00)).toBe(0)
-            expect(calcularCostoItem(10, 0)).toBe(0)
-        })
-    })
-
-    describe('parseDimensions()', () => {
-        it('debe parsear dimensiones con X mayúscula y espacios', () => {
-            expect(parseDimensions('1500 X 2000')).toEqual({ w: 1500, h: 2000 })
-        })
-
-        it('debe parsear dimensiones con x minúscula sin espacios', () => {
-            expect(parseDimensions('800x600')).toEqual({ w: 800, h: 600 })
-        })
-
-        it('debe parsear dimensiones con decimales', () => {
-            expect(parseDimensions('1500.5 x 2000.75')).toEqual({ w: 1500.5, h: 2000.75 })
-        })
-
-        it('debe devolver null si el formato es erróneo', () => {
-            expect(parseDimensions('medidas')).toBeNull()
-            expect(parseDimensions('1500  2000')).toBeNull()
-        })
-    })
-})
+    describe('previewFormula()', () => {
+        it('debe retornar un string formateado o error visual', () => {
+            expect(previewFormula('ancho / hojas', 2000, 1500, 2)).toBe('1000');
+            expect(previewFormula('ancho / 0', 2000, 1500, 2)).toContain('⚠ División por cero');
+        });
+    });
+});

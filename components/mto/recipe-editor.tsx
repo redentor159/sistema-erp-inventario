@@ -1039,6 +1039,7 @@ function AccesorioRow({
   // Load catalog product on mount and when SKU changes
   useEffect(() => {
     if (!currentSku) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCatalogProduct(null);
       return;
     }

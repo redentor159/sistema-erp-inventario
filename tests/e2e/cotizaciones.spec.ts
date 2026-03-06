@@ -2,17 +2,28 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Módulo de Cotizaciones', () => {
 
-    test('debe abrir la tabla de cotizaciones y tener buscador', async ({ page }) => {
+    test('debe mostrar la interfaz principal de la tabla de cotizaciones', async ({ page }) => {
+        // En Next.js app router con Supabase, la página puede redirigir si no hay sesión.
+        // Asumiendo que Playwright corre contra una DB seed o bypass.
         await page.goto('/cotizaciones');
 
-        // Estructura E2E esperada
-        // await expect(page.locator('input[placeholder*="Buscar"]')).toBeVisible();
-        // await expect(page.locator('button:has-text("Nueva Cotización")')).toBeVisible();
+        // Validamos la estructura visual base
+        await expect(page.locator('h1', { hasText: /Cotizaciones/i })).toBeVisible({ timeout: 10000 });
+
+        // Debe existir el botón de Nueva Cotización usando roles accesibles
+        await expect(page.getByRole('button', { name: /Nueva Cotización|Nueva/i })).toBeVisible();
+
+        // Debe existir un input de búsqueda
+        await expect(page.getByPlaceholder(/Buscar/i)).toBeVisible();
     });
 
-    test('debe permitir abrir el modal o página de nueva cotización', async ({ page }) => {
+    test('debe abrir el formulario para crear una nueva cotización', async ({ page }) => {
         await page.goto('/cotizaciones/new');
-        // await expect(page.locator('form')).toBeVisible();
-        // await expect(page.locator('button[type="submit"]')).toBeVisible();
+
+        // Verifica que cargue el layout principal del editor y panel de botones
+        await expect(page.locator('h1', { hasText: /Nueva Cotización|Cotización/i })).toBeVisible({ timeout: 10000 });
+
+        // Validar que existan los inputs o la UI del formulario de receta
+        await expect(page.getByRole('button', { name: /Guardar/i })).toBeVisible();
     });
 });

@@ -2,13 +2,21 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Módulo Kanban de Producción', () => {
 
-    test('debe cargar el tablero con columnas base', async ({ page }) => {
+    test('debe cargar la vista de producción con sus controles', async ({ page }) => {
         await page.goto('/production');
 
-        // Validar que al menos las columnas básicas existen en el UI
-        // await expect(page.locator('text=POR HACER')).toBeVisible();
-        // await expect(page.locator('text=EN PROGRESO')).toBeVisible();
-        // await expect(page.locator('text=ENTREGADO')).toBeVisible();
+        // Validamos el layout general
+        await expect(page.locator('h1', { hasText: /Producción|Kanban/i })).toBeVisible({ timeout: 10000 });
+    });
+
+    test('debe cargar las columnas base del tablero Kanban', async ({ page }) => {
+        await page.goto('/production');
+
+        // Validar que el componente Kanban Board se renderiza verificando los títulos de columnas
+        // Usamos hasText flexible porque puede estar en mayúscula o minúscula
+        await expect(page.locator('text=/POR HACER|Por Hacer/i')).toBeVisible();
+        await expect(page.locator('text=/EN PROGRESO|En Progreso/i')).toBeVisible();
+        await expect(page.locator('text=/ENTREGADO|Entregado/i')).toBeVisible();
     });
 
 });
