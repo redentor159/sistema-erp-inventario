@@ -199,8 +199,39 @@ export function EntradaFormCmp({ onSuccess }: EntradaFormProps) {
                 <FormControl>
                   <Input
                     type="date"
-                    onChange={(e) => field.onChange(new Date(e.target.value))}
-                    value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
+                    onChange={(e) => {
+                      const val = e.target.value; // "YYYY-MM-DD"
+                      if (!val) {
+                        field.onChange(undefined);
+                        return;
+                      }
+
+                      const now = new Date();
+                      const [year, month, day] = val.split("-").map(Number);
+
+                      // Crear objeto Date en hora local
+                      const dateWithCurrentTime = new Date(
+                        year,
+                        month - 1,
+                        day,
+                        now.getHours(),
+                        now.getMinutes(),
+                        now.getSeconds(),
+                        now.getMilliseconds(),
+                      );
+
+                      // Formatear como ISO Local (SIN 'Z') siguiendo la regla de arquitectura
+                      const localIsoString = format(
+                        dateWithCurrentTime,
+                        "yyyy-MM-dd'T'HH:mm:ss",
+                      );
+                      field.onChange(localIsoString);
+                    }}
+                    value={
+                      field.value
+                        ? new Date(field.value).toISOString().split("T")[0]
+                        : ""
+                    }
                   />
                 </FormControl>
                 <FormMessage />

@@ -36,7 +36,7 @@ export const entradaCabeceraSchema = z
   .object({
     id_proveedor: z.string().optional(), // Optional for Adjustments
     tipo_entrada: z.enum(["COMPRA", "AJUSTE_POSITIVO", "DEVOLUCION_CLIENTE"]),
-    fecha_registro: z.date().optional(),
+    fecha_registro: z.union([z.date(), z.string()]).optional(),
     nro_documento_fisico: z.string().optional(),
     moneda: z.enum(["PEN", "USD"]),
     tipo_cambio: z.coerce.number().positive("Tipo de cambio inválido"),
@@ -74,7 +74,7 @@ export const salidaCabeceraSchema = z
       "DEVOLUCION_PROVEEDOR",
     ]),
     id_cliente: z.string().optional(), // Optional for Adjustments
-    fecha: z.date().optional(),
+    fecha: z.union([z.date(), z.string()]).optional(),
     comentario: z.string().optional(),
     estado: z.enum(["CONFIRMADO", "ANULADO"]).default("CONFIRMADO"),
     detalles: z
