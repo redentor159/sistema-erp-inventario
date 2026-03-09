@@ -53,26 +53,26 @@ export function ProductDetailSheet({
 }) {
   const [activeTab, setActiveTab] = useState("general");
 
-  if (!product) return <>{children}</>;
-
-  const stock = Number(product.stock_actual) || 0;
-  const inversion = Number(product.inversion_total) || 0;
-  const pmp = Number(product.costo_promedio) || 0;
-  const mercado = Number(product.costo_mercado_unit) || 0;
+  const stock = Number(product?.stock_actual) || 0;
+  const inversion = Number(product?.inversion_total) || 0;
+  const pmp = Number(product?.costo_promedio) || 0;
+  const mercado = Number(product?.costo_mercado_unit) || 0;
   const isNegative = stock < 0;
 
-  // Lazy queries
+  // Lazy queries MOVED BEFORE EARLY RETURN
   const { data: ultimasCompras, isLoading: loadingCompras } = useQuery({
-    queryKey: ["ultimas_compras_sku", product.id_sku],
-    queryFn: () => catApi.getUltimasComprasDeSKU(product.id_sku),
-    enabled: activeTab === "proveedores",
+    queryKey: ["ultimas_compras_sku", product?.id_sku],
+    queryFn: () => catApi.getUltimasComprasDeSKU(product?.id_sku || ""),
+    enabled: activeTab === "proveedores" && !!product,
   });
 
   const { data: retazos, isLoading: loadingRetazos } = useQuery({
-    queryKey: ["retazos_disponibles_sku", product.id_sku],
-    queryFn: () => catApi.getRetazosDisponiblesDeSKU(product.id_sku),
-    enabled: activeTab === "costos",
+    queryKey: ["retazos_disponibles_sku", product?.id_sku],
+    queryFn: () => catApi.getRetazosDisponiblesDeSKU(product?.id_sku || ""),
+    enabled: activeTab === "costos" && !!product,
   });
+
+  if (!product) return <>{children}</>;
 
   return (
     <Sheet>
@@ -116,7 +116,7 @@ export function ProductDetailSheet({
                   Valorizado ({product.moneda_reposicion || "PEN"})
                 </p>
                 <p className="text-2xl font-bold text-gray-800">
-                   {(inversion || (stock * pmp)).toLocaleString("es-PE", {
+                  {(inversion || (stock * pmp)).toLocaleString("es-PE", {
                     style: "currency",
                     currency: product.moneda_reposicion || "PEN",
                   })}
@@ -129,26 +129,26 @@ export function ProductDetailSheet({
         <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0" value={activeTab} onValueChange={setActiveTab}>
           <div className="px-6 relative">
             <TabsList className="flex w-full overflow-x-auto whitespace-nowrap scrollbar-hide bg-transparent border-b rounded-none h-10 p-0 mb-4">
-              <TabsTrigger 
-                value="general" 
+              <TabsTrigger
+                value="general"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none!"
               >
                 Ficha
               </TabsTrigger>
-              <TabsTrigger 
-                value="costos" 
+              <TabsTrigger
+                value="costos"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none!"
               >
                 Costos
               </TabsTrigger>
-              <TabsTrigger 
-                value="ingenieria" 
+              <TabsTrigger
+                value="ingenieria"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none!"
               >
                 Series
               </TabsTrigger>
-              <TabsTrigger 
-                value="proveedores" 
+              <TabsTrigger
+                value="proveedores"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none!"
               >
                 Historial
@@ -157,7 +157,7 @@ export function ProductDetailSheet({
           </div>
 
           <ScrollArea className="flex-1 px-6 pb-6 mt-2">
-            
+
             {/* 1. GENERAL PESTAÑA */}
             <TabsContent value="general" className="mt-0 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 text-sm mt-2">
@@ -212,18 +212,18 @@ export function ProductDetailSheet({
             <TabsContent value="costos" className="mt-0 space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-3 border rounded-md">
-                   <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">Costo Mercado</p>
-                   <p className="text-xl font-bold">
+                  <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">Costo Mercado</p>
+                  <p className="text-xl font-bold">
                     {mercado.toLocaleString("es-PE", { style: "currency", currency: product.moneda_reposicion || "PEN" })}
-                   </p>
-                   <PriceFreshnessBadge dateString={product.fecha_act_precio} />
+                  </p>
+                  <PriceFreshnessBadge dateString={product.fecha_act_precio} />
                 </div>
                 <div className="p-3 border rounded-md bg-muted/10 relative overflow-hidden group">
-                   <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">Costo PMP</p>
-                   <p className="text-xl font-semibold text-muted-foreground">
+                  <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">Costo PMP</p>
+                  <p className="text-xl font-semibold text-muted-foreground">
                     {pmp.toLocaleString("es-PE", { style: "currency", currency: "PEN" })}
-                   </p>
-                   <div className="absolute inset-x-0 bottom-0 h-1 bg-muted group-hover:bg-slate-300 transition-colors" />
+                  </p>
+                  <div className="absolute inset-x-0 bottom-0 h-1 bg-muted group-hover:bg-slate-300 transition-colors" />
                 </div>
               </div>
 
@@ -245,49 +245,49 @@ export function ProductDetailSheet({
               </div>
 
               <div className="mt-6 border-t border-dashed pt-5">
-                 <h4 className="text-sm font-semibold mb-3 flex items-center justify-between">
-                    Retazos Disponibles 
-                    <Badge variant="secondary" className="text-[10px]">
-                      {retazos ? retazos.length : 0}
-                    </Badge>
-                 </h4>
-                 
-                 {loadingRetazos ? (
-                   <div className="flex justify-center p-6">
-                     <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                   </div>
-                 ) : retazos && retazos.length > 0 ? (
-                    <div className="space-y-2">
-                      {retazos.map((r: any) => (
-                        <div key={r.id_retazo} className="flex justify-between items-center p-2 rounded-md border text-xs">
-                          <div>
-                            <span className="font-mono font-medium">{Number(r.longitud_mm).toLocaleString("es-PE")} mm</span>
-                            <span className="block text-[10px] text-muted-foreground">Ubicación: {r.ubicacion || 'General'}</span>
-                          </div>
-                          <div className="text-right">
-                             <span className="font-mono font-medium">{r.orden_trabajo || 'OT No vinculada'}</span>
-                             <span className="block text-muted-foreground text-[10px]">{format(parseISO(r.fecha_creacion), "dd/MM/yyyy")}</span>
-                          </div>
+                <h4 className="text-sm font-semibold mb-3 flex items-center justify-between">
+                  Retazos Disponibles
+                  <Badge variant="secondary" className="text-[10px]">
+                    {retazos ? retazos.length : 0}
+                  </Badge>
+                </h4>
+
+                {loadingRetazos ? (
+                  <div className="flex justify-center p-6">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                ) : retazos && retazos.length > 0 ? (
+                  <div className="space-y-2">
+                    {retazos.map((r: any) => (
+                      <div key={r.id_retazo} className="flex justify-between items-center p-2 rounded-md border text-xs">
+                        <div>
+                          <span className="font-mono font-medium">{Number(r.longitud_mm).toLocaleString("es-PE")} mm</span>
+                          <span className="block text-[10px] text-muted-foreground">Ubicación: {r.ubicacion || 'General'}</span>
                         </div>
-                      ))}
-                    </div>
-                 ) : (
-                    <p className="text-xs text-muted-foreground text-center p-4 bg-muted/20 border border-dashed rounded-md">
-                      No hay retazos para este artículo.
-                    </p>
-                 )}
+                        <div className="text-right">
+                          <span className="font-mono font-medium">{r.orden_trabajo || 'OT No vinculada'}</span>
+                          <span className="block text-muted-foreground text-[10px]">{format(parseISO(r.fecha_creacion), "dd/MM/yyyy")}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground text-center p-4 bg-muted/20 border border-dashed rounded-md">
+                    No hay retazos para este artículo.
+                  </p>
+                )}
               </div>
             </TabsContent>
 
             {/* 3. INGENIERIA E SERIES */}
             <TabsContent value="ingenieria" className="mt-0 space-y-4">
               <div className="space-y-4">
-                 <div>
-                    <p className="text-xs text-muted-foreground">Sistema Maestro</p>
-                    <p className="font-medium text-sm">{product.sistema_nombre || product.id_sistema || "No aplica a un sistema de perfiles"}</p>
-                 </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Sistema Maestro</p>
+                  <p className="font-medium text-sm">{product.sistema_nombre || product.id_sistema || "No aplica a un sistema de perfiles"}</p>
+                </div>
 
-                 {product.id_sistema && (
+                {product.id_sistema && (
                   <div className="border rounded-md p-4 bg-muted/5 mt-2 shadow-sm">
                     <p className="text-xs font-semibold mb-4 border-b pb-2">
                       Equivalencias del Sistema ({product.id_sistema})
@@ -338,57 +338,57 @@ export function ProductDetailSheet({
 
             {/* 4. PROVEEDORES E HISTORIAL */}
             <TabsContent value="proveedores" className="mt-0 space-y-6">
-               <div className="bg-muted/10 p-3 rounded border">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 font-semibold">Cód. Abastecimiento Estandar</p>
-                  <p className="font-mono font-medium">{product.cod_proveedor || "-"}</p>
-               </div>
+              <div className="bg-muted/10 p-3 rounded border">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 font-semibold">Cód. Abastecimiento Estandar</p>
+                <p className="font-mono font-medium">{product.cod_proveedor || "-"}</p>
+              </div>
 
-               <div className="mt-4">
-                  <h4 className="text-sm font-semibold mb-3 border-b pb-2">Últimos Ingresos Reales</h4>
-                  
-                  {loadingCompras ? (
-                    <div className="flex justify-center p-6">
-                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                    </div>
-                  ) : ultimasCompras && ultimasCompras.length > 0 ? (
-                    <div className="space-y-3">
-                      {ultimasCompras.map((compra: any) => {
-                         const head = compra.trx_entradas_cabecera;
-                         return (
-                           <div key={compra.id_linea_entrada} className="p-3 text-sm border rounded-md shadow-sm relative overflow-hidden group">
-                             <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/20 group-hover:bg-primary/50 transition-colors" />
-                             <div className="flex justify-between items-start mb-2 pl-2">
-                                <span className="font-medium line-clamp-1 flex-1 pr-2 text-xs">
-                                  {head?.mst_proveedores?.razon_social || "Proveedor Desconocido"}
-                                </span>
-                                <span className="text-[10px] text-muted-foreground whitespace-nowrap bg-muted px-1.5 py-0.5 rounded">
-                                  {format(parseISO(head?.fecha_registro), "dd/MM/yyyy HH:mm")}
-                                </span>
-                             </div>
-                             <div className="flex justify-between items-end pl-2">
-                               <div>
-                                 <p className="text-[10px] text-muted-foreground">N° Doc: <span className="font-mono text-foreground">{head?.nro_documento_fisico || "N/A"}</span></p>
-                                 <p className="text-xs mt-0.5">
-                                   <span className="font-bold">{compra.cantidad}</span> {product.unidad_medida}
-                                 </p>
-                               </div>
-                               <div className="text-right">
-                                  <p className="font-semibold text-green-700 text-sm">
-                                    {Number(compra.costo_unitario).toLocaleString("es-PE", { style: "currency", currency: head?.moneda || "PEN" })}
-                                  </p>
-                                  <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Precio Compra</p>
-                               </div>
-                             </div>
-                           </div>
-                         );
-                      })}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-muted-foreground text-center p-6 bg-muted/20 border border-dashed rounded-md">
-                      No se encontraron registros de compras (Ingresos al almacén) históricos directos para este material.
-                    </p>
-                  )}
-               </div>
+              <div className="mt-4">
+                <h4 className="text-sm font-semibold mb-3 border-b pb-2">Últimos Ingresos Reales</h4>
+
+                {loadingCompras ? (
+                  <div className="flex justify-center p-6">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                ) : ultimasCompras && ultimasCompras.length > 0 ? (
+                  <div className="space-y-3">
+                    {ultimasCompras.map((compra: any) => {
+                      const head = compra.trx_entradas_cabecera;
+                      return (
+                        <div key={compra.id_linea_entrada} className="p-3 text-sm border rounded-md shadow-sm relative overflow-hidden group">
+                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/20 group-hover:bg-primary/50 transition-colors" />
+                          <div className="flex justify-between items-start mb-2 pl-2">
+                            <span className="font-medium line-clamp-1 flex-1 pr-2 text-xs">
+                              {head?.mst_proveedores?.razon_social || "Proveedor Desconocido"}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground whitespace-nowrap bg-muted px-1.5 py-0.5 rounded">
+                              {format(parseISO(head?.fecha_registro), "dd/MM/yyyy HH:mm")}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-end pl-2">
+                            <div>
+                              <p className="text-[10px] text-muted-foreground">N° Doc: <span className="font-mono text-foreground">{head?.nro_documento_fisico || "N/A"}</span></p>
+                              <p className="text-xs mt-0.5">
+                                <span className="font-bold">{compra.cantidad}</span> {product.unidad_medida}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold text-green-700 text-sm">
+                                {Number(compra.costo_unitario).toLocaleString("es-PE", { style: "currency", currency: head?.moneda || "PEN" })}
+                              </p>
+                              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Precio Compra</p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground text-center p-6 bg-muted/20 border border-dashed rounded-md">
+                    No se encontraron registros de compras (Ingresos al almacén) históricos directos para este material.
+                  </p>
+                )}
+              </div>
             </TabsContent>
 
           </ScrollArea>

@@ -1,5 +1,6 @@
 import { ConfigGeneralFormCmp } from "@/components/mst/config-general-form";
 import { Settings2 } from "lucide-react";
+import { SecretDangerZone } from "@/components/mst/secret-danger-zone";
 
 export default function SettingsPage() {
   return (
@@ -19,6 +20,7 @@ export default function SettingsPage() {
         </div>
       </div>
       <ConfigGeneralFormCmp />
+      <SecretDangerZone />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { kanbanApi, KanbanOrder } from "@/lib/api/kanban";
+import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -283,6 +284,37 @@ export default function ProductionPage() {
     }
   };
 
+  const generateDemoMutation = useMutation({
+    mutationFn: async () => {
+      // 1. Limpiar data vieja del Kanban (Seguridad)
+      const { error } = await supabase.rpc('fn_reset_kanban_data');
+      if (error) throw error;
+      // 2. Generar nueva data
+      await kanbanApi.generateDemoData();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["kanbanBoard"] });
+      queryClient.invalidateQueries({ queryKey: ["kanbanHistory"] });
+      toast({
+        title: "Datos Demo Generados",
+        description: "Se inyectaron cientos de registros para analizar KPI.",
+      });
+    },
+    onError: (err: any) => {
+      toast({
+        variant: "destructive",
+        title: "Error al generar Demo",
+        description: err.message,
+      });
+    }
+  });
+
+  const handleGenerateDemoData = () => {
+    if (confirm("¿Estás seguro de reinyectar la Base de Datos DEMO? Esto borrará el tablero Kanban actual (solo transacciones de Kanban).")) {
+      generateDemoMutation.mutate();
+    }
+  };
+
   const handleDeleteOrder = (id: string) => {
     if (confirm("¿Eliminar esta orden permanentemente?")) {
       // Add delete mutation logic
@@ -398,6 +430,15 @@ export default function ProductionPage() {
               Pegar
             </Button>
           )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleGenerateDemoData}
+            title="Inyectar Datos Demo Kanban"
+          >
+            ⚙️ Demo
+          </Button>
 
           <Button id="btn-new-order" size="sm" onClick={handleCreateOrder}>
             <PlusCircle className="mr-2 h-4 w-4" />
