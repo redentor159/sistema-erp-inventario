@@ -3,18 +3,10 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
-  LayoutDashboard,
-  Settings,
-  Box,
-  Users,
-  ShoppingCart,
-  FileText,
-  Trello,
   ChevronLeft,
   ChevronRight,
-  FileSpreadsheet,
-  ClipboardList,
 } from "lucide-react";
+import { MAIN_NAVIGATION } from "@/config/navigation";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -64,106 +56,34 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
-        <NavItem
-          href="/dashboard"
-          icon={LayoutDashboard}
-          label="Panel Principal"
-          collapsed={collapsed}
-          active={pathname === "/dashboard"}
-        />
-        <NavItem
-          href="/catalog"
-          icon={Box}
-          label="Catálogo"
-          collapsed={collapsed}
-          active={pathname === "/catalog"}
-        />
-        <NavItem
-          href="/inventory"
-          icon={Box}
-          label="Inventario (Kardex)"
-          collapsed={collapsed}
-          active={pathname === "/inventory"}
-        />
-        <NavItem
-          href="/cotizaciones"
-          icon={FileText}
-          label="Cotizaciones"
-          collapsed={collapsed}
-          active={pathname?.startsWith("/cotizaciones")}
-        />
-        <NavItem
-          href="/production"
-          icon={Trello}
-          label="Producción"
-          collapsed={collapsed}
-          active={pathname === "/production"}
-        />
-
-        <div className={cn("pt-4 pb-2", collapsed && "hidden")}>
-          <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            Maestros
-          </p>
-        </div>
-        {collapsed && <div className="h-4" />}
-
-        <NavItem
-          href="/configuracion"
-          icon={Settings}
-          label="Configuración"
-          collapsed={collapsed}
-          active={pathname === "/configuracion"}
-        />
-        <NavItem
-          href="/maestros/series"
-          icon={Box}
-          label="Sistemas y Series"
-          collapsed={collapsed}
-          active={pathname === "/maestros/series"}
-        />
-        <NavItem
-          href="/recetas"
-          icon={FileText}
-          label="Recetas"
-          collapsed={collapsed}
-          active={pathname?.startsWith("/recetas")}
-        />
-        <NavItem
-          href="/clients"
-          icon={Users}
-          label="Clientes"
-          collapsed={collapsed}
-          active={pathname === "/clients"}
-        />
-        <NavItem
-          href="/suppliers"
-          icon={ShoppingCart}
-          label="Proveedores"
-          collapsed={collapsed}
-          active={pathname === "/suppliers"}
-        />
-
-        <div className={cn("pt-4 pb-2", collapsed && "hidden")}>
-          <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            Reportes
-          </p>
-        </div>
-        {collapsed && <div className="h-4" />}
-
-        <NavItem
-          href="/export"
-          icon={FileSpreadsheet}
-          label="Exportar Datos"
-          collapsed={collapsed}
-          active={pathname === "/export"}
-        />
-        <NavItem
-          href="/hojas-conteo"
-          icon={ClipboardList}
-          label="Hojas de Conteo"
-          collapsed={collapsed}
-          active={pathname === "/hojas-conteo"}
-        />
+        {MAIN_NAVIGATION.map((group, index) => (
+          <div key={index}>
+            {group.label && (
+              <>
+                <div className={cn("pt-4 pb-2", collapsed && "hidden")}>
+                  <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    {group.label}
+                  </p>
+                </div>
+                {collapsed && <div className="h-4" />}
+              </>
+            )}
+            {group.items.map((item) => (
+              <NavItem
+                key={item.href}
+                href={item.href}
+                icon={item.icon}
+                label={item.label}
+                collapsed={collapsed}
+                active={
+                  item.matchPrefix
+                    ? pathname?.startsWith(item.href)
+                    : pathname === item.href
+                }
+              />
+            ))}
+          </div>
+        ))}
       </nav>
 
       <div className="p-2 border-t border-gray-200 dark:border-gray-700">
