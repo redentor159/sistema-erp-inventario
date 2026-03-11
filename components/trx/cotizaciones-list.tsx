@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTableSort } from "@/hooks/useTableSort";
 
 export function CotizacionesList() {
   const router = useRouter();
@@ -40,8 +41,10 @@ export function CotizacionesList() {
     return proyecto.includes(lowerQuery) || cliente.includes(lowerQuery);
   });
 
-  const totalPages = Math.ceil(filteredData.length / pageSize);
-  const paginatedData = filteredData.slice(page * pageSize, (page + 1) * pageSize);
+  const { sortedData: sortedCotizaciones, handleSort, sortConfig } = useTableSort(filteredData);
+
+  const totalPages = Math.ceil(sortedCotizaciones.length / pageSize);
+  const paginatedData = sortedCotizaciones.slice(page * pageSize, (page + 1) * pageSize);
 
   useEffect(() => {
     loadData();
@@ -163,49 +166,86 @@ export function CotizacionesList() {
       </CardHeader>
       <CardContent>
         {/* Desktop Table View */}
-        <div className="hidden md:block rounded-md border overflow-x-auto">
+        <div className="bg-white hidden md:block rounded-md shadow-sm ring-1 ring-slate-900/5 overflow-x-auto">
           <table className="w-full text-sm whitespace-nowrap">
-            <thead className="bg-muted/50">
-              <tr className="border-b text-left">
-                <th className="p-3 font-medium">Proyecto</th>
-                <th className="p-3 font-medium">Cliente</th>
-                <th className="p-3 font-medium">Fecha</th>
-                <th className="p-3 font-medium">Estado</th>
-                <th className="p-3 font-medium text-right">Total</th>
-                <th className="p-3 font-medium"></th>
+            <thead className="bg-slate-50 border-b border-slate-100/80">
+              <tr className="text-left">
+                <th 
+                  className="py-2 px-3 text-sm font-semibold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors"
+                  onClick={() => handleSort("nombre_proyecto")}
+                >
+                  Proyecto {sortConfig?.key === "nombre_proyecto" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </th>
+                <th 
+                  className="py-2 px-3 text-sm font-semibold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors"
+                  onClick={() => handleSort("mst_clientes.nombre_completo")}
+                >
+                  Cliente {sortConfig?.key === "mst_clientes.nombre_completo" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </th>
+                <th 
+                  className="py-2 px-3 text-sm font-semibold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors"
+                  onClick={() => handleSort("fecha_emision")}
+                >
+                  Fecha {sortConfig?.key === "fecha_emision" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </th>
+                <th 
+                  className="py-2 px-3 text-sm font-semibold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors"
+                  onClick={() => handleSort("estado")}
+                >
+                  Estado {sortConfig?.key === "estado" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </th>
+                <th 
+                  className="py-2 px-3 text-sm font-semibold text-right text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors"
+                  onClick={() => handleSort("_vc_precio_final_cliente")}
+                >
+                  Total {sortConfig?.key === "_vc_precio_final_cliente" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </th>
+                <th className="py-2 px-3 text-sm font-semibold text-slate-700 text-right">Acciones</th>
               </tr>
             </thead>
             <tbody>
+              {data.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="py-2 px-3 text-center text-sm text-slate-500 h-24"
+                  >
+                    No hay cotizaciones registradas.
+                  </td>
+                </tr>
+              )}
               {paginatedData.map((row) => (
                 <tr
                   key={row.id_cotizacion}
-                  className="border-b hover:bg-muted/50 cursor-pointer"
+                  className="border-b border-slate-100/80 hover:bg-slate-50 transition-colors cursor-pointer"
                   onClick={() =>
                     router.push(`/cotizaciones/detalle?id=${row.id_cotizacion}`)
                   }
                 >
-                  <td className="p-3 font-medium">
+                  <td className="py-2 px-3 text-sm font-medium text-slate-900">
                     {row.nombre_proyecto || "Sin nombre"}
                   </td>
-                  <td className="p-3 text-muted-foreground">
+                  <td className="py-2 px-3 text-sm text-slate-600">
                     {row.mst_clientes?.nombre_completo || "---"}
                   </td>
-                  <td className="p-3">
+                  <td className="py-2 px-3 text-sm text-slate-700">
                     {new Date(row.fecha_emision).toLocaleDateString()}
                   </td>
-                  <td className="p-3">
-                    <Badge
-                      variant={
-                        row.estado === "Borrador" ? "secondary" : "default"
-                      }
+                  <td className="py-2 px-3 text-sm">
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-md w-fit ${
+                        row.estado === "Borrador"
+                          ? "bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-600/20"
+                          : "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20"
+                      }`}
                     >
                       {row.estado}
-                    </Badge>
+                    </span>
                   </td>
-                  <td className="p-3 text-right font-bold text-green-600">
+                  <td className="py-2 px-3 text-sm text-right font-bold text-slate-900">
                     {formatCurrency(row._vc_precio_final_cliente || 0)}
                   </td>
-                  <td className="p-3 text-right">
+                  <td className="py-2 px-3 text-sm text-right">
                     <div className="flex justify-end gap-2">
                       <Button
                         variant="ghost"
@@ -231,16 +271,6 @@ export function CotizacionesList() {
                   </td>
                 </tr>
               ))}
-              {data.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="p-8 text-center text-muted-foreground"
-                  >
-                    No hay cotizaciones registradas.
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
         </div>
@@ -250,7 +280,7 @@ export function CotizacionesList() {
           {paginatedData.map((row) => (
             <div
               key={row.id_cotizacion}
-              className="bg-white border rounded-lg p-4 flex flex-col gap-3 shadow-sm hover:border-gray-300 transition-colors cursor-pointer"
+              className="bg-white rounded-lg p-4 flex flex-col gap-3 shadow-sm ring-1 ring-slate-900/5 hover:bg-slate-50 transition-colors cursor-pointer"
               onClick={() =>
                 router.push(`/cotizaciones/detalle?id=${row.id_cotizacion}`)
               }
@@ -260,32 +290,35 @@ export function CotizacionesList() {
                   <h3 className="font-bold text-gray-900 leading-tight">
                     {row.nombre_proyecto || "Sin nombre"}
                   </h3>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-slate-500 mt-1">
                     {row.mst_clientes?.nombre_completo || "Cliente No Asignado"}
                   </p>
                 </div>
-                <Badge
-                  variant={row.estado === "Borrador" ? "secondary" : "default"}
-                  className="flex-shrink-0 text-[10px] px-2 py-0.5"
+                <span
+                  className={`text-[10px] px-2 py-0.5 rounded-sm font-semibold flex-shrink-0 ${
+                    row.estado === "Borrador"
+                      ? "bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-600/20"
+                      : "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20"
+                  }`}
                 >
                   {row.estado}
-                </Badge>
+                </span>
               </div>
 
-              <div className="flex justify-between items-end border-t pt-3 mt-1 border-gray-100">
+              <div className="flex justify-between items-end border-t border-slate-100/80 pt-3 mt-1">
                 <div className="flex flex-col">
-                  <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
                     Fecha Emisión
                   </span>
-                  <span className="text-xs font-medium text-gray-700">
+                  <span className="text-xs font-medium text-slate-700">
                     {new Date(row.fecha_emision).toLocaleDateString()}
                   </span>
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
                     Total
                   </span>
-                  <span className="text-lg font-bold text-green-600 leading-none">
+                  <span className="text-lg font-bold text-slate-900 leading-none">
                     {formatCurrency(row._vc_precio_final_cliente || 0)}
                   </span>
                 </div>

@@ -33,6 +33,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { SeriesFormCmp } from "./series-form";
+import { useTableSort } from "@/hooks/useTableSort";
 
 export function SeriesList() {
     const queryClient = useQueryClient();
@@ -62,14 +63,16 @@ export function SeriesList() {
         },
     });
 
-    if (isLoading) return <div>Cargando sistemas...</div>;
-
     const filteredSeries =
         series?.filter(
             (s) =>
                 s.id_sistema.toLowerCase().includes(search.toLowerCase()) ||
                 s.nombre_comercial.toLowerCase().includes(search.toLowerCase()),
         ) || [];
+
+    const { sortedData: sortedSeries, handleSort, sortConfig } = useTableSort(filteredSeries);
+
+    if (isLoading) return <div>Cargando sistemas...</div>;
 
     const handleEdit = (serie: any) => {
         setSelectedSerie(serie);
@@ -124,58 +127,93 @@ export function SeriesList() {
             <div className="border rounded-md bg-card shadow-sm overflow-hidden pointer-events-auto">
                 <div className="overflow-x-auto hidden md:block">
                     <Table className="whitespace-nowrap">
-                        <TableHeader className="bg-muted/50">
+                        <TableHeader className="bg-slate-50 border-b border-slate-100/80">
                             <TableRow>
-                                <TableHead className="font-semibold">ID Sistema</TableHead>
-                                <TableHead className="font-semibold">Nombre Comercial</TableHead>
-                                <TableHead className="font-semibold text-xs whitespace-nowrap">Cod Corrales</TableHead>
-                                <TableHead className="font-semibold text-xs whitespace-nowrap">Cod Eduholding</TableHead>
-                                <TableHead className="font-semibold text-xs whitespace-nowrap">Cod Limatambo</TableHead>
-                                <TableHead className="font-semibold text-xs whitespace-nowrap">Cod HPD</TableHead>
-                                <TableHead className="font-semibold">Uso Principal</TableHead>
-                                <TableHead className="text-right font-semibold w-[100px]">
+                                <TableHead 
+                                  className="font-semibold cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm text-slate-700"
+                                  onClick={() => handleSort("id_sistema")}
+                                >
+                                  ID Sistema {sortConfig?.key === "id_sistema" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                                </TableHead>
+                                <TableHead 
+                                  className="font-semibold cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm text-slate-700"
+                                  onClick={() => handleSort("nombre_comercial")}
+                                >
+                                  Nombre Comercial {sortConfig?.key === "nombre_comercial" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                                </TableHead>
+                                <TableHead 
+                                  className="font-semibold text-xs whitespace-nowrap cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-slate-700"
+                                  onClick={() => handleSort("cod_corrales")}
+                                >
+                                  Cod Corrales {sortConfig?.key === "cod_corrales" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                                </TableHead>
+                                <TableHead 
+                                  className="font-semibold text-xs whitespace-nowrap cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-slate-700"
+                                  onClick={() => handleSort("cod_eduholding")}
+                                >
+                                  Cod Eduholding {sortConfig?.key === "cod_eduholding" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                                </TableHead>
+                                <TableHead 
+                                  className="font-semibold text-xs whitespace-nowrap cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-slate-700"
+                                  onClick={() => handleSort("cod_limatambo")}
+                                >
+                                  Cod Limatambo {sortConfig?.key === "cod_limatambo" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                                </TableHead>
+                                <TableHead 
+                                  className="font-semibold text-xs whitespace-nowrap cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-slate-700"
+                                  onClick={() => handleSort("cod_hpd")}
+                                >
+                                  Cod HPD {sortConfig?.key === "cod_hpd" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                                </TableHead>
+                                <TableHead 
+                                  className="font-semibold cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm text-slate-700"
+                                  onClick={() => handleSort("uso_principal")}
+                                >
+                                  Uso Principal {sortConfig?.key === "uso_principal" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                                </TableHead>
+                                <TableHead className="text-right font-semibold w-[100px] py-2 px-3 text-sm text-slate-700">
                                     Acciones
                                 </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {filteredSeries?.length === 0 && (
+                            {sortedSeries?.length === 0 && (
                                 <TableRow>
                                     <TableCell
                                         colSpan={8}
-                                        className="text-center h-24 text-muted-foreground"
+                                        className="text-center h-24 text-sm text-muted-foreground py-2 px-3"
                                     >
                                         No se encontraron sistemas.
                                     </TableCell>
                                 </TableRow>
                             )}
-                            {filteredSeries?.map((serie: any) => (
+                            {sortedSeries?.map((serie: any) => (
                                 <TableRow
                                     key={serie.id_sistema}
-                                    className="group hover:bg-muted/30"
+                                    className="border-b border-slate-100/80 hover:bg-slate-50 transition-colors"
                                 >
-                                    <TableCell className="font-medium">
+                                    <TableCell className="font-medium py-2 px-3 text-sm text-slate-900">
                                         {serie.id_sistema}
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="py-2 px-3 text-sm text-slate-700">
                                         {serie.nombre_comercial}
                                     </TableCell>
-                                    <TableCell className="text-xs text-muted-foreground">
+                                    <TableCell className="text-xs text-slate-500 py-2 px-3">
                                         {serie.cod_corrales || "-"}
                                     </TableCell>
-                                    <TableCell className="text-xs text-muted-foreground">
+                                    <TableCell className="text-xs text-slate-500 py-2 px-3">
                                         {serie.cod_eduholding || "-"}
                                     </TableCell>
-                                    <TableCell className="text-xs text-muted-foreground">
+                                    <TableCell className="text-xs text-slate-500 py-2 px-3">
                                         {serie.cod_limatambo || "-"}
                                     </TableCell>
-                                    <TableCell className="text-xs text-muted-foreground">
+                                    <TableCell className="text-xs text-slate-500 py-2 px-3">
                                         {serie.cod_hpd || "-"}
                                     </TableCell>
-                                    <TableCell className="text-xs">
+                                    <TableCell className="text-xs py-2 px-3 text-slate-700">
                                         {serie.uso_principal || <span className="text-muted-foreground italic">-</span>}
                                     </TableCell>
-                                    <TableCell className="text-right">
+                                    <TableCell className="text-right py-2 px-3 text-sm">
                                         <div className="flex justify-end gap-1">
                                             <Button
                                                 variant="ghost"

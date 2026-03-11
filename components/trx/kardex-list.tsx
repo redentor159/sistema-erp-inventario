@@ -111,7 +111,7 @@ export function KardexList({ active }: { active: boolean }) {
       />
 
       {/* FILTER BAR - COMPACT */}
-      <div className="flex flex-col md:flex-row gap-2 p-2 border rounded-lg bg-gray-50 dark:bg-gray-900/50 items-center justify-between">
+      <div className="flex flex-col md:flex-row gap-3 p-3 bg-white shadow-sm ring-1 ring-slate-900/5 rounded-xl dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 items-center justify-between transition-all duration-200">
         <div className="flex flex-1 gap-2 items-center">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -143,7 +143,7 @@ export function KardexList({ active }: { active: boolean }) {
               variant="ghost"
               size="sm"
               onClick={clearFilters}
-              className="text-red-500 hover:text-red-700 hover:bg-red-50 h-9"
+              className="text-red-600 hover:text-red-700 hover:bg-red-50 h-9 transition-all duration-200"
             >
               <X className="mr-2 h-3 w-3" />
               Limpiar
@@ -172,18 +172,18 @@ export function KardexList({ active }: { active: boolean }) {
       </div>
 
       {/* TABLE */}
-      <div className="border rounded-md bg-white dark:bg-gray-800 flex flex-col">
-        <div className="overflow-auto max-h-[600px]">
+      <div className="bg-white shadow-sm ring-1 ring-slate-900/5 rounded-xl dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 flex flex-col overflow-hidden transition-all duration-200">
+        <div className="overflow-auto max-h-[600px] rounded-t-xl">
           {isLoading ? (
-            <div className="p-12 text-center text-muted-foreground">
+            <div className="p-12 text-center text-slate-500">
               Cargando movimientos...
             </div>
           ) : (
             <Table>
-              <TableHeader className="bg-gray-50 sticky top-0 z-10">
-                <TableRow className="h-8">
+              <TableHeader className="bg-slate-50/50 sticky top-0 z-10 shadow-sm border-b border-slate-200/60 dark:bg-slate-900/80 backdrop-blur-md">
+                <TableRow className="h-10 hover:bg-transparent border-0">
                   <TableHead
-                    className="w-[120px] cursor-pointer hover:bg-muted/50"
+                    className="w-[120px] cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors py-2 px-3 text-sm font-semibold text-slate-700 dark:text-slate-300"
                     onClick={() => handleSort("fecha_hora")}
                   >
                     Fecha{" "}
@@ -191,16 +191,16 @@ export function KardexList({ active }: { active: boolean }) {
                       (sortConfig.direction === "asc" ? "↑" : "↓")}
                   </TableHead>
                   <TableHead
-                    className="w-[100px] cursor-pointer hover:bg-muted/50"
+                    className="w-[100px] cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors py-2 px-3 text-sm font-semibold text-slate-700 dark:text-slate-300"
                     onClick={() => handleSort("tipo_movimiento")}
                   >
                     Tipo{" "}
                     {sortConfig?.key === "tipo_movimiento" &&
                       (sortConfig.direction === "asc" ? "↑" : "↓")}
                   </TableHead>
-                  <TableHead className="w-[80px]">SKU</TableHead>
+                  <TableHead className="w-[80px] py-2 px-3 text-sm font-semibold text-slate-700 dark:text-slate-300">SKU</TableHead>
                   <TableHead
-                    className="cursor-pointer hover:bg-muted/50"
+                    className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors py-2 px-3 text-sm font-semibold text-slate-700 dark:text-slate-300"
                     onClick={() => handleSort("producto_nombre")}
                   >
                     Producto{" "}
@@ -208,14 +208,14 @@ export function KardexList({ active }: { active: boolean }) {
                       (sortConfig.direction === "asc" ? "↑" : "↓")}
                   </TableHead>
                   <TableHead
-                    className="text-right w-[100px] cursor-pointer hover:bg-muted/50"
+                    className="text-right w-[100px] cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors py-2 px-3 text-sm font-semibold text-slate-700 dark:text-slate-300"
                     onClick={() => handleSort("cantidad")}
                   >
                     Cant.{" "}
                     {sortConfig?.key === "cantidad" &&
                       (sortConfig.direction === "asc" ? "↑" : "↓")}
                   </TableHead>
-                  <TableHead className="w-[50px]">Und</TableHead>
+                  <TableHead className="w-[50px] py-2 px-3 text-sm font-semibold text-slate-700 dark:text-slate-300">Und</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -223,7 +223,7 @@ export function KardexList({ active }: { active: boolean }) {
                   <TableRow>
                     <TableCell
                       colSpan={6}
-                      className="text-center h-32 text-muted-foreground"
+                      className="text-center h-32 text-slate-500"
                     >
                       No se encontraron movimientos con los filtros actuales.
                     </TableCell>
@@ -232,45 +232,44 @@ export function KardexList({ active }: { active: boolean }) {
                 {sortedMovimientos?.map((mov: any) => (
                   <TableRow
                     key={mov.id_movimiento}
-                    className="hover:bg-muted/50 cursor-pointer h-8 border-b"
+                    className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200 cursor-pointer border-b border-slate-100/80 dark:border-slate-800"
                     onClick={() => setSelectedMovimiento(mov)}
                   >
-                    <TableCell className="whitespace-nowrap font-mono text-xs text-muted-foreground py-1">
+                    <TableCell className="whitespace-nowrap font-mono text-xs text-slate-500 py-2 px-3">
                       {format(new Date(mov.fecha_hora), "dd/MM/yy HH:mm", {
                         locale: es,
                       })}
                     </TableCell>
-                    <TableCell className="py-1">
-                      <Badge
-                        variant={
+                    <TableCell className="py-2 px-3">
+                      <span
+                        className={
                           mov.cantidad > 0
-                            ? "default"
+                            ? "inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20"
                             : mov.tipo_movimiento === "VENTA"
-                              ? "destructive"
-                              : "secondary"
+                              ? "inline-flex items-center rounded-md bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-700 ring-1 ring-inset ring-rose-600/20"
+                              : "inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20"
                         }
-                        className="text-xs px-2 py-0.5 h-5"
                       >
                         {mov.tipo_movimiento}
-                      </Badge>
+                      </span>
                     </TableCell>
-                    <TableCell className="text-xs font-mono py-1">
+                    <TableCell className="text-xs font-mono py-2 px-3 text-slate-600 dark:text-slate-400">
                       {mov.id_sku}
                     </TableCell>
                     <TableCell
-                      className="max-w-[300px] py-1"
+                      className="max-w-[300px] py-2 px-3"
                       title={mov.producto_nombre}
                     >
-                      <div className="truncate text-sm font-medium leading-tight">
+                      <div className="truncate text-sm font-medium leading-tight text-slate-900 dark:text-slate-100">
                         {mov.producto_nombre}
                       </div>
                     </TableCell>
                     <TableCell
-                      className={`text-right font-bold text-sm py-1 ${mov.cantidad < 0 ? "text-red-500" : "text-green-600"}`}
+                      className={`text-right font-medium font-mono text-sm py-2 px-3 ${mov.cantidad < 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"}`}
                     >
                       {Number(mov.cantidad).toFixed(2)}
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground py-1">
+                    <TableCell className="text-xs text-slate-500 py-2 px-3">
                       {mov.unidad_medida}
                     </TableCell>
                   </TableRow>
@@ -280,8 +279,8 @@ export function KardexList({ active }: { active: boolean }) {
           )}
         </div>
 
-        {/* PAGINTAION FOOTER */}
-        <div className="border-t p-2 bg-gray-50 flex items-center justify-between text-xs text-muted-foreground">
+        {/* PAGINATION FOOTER */}
+        <div className="border-t border-slate-200/60 p-3 bg-slate-50 dark:bg-slate-900/50 flex items-center justify-between text-xs text-slate-500">
           <div>
             Mostrando {sortedMovimientos.length} de {totalCount} registros
           </div>

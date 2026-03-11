@@ -111,7 +111,7 @@ export function EntradaFormCmp({ onSuccess }: EntradaFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* CABECERA */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-6 bg-white rounded-md shadow-sm ring-1 ring-slate-900/5">
           <FormField
             control={form.control}
             name="tipo_entrada"

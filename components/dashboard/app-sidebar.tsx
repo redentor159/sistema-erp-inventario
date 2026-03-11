@@ -26,13 +26,13 @@ export function AppSidebar() {
   return (
     <aside
       className={cn(
-        "bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 hidden md:flex flex-col transition-all duration-300",
+        "bg-white dark:bg-slate-900 border-r border-slate-200/60 shadow-sm dark:border-slate-800 hidden md:flex flex-col transition-all duration-300",
         collapsed ? "w-16" : "w-64",
       )}
     >
       <div
         className={cn(
-          "h-16 border-b border-gray-200 dark:border-gray-700 flex items-center transition-all px-4",
+          "h-16 border-b border-slate-200/60 dark:border-slate-800 flex items-center transition-all px-4",
           collapsed ? "justify-center" : "justify-between",
         )}
       >
@@ -86,7 +86,7 @@ export function AppSidebar() {
         ))}
       </nav>
 
-      <div className="p-2 border-t border-gray-200 dark:border-gray-700">
+      <div className="p-2 border-t border-slate-200/60 dark:border-slate-800">
         <HelpPanel collapsed={collapsed} />
       </div>
 

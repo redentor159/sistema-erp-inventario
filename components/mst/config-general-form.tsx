@@ -570,7 +570,7 @@ export function ConfigGeneralFormCmp() {
                 />
 
                 <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-4 p-4 border rounded-lg">
+                  <div className="space-y-4 p-6 rounded-md shadow-sm ring-1 ring-slate-900/5 bg-slate-50/50">
                     <h4 className="font-medium flex items-center gap-2">
                       🇵🇪 Cuentas en Soles
                     </h4>
@@ -654,7 +654,7 @@ export function ConfigGeneralFormCmp() {
                     </div>
                   </div>
 
-                  <div className="space-y-4 p-4 border rounded-lg">
+                  <div className="space-y-4 p-6 rounded-md shadow-sm ring-1 ring-slate-900/5 bg-slate-50/50">
                     <h4 className="font-medium flex items-center gap-2">
                       🇺🇸 Cuentas en Dólares
                     </h4>

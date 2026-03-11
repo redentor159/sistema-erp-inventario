@@ -107,7 +107,7 @@ export default function LoginPage() {
 
       {/* Panel derecho — Formulario */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <div className="w-full max-w-sm bg-white shadow-lg rounded-2xl p-8 border border-slate-200 space-y-8">
+        <div className="w-full max-w-sm bg-white shadow-sm ring-1 ring-slate-900/5 rounded-2xl p-8 space-y-8">
           {/* Mobile logo */}
           <div className="lg:hidden text-center">
             <div className="mx-auto w-12 h-12 rounded-xl bg-blue-900 flex items-center justify-center mb-3 shadow-md">
@@ -145,7 +145,7 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="usuario@empresa.com"
-                      className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 focus:bg-white transition"
+                      className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 focus:bg-white transition-all duration-200"
                     />
                   </div>
                 </div>
@@ -164,7 +164,7 @@ export default function LoginPage() {
                         setScreen("forgot");
                         setError(null);
                       }}
-                      className="text-xs text-slate-500 hover:text-slate-900 transition"
+                      className="text-xs text-slate-500 hover:text-slate-900 transition-all duration-200"
                     >
                       ¿Olvidaste tu contraseña?
                     </button>
@@ -178,13 +178,13 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 focus:bg-white transition"
+                      className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 focus:bg-white transition-all duration-200"
                     />
                   </div>
                 </div>
 
                 {error && (
-                  <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+                  <div className="flex items-start gap-2 p-3 rounded-md bg-red-50 text-sm font-medium text-red-700 ring-1 ring-inset ring-red-600/20">
                     <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
                     <span>{error}</span>
                   </div>
@@ -193,7 +193,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 border border-amber-600/20 flex items-center justify-center gap-2"
+                  className="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white text-sm font-semibold rounded-md shadow-sm transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                   {loading ? "Verificando..." : "Ingresar al sistema"}
@@ -217,7 +217,7 @@ export default function LoginPage() {
                     setScreen("login");
                     setError(null);
                   }}
-                  className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900 mb-4 transition"
+                  className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900 mb-4 transition-all duration-200"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Volver al inicio de sesión
@@ -248,13 +248,13 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="usuario@empresa.com"
-                      className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 focus:bg-white transition"
+                      className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 focus:bg-white transition-all duration-200"
                     />
                   </div>
                 </div>
 
                 {error && (
-                  <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+                  <div className="flex items-start gap-2 p-3 rounded-md bg-red-50 text-sm font-medium text-red-700 ring-1 ring-inset ring-red-600/20">
                     <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
                     <span>{error}</span>
                   </div>
@@ -263,7 +263,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 border border-amber-600/20 flex items-center justify-center gap-2"
+                  className="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white text-sm font-semibold rounded-md shadow-sm transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                   {loading ? "Enviando..." : "Enviar enlace de recuperación"}
@@ -296,7 +296,7 @@ export default function LoginPage() {
                   setScreen("login");
                   setError(null);
                 }}
-                className="text-sm text-slate-600 hover:text-slate-900 underline transition"
+                className="text-sm text-slate-600 hover:text-slate-900 underline transition-all duration-200"
               >
                 Volver al inicio de sesión
               </button>

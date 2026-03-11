@@ -514,7 +514,7 @@ export function CotizacionItemDialog({
                   const tipoDibujo = selectedModelMeta?.tipo_dibujo || "Fijo";
                   const configHojas = selectedModelMeta?.config_hojas_default || "F";
                   return (
-                    <div className="border rounded-lg p-4 bg-slate-50/50 flex flex-col items-center gap-2">
+                    <div className="p-6 rounded-md shadow-sm ring-1 ring-slate-900/5 bg-slate-50/50 flex flex-col items-center gap-2">
                       <p className="text-xs text-muted-foreground font-medium">Vista Previa</p>
                       <ItemRenderer
                         anchoMm={item.ancho_mm}
@@ -595,7 +595,7 @@ export function CotizacionItemDialog({
                   }
 
                   return (
-                    <div className="mt-4 p-4 border rounded-lg bg-slate-50 border-slate-200">
+                    <div className="mt-4 p-6 rounded-md shadow-sm ring-1 ring-slate-900/5 bg-slate-50/50">
                       <div className="flex items-center gap-2 mb-2">
                         <Truck className="h-4 w-4 text-slate-500" />
                         <h4 className="font-semibold text-slate-800 text-sm">
@@ -742,7 +742,7 @@ export function CotizacionItemDialog({
             </TabsContent>
 
             <TabsContent value="servicio" className="space-y-4 py-4">
-              <div className="p-4 bg-slate-50 rounded border border-slate-200">
+              <div className="p-6 rounded-md shadow-sm ring-1 ring-slate-900/5 bg-slate-50/50">
                 <p className="text-sm text-slate-600 mb-4">
                   Agregue servicios o ítems extras (instalación específica,
                   accesorios adicionales, etc.) que no requieren cálculo de

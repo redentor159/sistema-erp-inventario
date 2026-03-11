@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTableSort } from "@/hooks/useTableSort";
 
 export function PlantillaList() {
   const queryClient = useQueryClient();
@@ -83,8 +84,10 @@ export function PlantillaList() {
           .includes(search.toLowerCase()),
     ) || [];
 
-  const totalPages = Math.ceil(filteredPlantillas.length / pageSize);
-  const paginatedPlantillas = filteredPlantillas.slice(
+  const { sortedData: sortedPlantillas, handleSort, sortConfig } = useTableSort(filteredPlantillas);
+
+  const totalPages = Math.ceil(sortedPlantillas.length / pageSize);
+  const paginatedPlantillas = sortedPlantillas.slice(
     page * pageSize,
     (page + 1) * pageSize,
   );
@@ -141,20 +144,50 @@ export function PlantillaList() {
         </Dialog>
       </div>
 
-      <div className="border rounded-md bg-white dark:bg-gray-800 overflow-hidden">
+      <div className="bg-white rounded-md shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
         {/* Desktop Table View */}
         <div className="hidden md:block overflow-auto">
           <Table>
-            <TableHeader>
+            <TableHeader className="bg-slate-50 border-b border-slate-100/80">
               <TableRow>
-                <TableHead className="w-[80px]">ID</TableHead>
-                <TableHead>Nombre Genérico</TableHead>
-                <TableHead>Familia</TableHead>
-                <TableHead>Sistema</TableHead>
-                <TableHead className="text-right">Largo Estándar</TableHead>
-                <TableHead className="text-right">Peso Teórico</TableHead>
-                <TableHead className="text-center">Ref.</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+                <TableHead 
+                  className="w-[80px] cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("id_plantilla")}
+                >
+                  ID {sortConfig?.key === "id_plantilla" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("nombre_generico")}
+                >
+                  Nombre Genérico {sortConfig?.key === "nombre_generico" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("mst_familias.nombre_familia")}
+                >
+                  Familia {sortConfig?.key === "mst_familias.nombre_familia" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("mst_series_equivalencias.nombre_comercial")}
+                >
+                  Sistema {sortConfig?.key === "mst_series_equivalencias.nombre_comercial" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="text-right cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("largo_estandar_mm")}
+                >
+                  Largo Estándar {sortConfig?.key === "largo_estandar_mm" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="text-right cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("peso_teorico_kg")}
+                >
+                  Peso Teórico {sortConfig?.key === "peso_teorico_kg" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead className="text-center py-2 px-3 text-sm font-semibold text-slate-700">Ref.</TableHead>
+                <TableHead className="text-right py-2 px-3 text-sm font-semibold text-slate-700">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -166,37 +199,37 @@ export function PlantillaList() {
                 </TableRow>
               ) : filteredPlantillas.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center h-24">
+                  <TableCell colSpan={8} className="text-center h-24 py-2 px-3 text-sm text-slate-500">
                     No se encontraron plantillas.
                   </TableCell>
                 </TableRow>
               ) : (
                 paginatedPlantillas.map((plantilla: any) => (
-                  <TableRow key={plantilla.id_plantilla}>
-                    <TableCell className="font-mono text-xs font-medium">
+                  <TableRow key={plantilla.id_plantilla} className="hover:bg-slate-50 transition-colors border-b border-slate-100/80">
+                    <TableCell className="py-2 px-3 font-mono text-xs font-medium text-slate-700">
                       {plantilla.id_plantilla}
                     </TableCell>
-                    <TableCell className="font-medium">
+                    <TableCell className="py-2 px-3 text-sm font-medium text-slate-900">
                       {plantilla.nombre_generico}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-2 px-3 text-sm text-slate-700">
                       {plantilla.mst_familias?.nombre_familia}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-2 px-3 text-sm text-slate-700">
                       {plantilla.mst_series_equivalencias?.nombre_comercial ||
                         "-"}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="py-2 px-3 text-sm text-right text-slate-700">
                       {plantilla.largo_estandar_mm
                         ? `${Number(plantilla.largo_estandar_mm).toLocaleString()} mm`
                         : "-"}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="py-2 px-3 text-sm text-right text-slate-700">
                       {plantilla.peso_teorico_kg
                         ? `${Number(plantilla.peso_teorico_kg).toFixed(3)} Kg/m`
                         : "-"}
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="py-2 px-3 text-sm text-center text-slate-700">
                       {plantilla.imagen_ref ? (
                         <a
                           href={plantilla.imagen_ref}
@@ -204,27 +237,27 @@ export function PlantillaList() {
                           rel="noreferrer"
                           className="inline-flex items-center justify-center"
                         >
-                          <ImageIcon className="h-4 w-4 text-blue-500" />
+                          <ImageIcon className="h-4 w-4 text-blue-500 hover:text-blue-600 transition-colors" />
                         </a>
                       ) : (
-                        <span className="text-muted-foreground">-</span>
+                        <span className="text-slate-400">-</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="py-2 px-3 text-sm text-right">
                       <div className="flex justify-end gap-2">
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => setEditingPlantilla(plantilla)}
                         >
-                          <Pencil className="h-4 w-4 text-gray-500" />
+                          <Pencil className="h-4 w-4 text-slate-500" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => confirmDelete(plantilla.id_plantilla)}
                         >
-                          <Trash2 className="h-4 w-4 text-red-500" />
+                          <Trash2 className="h-4 w-4 text-red-500 hover:text-red-700 hover:bg-red-50" />
                         </Button>
                       </div>
                     </TableCell>
@@ -249,7 +282,7 @@ export function PlantillaList() {
             paginatedPlantillas.map((plantilla: any) => (
               <div
                 key={plantilla.id_plantilla}
-                className="p-4 flex flex-col gap-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                className="p-4 flex flex-col gap-3 hover:bg-slate-50 transition-colors"
               >
                 <div className="flex justify-between items-start gap-2">
                   <div className="flex-1">
@@ -272,10 +305,10 @@ export function PlantillaList() {
                       ID: {plantilla.id_plantilla}
                     </p>
                     <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                      <span className="text-[10px] bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded font-medium text-gray-700 dark:text-gray-300">
+                      <span className="text-[10px] bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-600/20 px-1.5 py-0.5 rounded-sm font-medium">
                         Fam: {plantilla.mst_familias?.nombre_familia || "-"}
                       </span>
-                      <span className="text-[10px] bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded font-medium text-gray-700 dark:text-gray-300">
+                      <span className="text-[10px] bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-600/20 px-1.5 py-0.5 rounded-sm font-medium">
                         Sis:{" "}
                         {plantilla.mst_series_equivalencias?.nombre_comercial ||
                           "-"}
@@ -287,7 +320,7 @@ export function PlantillaList() {
                       variant="ghost"
                       size="icon"
                       onClick={() => setEditingPlantilla(plantilla)}
-                      className="h-8 w-8 text-muted-foreground hover:text-primary bg-gray-50 dark:bg-gray-800/50"
+                      className="h-8 w-8 text-slate-500 hover:text-slate-900 bg-slate-50"
                     >
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
@@ -295,14 +328,14 @@ export function PlantillaList() {
                       variant="ghost"
                       size="icon"
                       onClick={() => confirmDelete(plantilla.id_plantilla)}
-                      className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 bg-gray-50 dark:bg-gray-800/50"
+                      className="h-8 w-8 text-slate-500 hover:text-red-600 hover:bg-red-50 bg-slate-50"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center text-xs mt-1 bg-slate-50 dark:bg-slate-900/50 px-3 py-2 rounded-md border border-slate-100 dark:border-slate-800">
+                <div className="flex justify-between items-center text-xs mt-1 bg-slate-50 px-3 py-2 rounded-md border border-slate-100/80">
                   <div className="flex flex-col">
                     <span className="text-[9px] text-muted-foreground uppercase font-semibold tracking-wider">
                       Largo Est.

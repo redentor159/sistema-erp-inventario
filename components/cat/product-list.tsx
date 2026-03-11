@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { useState, useEffect, useRef } from "react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
+import { useTableSort } from "@/hooks/useTableSort";
 
 const PriceFreshnessBadge = ({ dateString }: { dateString?: string }) => {
   if (!dateString) {
@@ -162,6 +163,8 @@ export function ProductList({ active }: { active: boolean }) {
   const products = result?.data || [];
   const totalCount = result?.count || 0;
   const totalPages = Math.ceil(totalCount / pageSize);
+
+  const { sortedData: sortedProducts, handleSort, sortConfig } = useTableSort(products);
 
   // --- MUTATIONS ---
   const deleteMutation = useMutation({
@@ -472,35 +475,78 @@ export function ProductList({ active }: { active: boolean }) {
         </div>
       </div>
 
-      <div className="border rounded-md bg-white dark:bg-gray-800 flex flex-col">
+      <div className="bg-white rounded-md shadow-sm ring-1 ring-slate-900/5 flex flex-col">
         {/* Desktop Table View */}
         <div className="hidden md:block flex-1 overflow-auto">
           <Table>
-            <TableHeader>
+            <TableHeader className="bg-slate-50 border-b border-slate-100/80">
               <TableRow>
-                <TableHead className="w-[120px]">SKU</TableHead>
-                <TableHead>Producto</TableHead>
-                <TableHead>Familia / Marca</TableHead>
-                <TableHead>Acabado</TableHead>
-                <TableHead>Almacén</TableHead>
-                <TableHead className="text-right w-[140px]">
-                  {isEditMode ? "Costo (Edit)" : "Costo Mercado"}
+                <TableHead 
+                  className="w-[120px] cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("id_sku")}
+                >
+                  SKU {sortConfig?.key === "id_sku" && (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TableHead>
-                <TableHead className="text-right">Stock Actual</TableHead>
-                <TableHead className="text-right">PMP (Unit)</TableHead>
-                <TableHead className="text-right">Inversión (Total)</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("nombre_completo")}
+                >
+                  Producto {sortConfig?.key === "nombre_completo" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("nombre_familia")}
+                >
+                  Familia / Marca {sortConfig?.key === "nombre_familia" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("nombre_acabado")}
+                >
+                  Acabado {sortConfig?.key === "nombre_acabado" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("nombre_almacen")}
+                >
+                  Almacén {sortConfig?.key === "nombre_almacen" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="text-right w-[140px] cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("costo_mercado_unit")}
+                >
+                  {isEditMode ? "Costo (Edit)" : "Costo Mercado"} {sortConfig?.key === "costo_mercado_unit" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="text-right cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("stock_actual")}
+                >
+                  Stock Actual {sortConfig?.key === "stock_actual" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="text-right cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("costo_promedio")}
+                >
+                  PMP (Unit) {sortConfig?.key === "costo_promedio" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="text-right cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("inversion_total")}
+                >
+                  Inversión (Total) {sortConfig?.key === "inversion_total" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead className="text-right py-2 px-3 text-sm font-semibold text-slate-700">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.length === 0 ? (
+              {sortedProducts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center h-24">
+                  <TableCell colSpan={10} className="text-center h-24 text-sm text-slate-500 py-2 px-3">
                     No se encontraron productos.
                   </TableCell>
                 </TableRow>
               ) : (
-                products.map((product: any) => {
+                sortedProducts.map((product: any) => {
                   const stock = Number(product.stock_actual || 0);
                   const pmp = Number(product.costo_promedio || 0);
 
@@ -521,8 +567,8 @@ export function ProductList({ active }: { active: boolean }) {
                   const isNegative = stock < 0;
                   const isPositive = stock > 0;
                   const rowClass = isNegative
-                    ? "bg-red-50 dark:bg-red-900/10 hover:bg-red-100"
-                    : "hover:bg-muted/50";
+                    ? "bg-red-50 hover:bg-red-100 transition-colors border-b border-slate-100/80"
+                    : "hover:bg-slate-50 transition-colors border-b border-slate-100/80";
                   const stockClass = isNegative
                     ? "text-red-600 font-bold"
                     : isPositive
@@ -533,12 +579,12 @@ export function ProductList({ active }: { active: boolean }) {
 
                   return (
                     <TableRow key={product.id_sku} className={`${rowClass}`}>
-                      <TableCell className="font-mono text-xs font-medium">
+                      <TableCell className="font-mono text-xs font-medium py-2 px-3">
                         {product.id_sku}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-2 px-3 text-sm">
                         <div className="flex flex-col">
-                          <span className="font-medium text-sm">
+                          <span className="font-medium text-slate-900">
                             {product.nombre_completo}
                           </span>
                           <span className="text-xs text-muted-foreground">
@@ -546,20 +592,20 @@ export function ProductList({ active }: { active: boolean }) {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-2 px-3 text-sm">
                         <div className="flex flex-col text-xs">
-                          <span>{product.nombre_familia}</span>
+                          <span className="text-slate-900">{product.nombre_familia}</span>
                           <span className="text-muted-foreground">
                             {product.nombre_marca}
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <span className="text-xs">
+                      <TableCell className="py-2 px-3 text-sm">
+                        <span className="text-xs text-slate-700">
                           {product.nombre_acabado || "-"}
                         </span>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-2 px-3 text-sm">
                         {isEditMode ? (
                           <select
                             className={`text-[10px] w-full bg-transparent border rounded px-1 py-1 cursor-pointer hover:bg-slate-50 focus:outline-none focus:ring-1 focus:ring-blue-400 ${pendingAlmacenChanges[product.id_sku] !== undefined ? "bg-yellow-50 border-yellow-400 font-bold" : "border-slate-200"}`}
@@ -586,12 +632,12 @@ export function ProductList({ active }: { active: boolean }) {
                             ))}
                           </select>
                         ) : (
-                          <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                          <span className="text-xs font-medium text-slate-600">
                             {product.nombre_almacen || "Sin Asignar"}
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="text-right text-xs font-mono p-1">
+                      <TableCell className="text-right text-xs font-mono py-2 px-3">
                         {isEditMode ? (
                           <div className="flex items-center gap-1">
                             <select
@@ -646,7 +692,7 @@ export function ProductList({ active }: { active: boolean }) {
                           </div>
                         ) : (
                           <div className="flex flex-col items-end">
-                            <span>
+                            <span className="text-slate-900">
                               {costoMercado.toLocaleString("es-PE", {
                                 style: "currency",
                                 currency: moneda,
@@ -657,25 +703,25 @@ export function ProductList({ active }: { active: boolean }) {
                         )}
                       </TableCell>
                       <TableCell
-                        className={`text-right text-base ${stockClass}`}
+                        className={`text-right text-base py-2 px-3 ${stockClass}`}
                       >
                         {stock.toLocaleString("es-PE", {
                           minimumFractionDigits: 2,
                         })}
                       </TableCell>
-                      <TableCell className="text-right font-mono text-xs">
+                      <TableCell className="text-right font-mono text-xs py-2 px-3 text-slate-700">
                         {pmp.toLocaleString("es-PE", {
                           style: "currency",
                           currency: "PEN",
                         })}
                       </TableCell>
-                      <TableCell className="text-right font-medium text-xs">
+                      <TableCell className="text-right font-medium text-xs py-2 px-3 text-slate-900">
                         {inversion.toLocaleString("es-PE", {
                           style: "currency",
                           currency: "PEN",
                         })}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right py-2 px-3 text-sm">
                         <div className="flex items-center justify-end gap-1">
                           {/* Detail View */}
                           <ProductDetailSheet product={product}>

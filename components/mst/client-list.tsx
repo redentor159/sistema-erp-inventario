@@ -41,6 +41,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ClientFormCmp } from "./client-form";
+import { useTableSort } from "@/hooks/useTableSort";
 
 export function ClientList() {
   const queryClient = useQueryClient();
@@ -73,8 +74,6 @@ export function ClientList() {
     },
   });
 
-  if (isLoading) return <div>Cargando clientes...</div>;
-
   const filteredClients =
     clients?.filter(
       (c) =>
@@ -82,8 +81,10 @@ export function ClientList() {
         c.ruc.includes(search),
     ) || [];
 
-  const totalPages = Math.ceil(filteredClients.length / pageSize);
-  const paginatedClients = filteredClients.slice(
+  const { sortedData: sortedClients, handleSort, sortConfig } = useTableSort(filteredClients);
+
+  const totalPages = Math.ceil(sortedClients.length / pageSize);
+  const paginatedClients = sortedClients.slice(
     page * pageSize,
     (page + 1) * pageSize,
   );
@@ -98,9 +99,11 @@ export function ClientList() {
     setOpen(true);
   };
 
+  if (isLoading) return <div>Cargando clientes...</div>;
+
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center bg-card p-4 rounded-lg border shadow-sm">
+      <div className="flex justify-between items-center bg-white p-4 rounded-md ring-1 ring-slate-900/5 shadow-sm">
         <div className="relative w-72">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -157,32 +160,53 @@ export function ClientList() {
         </Dialog>
       </div>
 
-      <div className="border rounded-md bg-card shadow-sm overflow-hidden pointer-events-auto">
+      <div className="bg-white rounded-md shadow-sm ring-1 ring-slate-900/5 overflow-hidden pointer-events-auto">
         {/* Desktop Table View */}
         <div className="hidden md:block overflow-x-auto">
           <Table className="whitespace-nowrap">
-            <TableHeader className="bg-muted/50">
+            <TableHeader className="bg-slate-50 border-b border-slate-100/80">
               <TableRow>
-                <TableHead className="font-semibold">RUC</TableHead>
-                <TableHead className="font-semibold">
-                  Nombre / Razón Social
+                <TableHead 
+                  className="font-semibold cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm text-slate-700"
+                  onClick={() => handleSort("ruc")}
+                >
+                  RUC {sortConfig?.key === "ruc" && (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TableHead>
-                <TableHead className="font-semibold text-center w-[120px]">
-                  Tipo
+                <TableHead 
+                  className="font-semibold cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm text-slate-700"
+                  onClick={() => handleSort("nombre_completo")}
+                >
+                  Nombre / Razón Social {sortConfig?.key === "nombre_completo" && (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TableHead>
-                <TableHead className="font-semibold">Contacto</TableHead>
-                <TableHead className="font-semibold">Dirección</TableHead>
-                <TableHead className="text-right font-semibold w-[100px]">
+                <TableHead 
+                  className="font-semibold text-center w-[120px] cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm text-slate-700"
+                  onClick={() => handleSort("tipo_cliente")}
+                >
+                  Tipo {sortConfig?.key === "tipo_cliente" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="font-semibold cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm text-slate-700"
+                  onClick={() => handleSort("telefono")}
+                >
+                  Contacto {sortConfig?.key === "telefono" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="font-semibold cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm text-slate-700"
+                  onClick={() => handleSort("direccion_obra_principal")}
+                >
+                  Dirección {sortConfig?.key === "direccion_obra_principal" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead className="text-right font-semibold w-[100px] py-2 px-3 text-sm text-slate-700">
                   Acciones
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredClients?.length === 0 && (
+              {sortedClients?.length === 0 && (
                 <TableRow>
                   <TableCell
                     colSpan={6}
-                    className="text-center h-24 text-muted-foreground"
+                    className="text-center h-24 text-sm text-muted-foreground py-2 px-3"
                   >
                     No se encontraron clientes.
                   </TableCell>
@@ -191,9 +215,9 @@ export function ClientList() {
               {paginatedClients?.map((client: any) => (
                 <TableRow
                   key={client.id_cliente}
-                  className="group hover:bg-muted/30"
+                  className="hover:bg-slate-50 transition-colors border-b border-slate-100/80"
                 >
-                  <TableCell className="font-medium">
+                  <TableCell className="font-medium py-2 px-3 text-sm">
                     <div className="flex flex-col">
                       <span>{client.ruc}</span>
                       <span className="text-[10px] text-muted-foreground">
@@ -201,24 +225,24 @@ export function ClientList() {
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <span className="font-medium text-primary">
+                  <TableCell className="py-2 px-3 text-sm">
+                    <span className="font-medium text-slate-900">
                       {client.nombre_completo}
                     </span>
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center py-2 px-3 text-sm">
                     <div className="flex justify-center">
                       <span
-                        className={`text-xs font-medium px-2 py-0.5 rounded-full w-fit ${client.tipo_cliente === "EMPRESA"
-                            ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                            : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        className={`text-xs font-medium px-2 py-0.5 rounded-md w-fit ${client.tipo_cliente === "EMPRESA"
+                            ? "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20"
+                            : "bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-600/20"
                           }`}
                       >
                         {client.tipo_cliente}
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-2 px-3 text-sm">
                     <div className="flex flex-col">
                       <span>
                         {client.telefono || (
@@ -229,7 +253,7 @@ export function ClientList() {
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-2 px-3 text-sm">
                     <span
                       className="text-sm truncate max-w-[200px] block"
                       title={client.direccion_obra_principal || ""}
@@ -241,7 +265,7 @@ export function ClientList() {
                       )}
                     </span>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right py-2 px-3 text-sm">
                     <div className="flex justify-end gap-1">
                       <Button
                         variant="ghost"
@@ -277,7 +301,7 @@ export function ClientList() {
           {paginatedClients?.map((client: any) => (
             <div
               key={client.id_cliente}
-              className="p-4 flex flex-col gap-3 hover:bg-muted/30 transition-colors"
+              className="p-4 flex flex-col gap-3 hover:bg-slate-50 transition-colors"
             >
               <div className="flex justify-between items-start gap-2">
                 <div className="flex-1">
@@ -292,7 +316,7 @@ export function ClientList() {
                       RUC: {client.ruc}
                     </Badge>
                     <span
-                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${client.tipo_cliente === "EMPRESA" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"}`}
+                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded-sm ${client.tipo_cliente === "EMPRESA" ? "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20" : "bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-600/20"}`}
                     >
                       {client.tipo_cliente}
                     </span>
@@ -318,7 +342,7 @@ export function ClientList() {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-1.5 text-xs text-muted-foreground mt-1 bg-muted/30 p-2.5 rounded-md border border-border/40">
+              <div className="flex flex-col gap-1.5 text-xs text-muted-foreground mt-1 bg-slate-50 p-2.5 rounded-md border border-slate-100/80">
                 <div className="flex items-start gap-2">
                   <span className="font-semibold w-14 uppercase text-[9px] tracking-wider mt-0.5 text-foreground/60">
                     Teléfono:

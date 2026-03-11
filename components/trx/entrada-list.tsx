@@ -35,14 +35,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useTableSort } from "@/hooks/useTableSort";
 
 export function EntradaList({ active }: { active: boolean }) {
   const [search, setSearch] = useState("");
-  const [sortConfig, setSortConfig] = useState<{
-    key: string;
-    direction: "asc" | "desc";
-  } | null>({ key: "fecha_registro", direction: "desc" });
-
   const { data: entradas, isLoading } = useQuery({
     queryKey: ["trxEntradas", search],
     queryFn: () => trxApi.getEntradas({ search }),
@@ -55,46 +51,23 @@ export function EntradaList({ active }: { active: boolean }) {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(50);
 
-  // SORTING LOGIC
-  const handleSort = (key: string) => {
-    let direction: "asc" | "desc" = "asc";
-    if (
-      sortConfig &&
-      sortConfig.key === key &&
-      sortConfig.direction === "asc"
-    ) {
-      direction = "desc";
-    }
-    setSortConfig({ key, direction });
-  };
-
-  const sortedEntradas = React.useMemo(() => {
-    if (!entradas) return [];
-    const sorted = [...entradas];
-    if (sortConfig) {
-      sorted.sort((a, b) => {
-        // Handle nested properties if needed, e.g. provider name
-        let valA = a[sortConfig.key];
-        let valB = b[sortConfig.key];
-
-        if (sortConfig.key === "proveedor") {
-          valA = a.mst_proveedores?.razon_social || "";
-          valB = b.mst_proveedores?.razon_social || "";
-        }
-
-        if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
-        if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
-    return sorted;
-  }, [entradas, sortConfig]);
+  const { sortedData: sortedEntradas, handleSort, sortConfig } = useTableSort(entradas || [], { key: "fecha_registro", direction: "desc" });
 
   const totalPages = Math.ceil((sortedEntradas?.length || 0) / pageSize);
   const paginatedEntradas = sortedEntradas?.slice(
     page * pageSize,
     (page + 1) * pageSize,
   );
+
+  const getTipoBadgeClass = (tipo: string) => {
+    const t = tipo?.toUpperCase() || "";
+    if (t.includes("COMPRA")) return "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20";
+    if (t.includes("AJUSTE")) return "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20";
+    if (t.includes("VENTA")) return "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20";
+    if (t.includes("PRODUCCION")) return "bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-600/20";
+    if (t.includes("BAJA") || t.includes("MERMA") || t.includes("CONSUMO")) return "bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-600/20";
+    return "bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-600/20";
+  };
 
   if (isLoading && active)
     return (
@@ -174,47 +147,49 @@ export function EntradaList({ active }: { active: boolean }) {
         id={selectedEntrada?.id_entrada}
       />
 
-      <div className="border rounded-md bg-white dark:bg-gray-800 overflow-hidden">
+      <div className="bg-white rounded-md shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
         {/* Desktop Table View */}
         <div className="hidden md:block overflow-auto">
           <Table>
-            <TableHeader>
+            <TableHeader className="bg-slate-50 border-b border-slate-100/80">
               <TableRow>
                 <TableHead
-                  className="cursor-pointer hover:bg-muted/50"
+                  className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
                   onClick={() => handleSort("fecha_registro")}
                 >
-                  Fecha{" "}
-                  {sortConfig?.key === "fecha_registro" &&
-                    (sortConfig.direction === "asc" ? "↑" : "↓")}
+                  Fecha {sortConfig?.key === "fecha_registro" && (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer hover:bg-muted/50"
+                  className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
                   onClick={() => handleSort("tipo_entrada")}
                 >
-                  Tipo{" "}
-                  {sortConfig?.key === "tipo_entrada" &&
-                    (sortConfig.direction === "asc" ? "↑" : "↓")}
+                  Tipo {sortConfig?.key === "tipo_entrada" && (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => handleSort("proveedor")}
+                  className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("mst_proveedores.razon_social")}
                 >
-                  Proveedor{" "}
-                  {sortConfig?.key === "proveedor" &&
-                    (sortConfig.direction === "asc" ? "↑" : "↓")}
+                  Proveedor {sortConfig?.key === "mst_proveedores.razon_social" && (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer hover:bg-muted/50"
+                  className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
                   onClick={() => handleSort("nro_documento_fisico")}
                 >
-                  Documento{" "}
-                  {sortConfig?.key === "nro_documento_fisico" &&
-                    (sortConfig.direction === "asc" ? "↑" : "↓")}
+                  Documento {sortConfig?.key === "nro_documento_fisico" && (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TableHead>
-                <TableHead>Moneda</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("moneda")}
+                >
+                  Moneda {sortConfig?.key === "moneda" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("estado")}
+                >
+                  Estado {sortConfig?.key === "estado" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead className="text-right py-2 px-3 text-sm font-semibold text-slate-700">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -222,7 +197,7 @@ export function EntradaList({ active }: { active: boolean }) {
                 <TableRow>
                   <TableCell
                     colSpan={7}
-                    className="text-center h-24 text-muted-foreground"
+                    className="text-center h-24 text-sm text-muted-foreground py-2 px-3"
                   >
                     No se encontraron entradas con los filtros actuales.
                   </TableCell>
@@ -231,39 +206,38 @@ export function EntradaList({ active }: { active: boolean }) {
               {paginatedEntradas?.map((ent: any) => (
                 <TableRow
                   key={ent.id_entrada}
-                  className="cursor-pointer hover:bg-muted/50"
+                  className="border-b border-slate-100/80 hover:bg-slate-50 transition-colors cursor-pointer"
                   onClick={() => setSelectedEntrada(ent)}
                 >
-                  <TableCell>
+                  <TableCell className="py-2 px-3 text-sm text-slate-700">
                     {format(new Date(ent.fecha_registro), "dd/MM/yyyy", {
                       locale: es,
                     })}
                   </TableCell>
-                  <TableCell>{ent.tipo_entrada}</TableCell>
-                  <TableCell className="font-medium">
+                  <TableCell className="py-2 px-3 text-sm">
+                    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${getTipoBadgeClass(ent.tipo_entrada)}`}>
+                      {ent.tipo_entrada.replace("_", " ")}
+                    </span>
+                  </TableCell>
+                  <TableCell className="py-2 px-3 text-sm font-medium text-slate-900">
                     {ent.mst_proveedores?.razon_social || "Sin Proveedor"}
                   </TableCell>
-                  <TableCell>{ent.nro_documento_fisico || "-"}</TableCell>
-                  <TableCell>{ent.moneda}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
+                  <TableCell className="py-2 px-3 text-sm text-slate-700">{ent.nro_documento_fisico || "-"}</TableCell>
+                  <TableCell className="py-2 px-3 text-sm text-slate-700">{ent.moneda}</TableCell>
+                  <TableCell className="py-2 px-3 text-sm">
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-md w-fit ${
                         ent.estado === "INGRESADO"
-                          ? "default"
+                          ? "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20"
                           : ent.estado === "BORRADOR"
-                            ? "outline"
-                            : "secondary"
-                      }
-                      className={
-                        ent.estado === "INGRESADO"
-                          ? "bg-green-100 text-green-800 hover:bg-green-200 border-green-200"
-                          : ""
-                      }
+                            ? "bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-600/20"
+                            : "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20"
+                      }`}
                     >
                       {ent.estado}
-                    </Badge>
+                    </span>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right py-2 px-3 text-sm">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -291,52 +265,44 @@ export function EntradaList({ active }: { active: boolean }) {
           {paginatedEntradas?.map((ent: any) => (
             <div
               key={ent.id_entrada}
-              className="p-4 flex flex-col gap-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors"
+              className="p-4 flex flex-col gap-3 hover:bg-slate-50 cursor-pointer transition-colors"
               onClick={() => setSelectedEntrada(ent)}
             >
               <div className="flex justify-between items-start gap-2">
                 <div className="flex items-start gap-3 flex-1">
-                  <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <ArrowDownRight className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <div className="w-8 h-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <ArrowDownRight className="h-4 w-4 text-blue-600" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-bold text-sm text-gray-900 dark:text-gray-100 leading-tight">
+                    <h4 className="font-bold text-sm text-slate-900 leading-tight">
                       {ent.mst_proveedores?.razon_social || "Sin Proveedor"}
                     </h4>
                     <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                      <Badge
-                        variant="outline"
-                        className="text-[9px] font-mono bg-white dark:bg-gray-900 text-gray-500 uppercase px-1.5 py-0"
-                      >
-                        {ent.tipo_entrada}
-                      </Badge>
-                      <span className="text-[10px] text-gray-500 font-mono flex items-center">
+                      <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${getTipoBadgeClass(ent.tipo_entrada)}`}>
+                        {ent.tipo_entrada.replace("_", " ")}
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-mono flex items-center">
                         Doc: {ent.nro_documento_fisico || "S/D"}
                       </span>
                     </div>
                   </div>
                 </div>
                 <div className="flex-shrink-0">
-                  <Badge
-                    variant={
+                  <span
+                    className={`text-[10px] px-2 py-0.5 rounded-sm font-semibold ${
                       ent.estado === "INGRESADO"
-                        ? "default"
+                        ? "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20"
                         : ent.estado === "BORRADOR"
-                          ? "outline"
-                          : "secondary"
-                    }
-                    className={
-                      ent.estado === "INGRESADO"
-                        ? "bg-green-100 text-green-800 hover:bg-green-200 border-green-200 text-[10px] px-2 py-0.5"
-                        : "text-[10px] px-2 py-0.5"
-                    }
+                          ? "bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-600/20"
+                          : "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20"
+                    }`}
                   >
                     {ent.estado}
-                  </Badge>
+                  </span>
                 </div>
               </div>
 
-              <div className="flex justify-between items-center text-xs mt-1 bg-slate-50 dark:bg-slate-900/50 px-3 py-2 rounded-md border border-slate-100 dark:border-slate-800">
+              <div className="flex justify-between items-center text-xs mt-1 bg-slate-50 px-3 py-2 rounded-md border border-slate-100/80">
                 <div className="flex flex-col">
                   <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">
                     Fecha Registro

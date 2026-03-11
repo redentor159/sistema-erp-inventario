@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTableSort } from "@/hooks/useTableSort";
 
 export function SalidaList({ active }: { active: boolean }) {
   const [search, setSearch] = useState("");
@@ -50,11 +51,23 @@ export function SalidaList({ active }: { active: boolean }) {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(50);
 
-  const totalPages = Math.ceil((salidas?.length || 0) / pageSize);
-  const paginatedSalidas = salidas?.slice(
+  const { sortedData: sortedSalidas, handleSort, sortConfig } = useTableSort(salidas || [], { key: "fecha", direction: "desc" });
+
+  const totalPages = Math.ceil((sortedSalidas?.length || 0) / pageSize);
+  const paginatedSalidas = sortedSalidas?.slice(
     page * pageSize,
     (page + 1) * pageSize,
   );
+
+  const getTipoBadgeClass = (tipo: string) => {
+    const t = tipo?.toUpperCase() || "";
+    if (t.includes("COMPRA")) return "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20";
+    if (t.includes("AJUSTE")) return "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20";
+    if (t.includes("VENTA")) return "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20";
+    if (t.includes("PRODUCCION")) return "bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-600/20";
+    if (t.includes("BAJA") || t.includes("MERMA") || t.includes("CONSUMO")) return "bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-600/20";
+    return "bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-600/20";
+  };
 
   return (
     <div className="space-y-4">
@@ -126,26 +139,51 @@ export function SalidaList({ active }: { active: boolean }) {
         id={selectedSalida?.id_salida}
       />
 
-      <div className="border rounded-md bg-white dark:bg-gray-800 overflow-hidden">
+      <div className="bg-white rounded-md shadow-sm ring-1 ring-slate-900/5 overflow-hidden">
         {/* Desktop Table View */}
         <div className="hidden md:block overflow-auto">
           <Table>
-            <TableHeader>
+            <TableHeader className="bg-slate-50 border-b border-slate-100/80">
               <TableRow>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Destinatario</TableHead>
-                <TableHead>Comentario</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("fecha")}
+                >
+                  Fecha {sortConfig?.key === "fecha" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("tipo_salida")}
+                >
+                  Tipo {sortConfig?.key === "tipo_salida" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("mst_clientes.nombre_completo")}
+                >
+                  Destinatario {sortConfig?.key === "mst_clientes.nombre_completo" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("comentario")}
+                >
+                  Comentario {sortConfig?.key === "comentario" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                  onClick={() => handleSort("estado")}
+                >
+                  Estado {sortConfig?.key === "estado" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead className="text-right py-2 px-3 text-sm font-semibold text-slate-700">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {salidas?.length === 0 && (
+              {sortedSalidas?.length === 0 && (
                 <TableRow>
                   <TableCell
                     colSpan={6}
-                    className="text-center h-24 text-muted-foreground"
+                    className="text-center h-24 text-sm text-muted-foreground py-2 px-3"
                   >
                     No hay salidas registradas.
                   </TableCell>
@@ -154,40 +192,37 @@ export function SalidaList({ active }: { active: boolean }) {
               {paginatedSalidas?.map((sal: any) => (
                 <TableRow
                   key={sal.id_salida}
-                  className="cursor-pointer hover:bg-muted/50"
+                  className="border-b border-slate-100/80 hover:bg-slate-50 transition-colors cursor-pointer"
                   onClick={() => setSelectedSalida(sal)}
                 >
-                  <TableCell>
+                  <TableCell className="py-2 px-3 text-sm text-slate-700">
                     {format(new Date(sal.fecha), "dd/MM/yyyy", { locale: es })}
                   </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{sal.tipo_salida}</Badge>
+                  <TableCell className="py-2 px-3 text-sm">
+                    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${getTipoBadgeClass(sal.tipo_salida)}`}>
+                      {sal.tipo_salida.replace("_", " ")}
+                    </span>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-2 px-3 text-sm text-slate-900 font-medium">
                     {sal.mst_clientes?.nombre_completo ||
                       sal.id_destinatario ||
                       "-"}
                   </TableCell>
-                  <TableCell>{sal.comentario}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
+                  <TableCell className="py-2 px-3 text-sm text-slate-700">{sal.comentario}</TableCell>
+                  <TableCell className="py-2 px-3 text-sm">
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-md w-fit ${
                         sal.estado === "CONFIRMADO"
-                          ? "default" // Greenish usually if customized or we use explicit class
+                          ? "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20"
                           : sal.estado === "BORRADOR"
-                            ? "outline"
-                            : "secondary"
-                      }
-                      className={
-                        sal.estado === "CONFIRMADO"
-                          ? "bg-green-100 text-green-800 hover:bg-green-200 border-green-200"
-                          : ""
-                      }
+                            ? "bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-600/20"
+                            : "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20"
+                      }`}
                     >
                       {sal.estado}
-                    </Badge>
+                    </span>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right py-2 px-3 text-sm">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -215,47 +250,39 @@ export function SalidaList({ active }: { active: boolean }) {
           {paginatedSalidas?.map((sal: any) => (
             <div
               key={sal.id_salida}
-              className="p-4 flex flex-col gap-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors"
+              className="p-4 flex flex-col gap-3 hover:bg-slate-50 cursor-pointer transition-colors"
               onClick={() => setSelectedSalida(sal)}
             >
               <div className="flex justify-between items-start gap-2">
                 <div className="flex items-start gap-3 flex-1">
-                  <div className="w-8 h-8 rounded-full bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <LogOut className="h-4 w-4 text-red-600 dark:text-red-400 ml-[-2px]" />
+                  <div className="w-8 h-8 rounded-full bg-red-50 border border-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <LogOut className="h-4 w-4 text-red-600 ml-[-2px]" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-bold text-sm text-gray-900 dark:text-gray-100 leading-tight">
+                    <h4 className="font-bold text-sm text-slate-900 leading-tight">
                       {sal.mst_clientes?.nombre_completo ||
                         sal.id_destinatario ||
                         "Destino No Especificado"}
                     </h4>
                     <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                      <Badge
-                        variant="outline"
-                        className="text-[9px] font-mono bg-white dark:bg-gray-900 text-gray-500 uppercase px-1.5 py-0"
-                      >
-                        {sal.tipo_salida}
-                      </Badge>
+                      <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${getTipoBadgeClass(sal.tipo_salida)}`}>
+                        {sal.tipo_salida.replace("_", " ")}
+                      </span>
                     </div>
                   </div>
                 </div>
                 <div className="flex-shrink-0">
-                  <Badge
-                    variant={
+                  <span
+                    className={`text-[10px] px-2 py-0.5 rounded-sm font-semibold ${
                       sal.estado === "CONFIRMADO"
-                        ? "default"
+                        ? "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20"
                         : sal.estado === "BORRADOR"
-                          ? "outline"
-                          : "secondary"
-                    }
-                    className={
-                      sal.estado === "CONFIRMADO"
-                        ? "bg-green-100 text-green-800 hover:bg-green-200 border-green-200 text-[10px] px-2 py-0.5"
-                        : "text-[10px] px-2 py-0.5"
-                    }
+                          ? "bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-600/20"
+                          : "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20"
+                    }`}
                   >
                     {sal.estado}
-                  </Badge>
+                  </span>
                 </div>
               </div>
 
@@ -265,12 +292,12 @@ export function SalidaList({ active }: { active: boolean }) {
                 </p>
               )}
 
-              <div className="flex justify-between items-center text-xs mt-1 bg-slate-50 dark:bg-slate-900/50 px-3 py-2 rounded-md border border-slate-100 dark:border-slate-800">
+              <div className="flex justify-between items-center text-xs mt-1 bg-slate-50 px-3 py-2 rounded-md border border-slate-100/80">
                 <div className="flex flex-col">
                   <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">
                     Fecha Salida
                   </span>
-                  <span className="font-medium text-slate-700 dark:text-slate-300">
+                  <span className="font-medium text-slate-700">
                     {format(new Date(sal.fecha), "dd/MM/yyyy", { locale: es })}
                   </span>
                 </div>

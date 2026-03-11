@@ -12,7 +12,22 @@
 
 ---
 
+## Contexto del Sistema
+
+Eres un Staff UX/UI Engineer trabajando en el módulo interno de un ERP/WMS metalmecánico. El 95% del uso será en pantallas de escritorio (Desktop).
+Tu objetivo es transformar la interfaz actual (que se ve como una plantilla genérica de IA) en un software corporativo que se sienta táctil, riguroso y valorado en $10,000+. Nos inspiraremos en el rigor visual de Stripe y Linear, NO en Dribbble.
+
+---
+
 ## Global Rules
+
+### Reglas de Ingeniería B2B Premium (Strict Enforcement)
+
+1. **La Regla del Borde Milimétrico:** Ninguna tarjeta o contenedor debe verse "flotando sin límite". Toda tarjeta (`bg-white`) debe tener una sombra difusa (`shadow-sm`) Y un borde interior levísimo (`ring-1 ring-slate-900/5` o `border border-slate-200/60`).
+2. Tablas de Alta Densidad (Desktop): Las tablas no deben tener padding excesivo. Las celdas (TableCell y TableHead) deben ser compactas (py-2 px-3) Y obligatoriamente usar la clase text-sm (o text-xs para datos muy densos) para mantener la uniformidad tipográfica en todo el ERP. Al hacer hover sobre una fila (tr), debe iluminarse sutilmente (hover:bg-slate-50 transition-colors).
+3. **Cristal Tintado para Badges:** NUNCA usar `bg-black` o colores sólidos oscuros. Usar siempre el patrón `bg-[color]-50 text-[color]-700 ring-1 ring-inset ring-[color]-600/20` (ej. emerald/rose/amber).
+4. **Estados Activos Lavados:** La navegación usa el token primario lavado, no grises quemados.
+5. **Micro-interacciones:** Todo elemento clickeable debe tener `transition-all duration-200`.
 
 ### Color Palette
 

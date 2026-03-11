@@ -41,6 +41,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SupplierFormCmp } from "./supplier-form";
+import { useTableSort } from "@/hooks/useTableSort";
 
 export function SupplierList() {
   const queryClient = useQueryClient();
@@ -73,8 +74,6 @@ export function SupplierList() {
     },
   });
 
-  if (isLoading) return <div>Cargando proveedores...</div>;
-
   const filteredSuppliers =
     suppliers?.filter(
       (s) =>
@@ -84,8 +83,10 @@ export function SupplierList() {
           s.nombre_comercial.toLowerCase().includes(search.toLowerCase())),
     ) || [];
 
-  const totalPages = Math.ceil(filteredSuppliers.length / pageSize);
-  const paginatedSuppliers = filteredSuppliers.slice(
+  const { sortedData: sortedSuppliers, handleSort, sortConfig } = useTableSort(filteredSuppliers);
+
+  const totalPages = Math.ceil(sortedSuppliers.length / pageSize);
+  const paginatedSuppliers = sortedSuppliers.slice(
     page * pageSize,
     (page + 1) * pageSize,
   );
@@ -100,9 +101,11 @@ export function SupplierList() {
     setOpen(true);
   };
 
+  if (isLoading) return <div>Cargando proveedores...</div>;
+
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center bg-card p-4 rounded-lg border shadow-sm">
+      <div className="flex justify-between items-center bg-white p-4 rounded-md shadow-sm ring-1 ring-slate-900/5">
         <div className="relative w-72">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -161,32 +164,53 @@ export function SupplierList() {
         </Dialog>
       </div>
 
-      <div className="border rounded-md bg-card shadow-sm overflow-hidden pointer-events-auto">
+      <div className="bg-white rounded-md shadow-sm ring-1 ring-slate-900/5 overflow-hidden pointer-events-auto">
         {/* Desktop Table View */}
         <div className="hidden md:block overflow-x-auto">
           <Table className="whitespace-nowrap">
-            <TableHeader className="bg-muted/50">
+            <TableHeader className="bg-slate-50 border-b border-slate-100/80">
               <TableRow>
-                <TableHead className="font-semibold">RUC</TableHead>
-                <TableHead className="font-semibold">
-                  Razón / Nombre Com.
+                <TableHead 
+                  className="font-semibold cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm text-slate-700"
+                  onClick={() => handleSort("ruc")}
+                >
+                  RUC {sortConfig?.key === "ruc" && (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TableHead>
-                <TableHead className="font-semibold">Contacto</TableHead>
-                <TableHead className="font-semibold">Teléfono</TableHead>
-                <TableHead className="font-semibold text-center">
-                  Condiciones
+                <TableHead 
+                  className="font-semibold cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm text-slate-700"
+                  onClick={() => handleSort("razon_social")}
+                >
+                  Razón / Nombre Com. {sortConfig?.key === "razon_social" && (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TableHead>
-                <TableHead className="text-right font-semibold w-[100px]">
+                <TableHead 
+                  className="font-semibold cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm text-slate-700"
+                  onClick={() => handleSort("contacto_vendedor")}
+                >
+                  Contacto {sortConfig?.key === "contacto_vendedor" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="font-semibold cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm text-slate-700"
+                  onClick={() => handleSort("telefono_pedidos")}
+                >
+                  Teléfono {sortConfig?.key === "telefono_pedidos" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead 
+                  className="font-semibold text-center cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm text-slate-700"
+                  onClick={() => handleSort("moneda_predeterminada")}
+                >
+                  Condiciones {sortConfig?.key === "moneda_predeterminada" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                </TableHead>
+                <TableHead className="text-right font-semibold w-[100px] py-2 px-3 text-sm text-slate-700">
                   Acciones
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredSuppliers?.length === 0 && (
+              {sortedSuppliers?.length === 0 && (
                 <TableRow>
                   <TableCell
                     colSpan={6}
-                    className="text-center h-24 text-muted-foreground"
+                    className="text-center h-24 text-sm text-muted-foreground py-2 px-3"
                   >
                     No se encontraron proveedores.
                   </TableCell>
@@ -195,9 +219,9 @@ export function SupplierList() {
               {paginatedSuppliers?.map((supplier: any) => (
                 <TableRow
                   key={supplier.id_proveedor}
-                  className="group hover:bg-muted/30"
+                  className="hover:bg-slate-50 transition-colors border-b border-slate-100/80"
                 >
-                  <TableCell className="font-medium">
+                  <TableCell className="font-medium py-2 px-3 text-sm">
                     <div className="flex flex-col">
                       <span>{supplier.ruc}</span>
                       <span className="text-[10px] text-muted-foreground">
@@ -205,9 +229,9 @@ export function SupplierList() {
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-2 px-3 text-sm">
                     <div className="flex flex-col">
-                      <span className="font-medium text-primary">
+                      <span className="font-medium text-slate-900">
                         {supplier.razon_social}
                       </span>
                       {supplier.nombre_comercial && (
@@ -217,7 +241,7 @@ export function SupplierList() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-2 px-3 text-sm">
                     <div className="flex flex-col">
                       <span>
                         {supplier.contacto_vendedor || (
@@ -233,16 +257,16 @@ export function SupplierList() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-2 px-3 text-sm">
                     {supplier.telefono_pedidos || (
                       <span className="text-muted-foreground italic text-xs">
                         -
                       </span>
                     )}
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center py-2 px-3 text-sm">
                     <div className="flex flex-col items-center justify-center">
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground w-fit">
+                      <span className="bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-600/20 text-xs font-medium px-2 py-0.5 rounded-md w-fit">
                         {supplier.moneda_predeterminada}
                       </span>
                       <span className="text-[10px] text-muted-foreground mt-1">
@@ -250,7 +274,7 @@ export function SupplierList() {
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right py-2 px-3 text-sm">
                     <div className="flex justify-end gap-1">
                       <Button
                         variant="ghost"
@@ -286,7 +310,7 @@ export function SupplierList() {
           {paginatedSuppliers?.map((supplier: any) => (
             <div
               key={supplier.id_proveedor}
-              className="p-4 flex flex-col gap-3 hover:bg-muted/30 transition-colors"
+              className="p-4 flex flex-col gap-3 hover:bg-slate-50 transition-colors"
             >
               <div className="flex justify-between items-start gap-2">
                 <div className="flex-1">
@@ -305,7 +329,7 @@ export function SupplierList() {
                     >
                       RUC: {supplier.ruc}
                     </Badge>
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">
+                    <span className="bg-slate-50 text-slate-700 ring-1 ring-inset ring-slate-600/20 text-[9px] font-bold px-1.5 py-0.5 rounded-sm">
                       {supplier.moneda_predeterminada}
                     </span>
                   </div>
@@ -330,7 +354,7 @@ export function SupplierList() {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-1.5 text-xs text-muted-foreground mt-1 bg-muted/30 p-2.5 rounded-md border border-border/40">
+              <div className="flex flex-col gap-1.5 text-xs text-muted-foreground mt-1 bg-slate-50 p-2.5 rounded-md border border-slate-100/80">
                 <div className="flex items-start gap-2">
                   <span className="font-semibold w-16 uppercase text-[9px] tracking-wider mt-0.5 text-foreground/60">
                     Cont. Ventas:

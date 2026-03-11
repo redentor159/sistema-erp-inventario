@@ -165,7 +165,7 @@ export function SalidaFormCmp({ onSuccess }: SalidaFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* CABECERA */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-6 bg-white rounded-md shadow-sm ring-1 ring-slate-900/5">
           <FormField
             control={form.control}
             name="tipo_salida"
@@ -405,7 +405,7 @@ export function SalidaFormCmp({ onSuccess }: SalidaFormProps) {
                                 step="0.01"
                                 {...field}
                                 readOnly={true}
-                                className="bg-gray-100 text-gray-500 cursor-not-allowed"
+                                className="bg-slate-50 text-slate-500 cursor-not-allowed ring-1 ring-slate-900/5"
                               />
                             </FormControl>
                           )}

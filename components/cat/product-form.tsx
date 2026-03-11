@@ -264,7 +264,7 @@ export function ProductFormCmp({ onSuccess, initialData }: ProductFormProps) {
         </div>
 
         {/* ═══════ SECCIÓN 3: COMPONENTES SKU (4 selectores obligatorios) ═══════ */}
-        <div className="border p-4 rounded-md space-y-3">
+        <div className="p-6 bg-white rounded-md shadow-sm ring-1 ring-slate-900/5 space-y-3">
           <div className="text-sm font-semibold text-muted-foreground">
             Componentes del SKU (obligatorios)
           </div>
@@ -544,7 +544,7 @@ export function ProductFormCmp({ onSuccess, initialData }: ProductFormProps) {
 
         {/* ═══════ SECCIÓN 5: PROPIEDADES VIDRIO (condicional) ═══════ */}
         {isGlass && (
-          <div className="grid grid-cols-3 gap-4 border p-4 rounded-md bg-blue-50 dark:bg-blue-950/20">
+          <div className="grid grid-cols-3 gap-4 p-6 rounded-md shadow-sm ring-1 ring-blue-600/10 bg-blue-50/50">
             <div className="col-span-3 text-sm font-semibold text-blue-700 dark:text-blue-400">
               🪟 Propiedades de Vidrio
             </div>
@@ -618,7 +618,7 @@ export function ProductFormCmp({ onSuccess, initialData }: ProductFormProps) {
         )}
 
         {/* ═══════ SECCIÓN 6: PARÁMETROS DE INVENTARIO ═══════ */}
-        <div className="border p-4 rounded-md space-y-3 bg-slate-50 dark:bg-slate-900">
+        <div className="p-6 rounded-md shadow-sm ring-1 ring-slate-900/5 space-y-3 bg-slate-50/50">
           <div className="text-sm font-semibold text-muted-foreground">
             📦 Parámetros de Inventario
           </div>
