@@ -76,9 +76,10 @@ export function PlantillaList() {
   const filteredPlantillas =
     plantillas?.filter(
       (p: any) =>
+        p.id_plantilla.toLowerCase().includes(search.toLowerCase()) ||
         p.nombre_generico.toLowerCase().includes(search.toLowerCase()) ||
         p.mst_familias?.nombre_familia
-          .toLowerCase()
+          ?.toLowerCase()
           .includes(search.toLowerCase()),
     ) || [];
 

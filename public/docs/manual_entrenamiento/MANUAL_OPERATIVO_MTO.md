@@ -1,510 +1,469 @@
 # MANUAL OPERATIVO DEL SISTEMA ERP (MTO)
-**"Guía de Entrenamiento para el Personal Administrativo y Operativo"**
+**"Guía de Entrenamiento para el Personal"**
 
-Este manual contiene la ruta de aprendizaje completa para dominar el sistema ERP. A través de 24 ejercicios prácticos, aprenderás desde cómo crear un material hasta cómo auditar estratégicamente el almacén.
+Este manual contiene 24 ejercicios prácticos para aprender a usar el sistema ERP, desde crear un producto hasta revisar el almacén.
 
 ---
 
 ## 📦 Módulo 1: Catálogo y Maestro de Materiales
-> **"El Corazón de tus Existencias"**
+> **"Tus Productos"**
 
 ---
 
-📝 Ejercicio #1: Crear la Plantilla Maestra (El Molde)
-🎯 OBJETIVO PRÁCTICO:
-Definir un modelo genérico de producto. Sin esto, no puedes crear materiales específicos. Es como definir que existe un "Panel de Aluminio" antes de decir de qué color es.
+🧪 Reto Práctico #1: Crear la Plantilla Base
+🎯 Misión Comercial: > Acabamos de firmar con una nueva marca. Tu misión es crear la plantilla base en el sistema para poder registrar sus productos.
 
-🛠️ Datos de Preparación (Setup)
-Dato 1: **Perfil Serie 25 - Riel Superior** (Nombre)
+📦 Datos a Ingresar (Input):
+- ID Plantilla: NOVA-001
+- Nombre Genérico: Perfil Nova Test-001
+- Familia: Selecciona "Perfilería Aluminio" (o alguna parecida).
+- Largo Estándar: 6000
 
-Dato 2: **Perfiles de Aluminio** (Familia)
+🧭 Pistas de Navegación (Solo si te pierdes):
+Tip: El botón nuevo es negro, dice "+ Nueva Plantilla" y está arriba a la derecha en la vista de Catálogo. El botón final para guardar dice "Crear Plantilla" y también es negro.
 
-Dato 3: **Serie 25** (Sistema)
+❓ Pregunta de Verificación:
+¿Aparece tu nuevo registro en la lista con su medida correcta?
 
-Dato 4: **6000 mm** (Medida Estándar)
-
-🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Ve a la sección principal de **Catálogo / Inventario**.
-2. Haz clic en el botón superior que dice **"+ Nueva Plantilla"**.
-3. En la ventana que aparece, escribe el nombre: **"Perfil Serie 25 - Riel Superior"**.
-4. Selecciona la familia **"Perfiles de Aluminio"** y el sistema **"Serie 25"**.
-5. Escribe **"6000"** en el espacio de medida y deja el peso en **"0"** por ahora.
-6. Haz clic en el botón **"Guardar Plantilla"**.
-
-🧠 La Verdad del Sistema (Trazabilidad)
-El sistema crea una "Identidad Maestra" que servirá de base. Aún no tienes stock físico porque este es solo el diseño del producto, no el producto real que compras.
-
-🚨 PRUEBA DE ESTRÉS:
-Acción: Intenta crear otra plantilla con el nombre **exactamente igual** a la anterior.
-Lección: El sistema te advertirá o bloqueará el duplicado; un catálogo ordenado no debe tener moldes repetidos.
+✅ CLAVE DE CORRECCIÓN (Lo que debes ver en el sistema):
+- Tabla de Catálogo: Una fila nueva con el nombre "Perfil Nova Test-001".
+- Columna "Largo Estándar": Debe mostrar de forma clara 6,000 mm.
 
 ---
 
-📝 Ejercicio #2: Generación de Identidades (Creación de SKU)
-🎯 OBJETIVO PRÁCTICO:
-Crear el producto real que vas a comprar al proveedor combinando la plantilla con una marca y un acabado.
+🧪 Reto Práctico #2: Dar de Alta el Producto
+🎯 Misión Comercial: > Llegó mercadería de prueba al almacén. Necesitas crear su código real (SKU) para poder meterlo al sistema hoy mismo.
 
-🛠️ Datos de Preparación (Setup)
-Dato 1: **Perfil Serie 25 - Riel Superior** (Plantilla)
+📦 Datos a Ingresar (Input):
+- Nombre del Producto: Perfil Nova Negro Test
+- Plantilla: Busca el "Perfil Nova Test-001" que creaste antes.
+- Material Base: Selecciona "Aluminio" u otro lógico.
+- Marca: Elige una marca común en la lista.
+- Acabado/Color: Negro
+- Almacén: Selecciona "Almacén Perfiles".
 
-Dato 2: **GENÉRICO** (Marca)
+🧭 Pistas de Navegación (Solo si te pierdes):
+Tip: Ve arriba a la pestaña "Items (Insumos/SKUs)". El botón negro "+ Nuevo SKU" está arriba a la derecha. Rellena los datos y usa el botón negro "Crear Producto" al terminar.
 
-Dato 3: **Natural (Mate)** (Acabado)
+❓ Pregunta de Verificación:
+¿Qué valor de stock y qué color muestra esa columna ahora mismo?
 
-Dato 4: **10 unidades** (Stock Mínimo)
-
-🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Haz clic en el botón **"+ Nueva SKU"**.
-2. En el buscador, busca y selecciona: **"Perfil Serie 25 - Riel Superior"**.
-3. Elige la Marca **"GENÉRICO"** y el Acabado **"Natural"**.
-4. En la sección de inventario, escribe **"10"** en el campo **Stock Mínimo**.
-5. Haz clic en el botón **"Guardar SKU"**.
-
-🧠 La Verdad del Sistema (Trazabilidad)
-El sistema fabrica una "Identidad Única" (código interno). El producto aparecerá con **Stock: 0** y el sistema marcará alertará cuando baje de 10.
-
-🚨 PRUEBA DE ESTRÉS:
-Acción: Intenta crear **exactamente la misma combinación** (Mismo molde + Marca + Acabado).
-Lección: El sistema arrojará un error de "Identidad Duplicada" para evitar confusión en los códigos.
+✅ CLAVE DE CORRECCIÓN (Lo que debes ver en el sistema):
+- Tabla de Catálogo: Una fila nueva con tu producto.
+- Columna "Stock Actual": Debe decir 0.00 en nro gris/plomo.
+- Columna "Costo Mercado": Puede mostrar una etiqueta pequeña diciendo "Sin actualizar".
 
 ---
 
-📝 Ejercicio #3: Sincronización del Mundo Real (Ajuste de Stock)
-🎯 OBJETIVO PRÁCTICO:
-Corregir la cantidad física cuando lo que hay en el almacén no coincide con la pantalla.
+🧪 Reto Práctico #3: Cuadrar el Almacén Físico
+🎯 Misión Comercial: > El jefe de taller cuenta cajas y halla 15 perfiles "Nova Negro" sueltos. Suma esas varillas en pantalla rápido para cuadrar el número físico.
 
-🛠️ Datos de Preparación (Setup)
-Dato 1: **Perfil Serie 25 - Riel Superior - Natural** (Producto)
+📦 Datos a Ingresar (Input):
+- Tipo de Ajuste: Ingreso (+)
+- Cantidad: 15
+- Motivos (Notas): Ingreso de prueba por ajuste físico.
 
-Dato 2: **50 unidades** (Cantidad)
+🧭 Pistas de Navegación (Solo si te pierdes):
+Tip: Sigue en la pestaña "Items". En la fila de tu producto a la derecha, busca un botoncito de color gris claro o azulado con el símbolo "±" y presiónalo. Elige Ingreso de botón verde.
 
-Dato 3: **Primer Inventario** (Motivo)
+❓ Pregunta de Verificación:
+¿Cuántas varillas marca la tabla luego de guardar tu trabajo?
 
-🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Busca tu producto en la lista principal y haz clic sobre su nombre para abrir el **Panel Lateral**.
-2. Haz clic en el botón que dice **"📦 Ajustar Stock"**.
-3. Selecciona el tipo **"Ingreso"** (signo +).
-4. Escribe la cantidad **"50"** y en el motivo escribe **"Carga inicial de prueba"**.
-5. Presiona el botón **"Confirmar Ajuste"**.
-
-🧠 La Verdad del Sistema (Trazabilidad)
-El sistema escribe en el **Libro Contable (Kardex)** tu nombre, hora y motivo. El stock cambia a **50** y la alerta de stock mínimo desaparece.
-
-🚨 PRUEBA DE ESTRÉS:
-Acción: Intenta hacer una **Salida** por **60 unidades**.
-Lección: El sistema te avisará que no tienes suficiente material o quedará en negativo, evidenciando el error.
+✅ CLAVE DE CORRECCIÓN (Lo que debes ver en el sistema):
+- Tabla de Catálogo: Los números se actualizan solos al instante.
+- Columna "Stock Actual": Ahora dice 16.00 (si ya tenías 1) o 15.00 y pasa a color verde fuerte.
 
 ---
 
-📝 Ejercicio #4: La Prueba de Resistencia (Integridad)
-🎯 OBJETIVO PRÁCTICO:
-Entender por qué el sistema "bloquea" acciones para proteger tu historial contable.
+🧪 Reto Práctico #4: Probar la Seguridad del Sistema
+🎯 Misión Comercial: > Un usuario nuevo quiere borrar productos que ya usaron dinero u historial. Tu misión es probar si el sistema lo deja hacer eso o lo bloquea.
 
-🛠️ Datos de Preparación (Setup)
-Dato 1: **Cualquier producto con historial de movimientos**.
+📦 Datos a Ingresar (Input):
+- Ninguno. Tu tarea es tratar de borrar todo el producto con 15 líneas que recién subiste para ver qué pasa.
 
-🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Abre el **Panel Lateral** de tu producto con stock.
-2. Busca y haz clic en el botón de **"Eliminar"** (icono de tacho).
-3. Confirma que quieres borrarlo.
+🧭 Pistas de Navegación (Solo si te pierdes):
+Tip: Busca el tacho de basura rojo a la derecha extrema de la fila de tu producto en la vista de "Items".
 
-🧠 La Verdad del Sistema (Trazabilidad)
-El sistema detecta que hubo un movimiento en el **Libro Contable (Kardex)** y **prohibirá la eliminación**. No se puede borrar el producto si hay una historia que lo respalda.
+❓ Pregunta de Verificación:
+¿Qué hace la ventana después de oprimir el tacho de basura?
 
-🚨 PRUEBA DE ESTRÉS:
-Acción: Intenta borrarlo a la fuerza.
-Lección: Descubrirás que solo puedes cambiar su estado a **Inactivo** para que no estorbe, pero su historia permanece intacta.
+✅ CLAVE DE CORRECCIÓN (Lo que debes ver en el sistema):
+- El producto se queda ahí y no se borra.
+- Alerta: El sistema da error o traba el borrado, dejando claro que cosas con historia en el Kardex son sagradas.
 
 ---
 
 ## 🚛 Módulo 2: Movimientos de Almacén (Entradas y Salidas)
-> **"El Registro de la Realidad"**
+> **"Control de la Mercadería"**
 
 ---
 
-📝 Ejercicio #5: Ingreso de Mercadería (Entrada por Compra)
-🎯 OBJETIVO PRÁCTICO:
-Registrar la llegada de material comprado y actualizar el costo promedio (PMP).
+🧪 Reto Práctico #5: Ingreso de Factura
+🎯 Misión Comercial: > El camión del proveedor acaba de dejar cajas de material. Tu misión es registrar la factura de compra y meter esa mercadería al almacén del sistema.
 
-🛠️ Datos de Preparación (Setup)
-Dato 1: **Corporación Limatambo** (Proveedor)
+📦 Datos a Ingresar (Input):
+- Proveedor: Elige uno común de la lista (ej. Corporación Limatambo).
+- Ref. / Documento: F001-9876
+- Agrega un ítem: Busca el "Perfil Nova Test-001" (o cualquier producto real).
+- Cantidad: 100
+- Costo Unitario: 15.50
 
-Dato 2: **S80 Hoja - Mate/Natural** (Material)
+🧭 Pistas de Navegación (Solo si te pierdes):
+Tip: En el panel izquierdo ve a "Inventario". Ve a la pestaña de arriba que diga "Entradas". Arriba a la derecha usa el botón oscuro "+ Nueva Entrada". Al terminar de llenar todo, haz clic en el botón negro de abajo "Registrar Entrada".
 
-Dato 3: **50 unidades** y **S/ 150.00** (Costo)
+❓ Pregunta de Verificación:
+¿Qué dice la columna de "Estado" en tu nuevo papel de entrada?
 
-🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Ve a la sección de **"Entradas"**.
-2. Haz clic en el botón **"+ Nueva Entrada"**.
-3. Selecciona al proveedor **"Corporación Limatambo"**.
-4. Ingresa el documento: **"F001-9876"**.
-5. Busca el material **"S80 Hoja"**, escribe **"50"** en cantidad y **"150.00"** en costo.
-6. Haz clic en el botón **"Finalizar Ingreso"**.
-
-🧠 La Verdad del Sistema (Trazabilidad)
-El stock sube de inmediato y el sistema recalcula el **"Costo Promedio"**, mezclando el precio anterior con el nuevo automáticamente.
-
-🚨 PRUEBA DE ESTRÉS:
-Acción: Intenta registrar una entrada con cantidad **"0"** o costo **"0"**.
-Lección: El sistema te exigirá valores reales para no arruinar tus reportes financieros.
+✅ CLAVE DE CORRECCIÓN (Lo que debes ver en el sistema):
+- Tabla de Entradas: Saldrá tu nuevo documento de compra.
+- Columna Estado: Debe decir "INGRESADO" (normalmente en color verde).
+- Si revisas el producto en catálogo, su cantidad debió sumar esas 100 piezas solita.
 
 ---
 
-📝 Ejercicio #6: Salida por Producción (Referencia a Cotización)
-🎯 OBJETIVO PRÁCTICO:
-Descontar material para un trabajo específico vinculándolo a un cliente.
+🧪 Reto Práctico #6: Despachar a la Obra
+🎯 Misión Comercial: > Los chicos del taller necesitan llevarse unas cosas de urgencia para el cliente. Tu misión es sacar esos perfiles del sistema pero indicando claramente para qué cliente u obra se usarán.
 
-🛠️ Datos de Preparación (Setup)
-Dato 1: **COT-0041** (Código de Presupuesto)
+📦 Datos a Ingresar (Input):
+- Tipo de Salida: Consumo Producción (o parecido).
+- Comentarios / Referencia: Para Proyecto de Pruebas VIP.
+- Agregar Ítem: Elige el mismo producto de antes.
+- Cantidad: 10 unidades.
 
-Dato 2: **10 unidades** (Cantidad de Salida)
+🧭 Pistas de Navegación (Solo si te pierdes):
+Tip: Sigue en "Inventario", pero ahora dale a la pestaña superior "Salidas". El botón nuevo es color rojo "+ Nueva Salida". Llénalo y luego aprieta el botón rojo final "Registrar Salida".
 
-🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Ve a la sección de **"Salidas"**.
-2. Haz clic en el botón **"+ Nueva Salida"**.
-3. En el campo Referencia, escribe: **"COT-0041"**.
-4. Busca el material y escribe **"10"** en la cantidad.
-5. Haz clic en el botón **"Confirmar Despacho"**.
+❓ Pregunta de Verificación:
+Si metiste 100 varillas y sacas 10, ¿se restó automáticamente del stock central?
 
-🧠 La Verdad del Sistema (Trazabilidad)
-El material se resta del stock y queda anotado que fue para el proyecto **COT-0041**, permitiendo saber cuánto material gasta cada obra.
-
-🚨 PRUEBA DE ESTRÉS:
-Acción: Intenta registrar una salida hacia un código de presupuesto que **no existe**.
-Lección: El sistema te obligará a usar un destino válido para no perder el rastro del material.
+✅ CLAVE DE CORRECCIÓN (Lo que debes ver en el sistema):
+- Tabla de Salidas: Aparece tu registro nuevo con la fecha.
+- El almacén se vació en 10 varillas exactas, asegurando que nadie mienta o se lleve cosas sin que sepan.
 
 ---
 
-📝 Ejercicio #7: Inmutabilidad del Libro Contable (Kardex)
-🎯 OBJETIVO PRÁCTICO:
-Entender que no se puede alterar el pasado para garantizar la seguridad.
+🧪 Reto Práctico #7: Auditoría de Historial
+🎯 Misión Comercial: > Alguien malogró un ingreso gigante. Quiere abrir el historial y borrar unas filas o alterar números de compras pasadas a escondidas del dueño. Tu misión es intentar borrar la entrada de compras de las 100 varillas.
 
-🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Ve a la sección de **"Libro Contable (Kardex)"**.
-2. Busca el movimiento de **50 unidades** que hiciste anteriormente.
-3. Intenta buscar un botón de **"Editar"** o **"Eliminar"** en esa fila.
+📦 Datos a Ingresar (Input):
+- Ninguno (Se trata de borrar lo ya hecho).
 
-🧠 La Verdad del Sistema (Trazabilidad)
-Esos botones no existen. El Kardex es blindado. Si te equivocas, debes hacer un movimiento nuevo de corrección (ajuste), dejando rastro de quién y cuándo corrigió.
+🧭 Pistas de Navegación (Solo si te pierdes):
+Tip: Pásate a la primera pestaña "Kardex (Movimientos)". Busca la fila exacta donde metiste las 100 varillas y mira sus botones derechos en "Acciones".
 
-🚨 PRUEBA DE ESTRÉS:
-Acción: Intenta borrar un registro histórico.
-Lección: Verás que el historial es inalterable, protegiendo a la empresa de "pérdidas hormiga".
+❓ Pregunta de Verificación:
+¿Encuentras allí botones típicos de editar con lápiz azul o papeleras rojas?
+
+✅ CLAVE DE CORRECCIÓN (Lo que debes ver en el sistema):
+- Acciones: Está súper vacío de botones destructivos. Solo dice "Ver Detalle".
+- Lección al Alumno: Es impensable e imposible alterar nada ahí. El Kardex o Libro Contable es sagrado y no tolera cambios humanos; los errores allí se corrigen asumiendo nueva nota de salida o extorno.
 
 ---
 
-📝 Ejercicio #8: Corrección de Errores (Ajuste por Merma)
-🎯 OBJETIVO PRÁCTICO:
-Justificar pérdidas operativa (material roto) sin ensuciar los reportes de ventas.
+🧪 Reto Práctico #8: Desaparecer las Roturas
+🎯 Misión Comercial: > Al trabajar la sierra, un operario malogró 2 perfiles que acaban en la basura. Saca rápido esas barras del almacén como pérdida declarada.
 
-🛠️ Datos de Preparación (Setup)
-Dato 1: **Bisagra alta rotación** (Accesorio)
+📦 Datos a Ingresar (Input):
+- Producto: El mismo perfil u otro que tenga cantidad.
+- Tipo de Movimiento: Salida (-).
+- Cantidad: 2.
+- Motivos/Anotaciones: Merma o pedazos mal cortados.
 
-Dato 2: **2 unidades** (Rotas en instalación)
+🧭 Pistas de Navegación (Solo si te pierdes):
+Tip: Dirígete al "Catálogo" de toda la vida, pestaña "Items". Presiona la lupa para buscar tu vara. Luego a la derecha aprieta el botoncito chiquito gris "±". Elige el botón de ajuste negativo rojo claro y guárdalo.
 
-🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Busca la bisagra en el **Catálogo**.
-2. Abre el panel y haz clic en **"📦 Ajustar Stock"**.
-3. Selecciona **"Salida"** (signo -).
-4. Escribe la cantidad **"2"** y en motivo elige: **"Merma / Rotura en taller"**.
-5. Haz clic en el botón **"Guardar"**.
+❓ Pregunta de Verificación:
+¿Por qué haces esto en vez de meter una boleta de venta ficticia?
 
-🧠 La Verdad del Sistema (Trazabilidad)
-Se descuentan 2 unidades y se etiquetan como "pérdida operativa", permitiendo al administrador ver cuánto dinero se pierde por errores de taller.
-
-🚨 PRUEBA DE ESTRÉS:
-Acción: Registra esto como una "Venta" a precio S/ 0 en lugar de un Ajuste.
-Lección: Estarías bajando tu promedio de rentabilidad falsamente. Para pérdidas, siempre se usa **Ajustes**.
+✅ CLAVE DE CORRECCIÓN (Lo que debes ver en el sistema):
+- Al usar ajuste de merma, el stock total baja en el Kardex etiquetado como "Ajuste/Pérdida".
+- Si metieras ventas en S/ 0 soles por estas roturas ensuciarías toda la ganancia neta en tu gráfica analítica.
 
 ---
 
 ## 💰 Módulo 3: Cotizaciones (Presupuestos a Clientes)
-> **"El Arte de Valorar tu Trabajo"**
+> **"Presupuestos y Ventas"**
 
 ---
 
-📝 Ejercicio #9: El Primer Presupuesto (Creación Básica)
+📝 Ejercicio #9: Crear el Primer Presupuesto
 🎯 OBJETIVO PRÁCTICO:
-Convertir medidas en un presupuesto formal usando el despiece automático.
+Hacer una cotización rápida poniendo las medidas.
 
 🛠️ Datos de Preparación (Setup)
-Dato 1: **Constructora Inmobiliaria ABC** (Cliente)
-
+Dato 1: **Constructora ABC** (Cliente)
 Dato 2: **Corrales** (Marca)
-
-Dato 3: **S25_2H** (Modelo: Serie 25 - 2 hojas)
-
-Dato 4: **Ancho 1500 / Alto 1200** (Medidas en mm)
+Dato 3: **S25_2H** (Modelo de ventana)
+Dato 4: **Ancho 1500 / Alto 1200** (Medidas en milímetros)
 
 🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Ingresa a **"Cotizaciones"** y haz clic en **"+ Nueva Cotización"**.
-2. Elige al Cliente y la Marca **"Corrales"**, luego **"Guardar"**.
-3. Haz clic en el botón **"+ Agregar Ítem"**.
-4. Elige el modelo **"Ventana Serie 25 - 2h"** e ingresa las medidas en milímetros.
-5. Haz clic en el botón **"Guardar y Calcular"**.
+1. En el menú lateral oscuro, haz clic en **Cotizaciones** (icono de libreta).
+2. Arriba a la derecha, haz clic en el botón azul **"+ Nueva Cotización"**.
+3. Busca "Constructora" en cliente y elige **"Corrales"** en marca.
+4. Más abajo, haz clic en **"+ Agregar Ítem"** (icono con la cruz).
+5. Elige el modelo **"S25_2H"** y escribe: Ancho **1500** y Alto **1200**.
+6. Haz clic en **Calcular/Guardar** en la parte de abajo de la ventana.
 
 🧠 La Verdad del Sistema (Trazabilidad)
-El sistema realizó un **"Despiece Automático"**: calculó metros de perfil y m2 de vidrio consultando el costo actual de tu almacén.
+El sistema calcula todo por su cuenta (aluminio, vidrio y precios) usando los costos de tu almacén.
 
 🚨 PRUEBA DE ESTRÉS:
-Acción: Pon un **Ancho de 10 mm**.
-Lección: El sistema te dejará, pero el precio será ridículo; el sistema confía en el criterio lógico del usuario para las medidas reales.
+Acción: Poner las medidas en centímetros (ej. 150 en vez de 1500).
+Lección: El sistema calculará muy mal el precio. Trabaja siempre en medidas de milímetros.
 
 ---
 
-📝 Ejercicio #10: El Ajuste del Negocio (Margen y Fletes)
+📝 Ejercicio #10: Ganancia y Fletes
 🎯 OBJETIVO PRÁCTICO:
-Ajustar la rentabilidad del proyecto sin cambiar los costos base.
+Definir cuánto vas a ganar y el servicio de entrega.
 
 🛠️ Datos de Preparación (Setup)
-Dato 1: **45%** (Nuevo Margen/Markup)
-
-Dato 2: **S/ 250.00** (Costo de Instalación)
+Dato 1: **45%** (Margen de ganancia)
+Dato 2: **S/ 250.00** (Instalación y traslado)
 
 🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Dentro de la cotización, ve a la pestaña **"Totales / Ganancia"**.
-2. Cambia el porcentaje de ganancia a **"45%"**.
-3. Ingresa **"250.00"** en el campo **Costo Global de Instalación/Flete**.
-4. Observa el cambio inmediato en el **"Precio de Venta Final"**.
+1. En la misma pantalla del presupuesto, mira el **Panel de Totales** a la derecha.
+2. En la casilla **"Margen (%)"**, escribe **"45"**.
+3. En la sección de Costos Adicionales, escribe **"250"**.
+4. Verás que el gran **Precio Total** aumenta y cambia solo.
 
 🧠 La Verdad del Sistema (Trazabilidad)
-Has ajustado tu margen administrativo sin mover el **Costo Directo**. Esto te permite negociar precios sin perder de vista lo que te cuesta a ti el material.
+Aumentas el precio para el cliente sin que cambien los precios internos y secretos del almacén.
 
 🚨 PRUEBA DE ESTRÉS:
-Acción: Pon un **Margen de -10%** (negativo).
-Lección: El sistema te mostrará que estás regalando dinero; verifica siempre que el margen sea positivo.
+Acción: Poner un número negativo como "-15" en la ganancia.
+Lección: El sistema te avisará que estás perdiendo dinero y no te dejará avanzar.
 
 ---
 
-📝 Ejercicio #11: El Trámite de Aprobación (Paso a Producción)
+📝 Ejercicio #11: Aprobar la Cotización
 🎯 OBJETIVO PRÁCTICO:
-Congelar el precio comercial y dar la orden de inicio al taller.
+Confirmar la venta para que el taller empiece a trabajar.
 
 🖱️ Ejecución en el Sistema (Paso a Paso)
-1. En la parte superior, busca el botón **"Cambiar Estado"**.
-2. Selecciona la opción **"Aprobada"**.
-3. Confirma la acción y verás que el estado cambia a **Verde**.
+1. En la ventana, arriba a la derecha dice **"BORRADOR"** en color gris.
+2. Haz clic abajo en **Guardar** y cierra esa pantalla.
+3. En la lista de **Cotizaciones**, haz clic en tu nueva cotización.
+4. Usa los botones para cambiar el estado a **"APROBADA"**.
+5. Listo. Verás que cambia del color gris al color **Verde o Azul oscuro**.
 
 🧠 La Verdad del Sistema (Trazabilidad)
-Este paso "congela" la oferta y envía la señal al tablero de **Producción (Kanban)**. El taller ahora puede ver que este trabajo existe y está listo para fabricar.
+El presupuesto ya no es un borrador. Ahora el taller entero sabe que debe empezar con la obra.
 
 🚨 PRUEBA DE ESTRÉS:
-Acción: Intenta **Eliminar** la cotización ahora que está aprobada.
-Lección: El sistema bloqueará el borrado para proteger el compromiso legal; primero tendrías que **Anularla**.
+Acción: Intentar borrar la cotización con el tacho de basura rojo.
+Lección: Como ya está aprobada, no se borra. Tienes que usar el botón de anular si el cliente cancela.
 
 ---
 
-📝 Ejercicio #12: El Blindaje Comercial (Integridad)
+📝 Ejercicio #12: Proteger la Cotización
 🎯 OBJETIVO PRÁCTICO:
-Entender por qué un trato cerrado no se puede "manosear" libremente.
+Ver por qué no puedes cambiar números de un trabajo que ya está en fábrica.
 
 🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Intenta editar las medidas o el modelo de la ventana aprobada.
-2. Observa que los campos están bloqueados (gris).
+1. Vuelve a abrir tu cotización verde (**"APROBADA"**) haciendo clic en el lápiz azul.
+2. Intenta cambiar el ancho de 1500 a 1800.
+3. Observa que las cajas de escribir están bloqueadas (pintadas de gris claro).
 
 🧠 La Verdad del Sistema (Trazabilidad)
-El sistema aplica un **Blindaje Comercial**. Si cambias las medidas ahora, el taller cortará mal el aluminio y la empresa perderá todo el material.
+Si permitiera cambiar medidas ahora, el taller cortaría el material para la basura. 
 
 🚨 PRUEBA DE ESTRÉS:
-Acción: ¿Qué hacer si el cliente pide un cambio de último minuto?
-Lección: No fuerces el cambio. Lo correcto es usar el botón **"Clonar"**, editar la copia y anular la versión anterior.
+Acción: ¿Y si el cliente exige cambiar las medidas hoy?
+Lección: Tienes que presionar el botón de **Hacer Copia / Clonar**, poner la medida nueva ahí y anular este papel viejo.
 
 ---
 
 ## 🏭 Módulo 4: Producción (Tablero Kanban)
-> **"El Corazón de la Planta: Eficiencia y Calidad"**
+> **"Pantalla de Trabajo"**
 
 ---
 
-📝 Ejercicio #13: Nacimiento de la Orden (Importación)
+📝 Ejercicio #13: Empezar el Trabajo
 🎯 OBJETIVO PRÁCTICO:
-Convertir una cotización aprobada en una instrucción visual para el taller.
+Pasar la orden de venta directamente a una orden para el operario.
 
 🛠️ Datos de Preparación (Setup)
-Dato 1: **COT-0041** (Presupuesto listo)
+Dato 1: **COT-0041** (Presupuesto recién aprobado)
 
 🖱️ Ejecución en el Sistema (Paso a Paso)
-1. En el Tablero Kanban, haz clic en el botón **"Importar Cotización"**.
-2. Busca y selecciona el código **"COT-0041"**.
-3. Haz clic en el botón **"Confirmar Importación"**.
-4. Verás aparecer la tarjeta en la columna **BACKLOG**.
+1. En el menú oscuro izquierdo, ve a Producción y haz clic en **Tablero Kanban**. Verás unas columnas grises anchas.
+2. Arriba a la derecha, haz clic en el botón oscuro **"+ Nueva Orden"** (cruz blanca).
+3. Selecciona tu presupuesto **COT-0041** en la lista.
+4. Usa el calendario para elegir el día de "Entrega".
+5. Aprieta el botón azul **"Guardar"** abajo.
 
 🧠 La Verdad del Sistema (Trazabilidad)
-Todos los datos técnicos viajan automáticamente. La orden se queda en "Backlog" esperando que el Jefe de Planta decida cuándo empezar a cortar.
+Va a salirte una "tarjeta" cuadradita de color claro en la primera columna llamada (**"Pedidos Confirmados"**).
 
 🚨 PRUEBA DE ESTRÉS:
-Acción: Busca una cotización en **"Borrador"** para fabricar.
-Lección: El sistema las oculta; nunca se fabrica nada que no tenga aprobación legal y comercial.
+Acción: Querer armar ordenes usando cotizaciones "Borrador".
+Lección: Pon solo trabajos **Aprobados**, si no la planta hará trabajos innecesarios sin que el cliente pague.
 
 ---
 
-📝 Ejercicio #14: El Flujo de Valor (Movimiento)
+📝 Ejercicio #14: Mover el Trabajo
 🎯 OBJETIVO PRÁCTICO:
-Supervisar el avance real del producto a través de las estaciones de servicio.
+Indicar dónde está parado físicamente el trabajo en ese instante.
 
 🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Arrastra la tarjeta **COT-0041** de la columna **BACKLOG** a **CORTE**.
-2. Cuando se termine el corte, muévela a la columna **ARMADO**.
+1. Mira el orden de las columnas grandes: **Pedidos Confirmados**, **En Corte**, **En Ensamblaje**, **Listo para Instalar** y **Finalizado**.
+2. Haz un clic en tu tarjetita nueva de **Pedidos Confirmados** y no sueltes el botón del ratón.
+3. Arrástrala moviendo la mano y suéltala encima de la columna **En Corte**.
+4. Luego, haz lo mismo y arrástrala hacia la columna siguiente de **En Ensamblaje**.
 
 🧠 La Verdad del Sistema (Trazabilidad)
-El sistema mide el tiempo que la tarjeta pasa en cada estación. Esto ayuda a detectar "Cuellos de Botella" y saber si falta personal en alguna área.
+El sistema cronometra cuánto demora una tarjeta en cada fila. Luego verás si alguna máquina o empleado retrasa todo el proceso.
 
 ---
 
-📝 Ejercicio #15: Control de Calidad y Reprocesos
+📝 Ejercicio #15: Material Mal Hecho
 🎯 OBJETIVO PRÁCTICO:
-Gestionar errores de fabricación sin perder el control de la orden.
+Manejar el problema cuando toca volver a armar algo porque salió defectuoso.
 
 🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Arrastra la tarjeta de regreso: de **ACABADO** hacia **ARMADO**.
-2. En el motivo, escribe: **"Vidrio rayado - Cambio necesario"**.
-3. Observa la marca de alerta que aparece en la tarjeta.
+1. Mueve tu tarjetita de trabajo hasta la columna de **Listo para Instalar**.
+2. Suponte que el aluminio se rayó fiero.
+3. Presiona la tarjeta y devuélvela (arrástrala para atrás) hasta dejarla de nuevo en **En Ensamblaje**.
+4. Escribe un comentario usando el botoncito de lápiz diciendo qué falló exactamente.
 
 🧠 La Verdad del Sistema (Trazabilidad)
-Mover tarjetas hacia atrás se llama **"Reproceso"**. El sistema cuenta estos errores para que el Gerente decida si debe mejorar el cuidado de los materiales.
+Esa devolución se llama "Reproceso". Se anotan y guardan siempre para saber si vale la pena arreglar la máquina o jalarle las orejas al que malogra a diario.
 
 ---
 
-📝 Ejercicio #16: Cierre, Archivo e Integridad
+📝 Ejercicio #16: Archivar y Terminar
 🎯 OBJETIVO PRÁCTICO:
-Finalizar el flujo de trabajo y mover el expediente al historial.
+Desaparecer las cajas ya completadas para no marear a los chicos.
 
 🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Mueve la tarjeta a la columna **ENTREGADO**.
-2. Haz clic en el icono de **"Archivar"** (la caja) en la tarjeta.
-3. Confirma la acción. La tarjeta desaparece pero su historia vive en el archivo.
+1. Arrastra y suelta la tarjetita tuya hasta el final de la pantalla en **Finalizado**.
+2. Pon la flechita del ratón dentro de esa tarjeta; saldrá un icono chiquito de **"Cajita con Tapa"** (Archivar).
+3. Haz clic allí y dale sí al mensaje que te salte. Desaparecerá solita.
 
 🧠 La Verdad del Sistema (Trazabilidad)
-Archivar protege el tablero de desorden pero mantiene el expediente listo para cualquier reclamo de garantía futuro.
+No borraste su historia, solo limpiaste la columna de trabajo diario.
 
 🚨 PRUEBA DE ESTRÉS:
-Acción: Pregúntate si al terminar la orden ya se descontó el material del almacén.
-Lección: El Kanban mueve personas, el Inventario mueve materiales. ¡Debes ir a registrar la **Salida** en el almacén para que el stock esté al día!
+Acción: Pensar que por archivar ahí, ya se restó el material en tu almacén.
+Lección: ¡Ojo! Son cosas diferentes. Al terminar esto tú tienes que irte al tablero de Inventario (Módulo 2) para darle click normal a la **Nueva Salida** de ese material.
 
 ---
 
-## 📊 Módulo 5: El Cockpit MTO (Dashboard y Analítica)
-> **"De Operario a Estratega: El Control Total"**
+## 📊 Módulo 5: Resumen General (Dashboard)
+> **"Reportes Rápidos"**
 
 ---
 
-📝 Ejercicio #17: Curva ABC (El Principio de Pareto)
+📝 Ejercicio #17: Qué vale más cuidar (Clase A)
 🎯 OBJETIVO PRÁCTICO:
-Saber qué productos son vitales para la empresa y cuáles son secundarios.
+Encontrar los poquitos productos que más dinero de la empresa concentran.
 
 🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Entra a **"Dashboard"** y busca la pestaña **"Analítica de Inventarios"**.
-2. En el gráfico de **"Pareto / ABC"**, filtra por los **"Últimos 90 días"**.
-3. Identifica tus materiales **Clase A** (Aluminio caro) y **Clase C** (Accesorios).
+1. En el menú oscuro izquierdo principal, dale clic a la primera opción **Dashboard** (Panel de Control).
+2. Luego dale clic al secundario de **"Analítica Inventarios"** (unas garritas o barras pequeñas).
+3. Mira la rueda o gráfico mediano del medio llamado **Curva ABC / Análisis de Pareto**.
+4. Ubica a los elementos con el texto **Clase A**.
 
 🧠 La Verdad del Sistema (Trazabilidad)
-El sistema te dice que el "Clase A" es el 80% de tu dinero. Si te quedas sin aluminio, la empresa quiebra; si te quedas sin un tornillo (Clase C), puedes improvisar.
+Los que dicen "A" son vitales. Cuestan más. Si la planta frena por falta del grupo "A" hay desgracia comercial; de los tornillos "C" siempre habrá en la esquina ferretera.
 
 🚨 PRUEBA DE ESTRÉS:
-Acción: Si solo tienes dinero para comprar un producto hoy...
-Lección: El Dashboard te obliga a dar prioridad absoluta a los materiales de **Clase A**.
+Acción: Tratar de comprar los faltantes de tornillería barata con el último billete disponible.
+Lección: El jefe viendo esa rueda ABC destinará el único dinero para reponer primero la Clase A (perfiles), pase lo que pase.
 
 ---
 
-📝 Ejercicio #18: El Capital Estancado (Stock Zombie)
+📝 Ejercicio #18: Dinero Abandonado (Zombie)
 🎯 OBJETIVO PRÁCTICO:
-Descubrir dinero "atrapado" en materiales que no se mueven.
+Verificar cuánto capital está perdiéndose en mercancía sin vender.
 
 🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Busca la sección de **"Inventario Zombie"**.
-2. Revisa la lista de productos con stock pero **cero salidas** en 3 meses.
-3. Observa el valor en Soles (S/) perdido en esos materiales.
+1. Sigue mirando igual la ventana de **"Analítica Inventarios"**.
+2. Baja arrastrando normal tu pantalla.
+3. Fíjate en el título rojo de bordes vistosos rotulado: **"Inventario Zombie"** (paralizado a más de 90 días).
+4. Sorpréndete viendo el número gigante que dice la cantidad total de Soles (S/.)
 
 🧠 La Verdad del Sistema (Trazabilidad)
-Cada producto Zombie es efectivo que podrías estar usando para pagar sueldos o deudas. Este reporte sirve para liquidar esos productos y recuperar el dinero.
+Son soles congelados y perdiéndose en el rincón más triste de tu empresa. Hay que venderlos rápido como saldo para recuperar el capital urgente.
 
 ---
 
-📝 Ejercicio #19: El Tesoro Oculto (Retazos)
+📝 Ejercicio #19: El Valor del Residuo (Retazos)
 🎯 OBJETIVO PRÁCTICO:
-Valorar económicamente los sobrantes de aluminio útiles.
+Entender que los recortes sueltos de perfil deben valorarse porque sirven.
 
 🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Busca el indicador de **"Retazos Valorizados"**.
-2. Haz clic en **"Ver Detalle"** para ver cuántos metros lineales tienes disponibles en retazos útiles.
+1. Sube de nuevo viendo otra vez arriba en tu **Dashboard**.
+2. Reconoce una tarjeta verde que se titula **"Retazos Valorizados"**.
+3. (Si existe el botoncito) Dale a "Ver Detalle" para ver cuánto hay disponible.
 
 🧠 La Verdad del Sistema (Trazabilidad)
-El sistema les da un valor económico. Mientras otros tiran el aluminio al reciclaje, tú sabes que esos trozos valen miles de Soles si los usas en obras pequeñas.
+Ese cuadrito te dice en soles que todo lo que cortaron chicos y lo que te sobra sigue valiendo muchísimo dinero y que con ese trozo verde puedes sacar toda una obra menor sacándole más plata que vendiéndolo como aluminio viejo por kilo.
 
 ---
 
-📝 Ejercicio #20: La Alerta Roja (Toma de Decisiones)
+## 🔍 Módulo 6: Reportes y Listas de Almacén
+> **"Revisar números claros"**
+
+---
+
+📝 Ejercicio #21: Estado Actual
 🎯 OBJETIVO PRÁCTICO:
-Aprender a confiar en el dato por encima de la vista rápida.
+Descargar una hoja para cuadrar todo con el contador hoy mismo.
 
 🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Si el Dashboard muestra **STOCK 0** de un Riel, pero el operario dice que hay 2 barras tiradas allá...
-2. No canceles la compra. Busca por qué el sistema no sabe de esas barras.
+1. Vete de vuelta dando clic al panel oscuro a tu parte de **Inventario**.
+2. Por la zona derecha alta, verás dos botoncitos chiquitos, aprieta el de la hoja con cruz que significa bajar a Excel o bajar tu **Foto/Estado de Inventario**.
 
 🧠 La Verdad del Sistema (Trazabilidad)
-Alguien olvidó anotar una entrada o alguien duplicó una salida. Si alimentas el sistema con datos sucios, tomarás malas decisiones. ¡Disciplina militar en el registro!
+No importa si ayer pasaron ventas, ese documento le corta el hilo al sistema justo en tu tic exacto y solo te va a contar lo tuyo paralizado hoy, dando transparencia.
 
 ---
 
-## 🔍 Módulo 6: Reportes y Auditoría Física
-> **"La Verdad del Almacén: Cero Mermas, Cero Errores"**
-
----
-
-📝 Ejercicio #21: La Fotografía del Almacén (Estado)
+📝 Ejercicio #22: Exportar Kardex a Excel
 🎯 OBJETIVO PRÁCTICO:
-Saber exactamente cuánta mercadería tienes hoy mismo.
+Revisar si todo tu equipo digitó bien durante el mes jalándolo a tu Excel usual.
 
 🖱️ Ejecución en el Sistema (Paso a Paso)
-1. En la zona de exportación, elige: **"Estado de Inventario (Foto Actual)"**.
-2. Descarga el Excel y abre el archivo.
+1. Sigue en **Inventario**, pero parado firme usando su primera pestaña: la del gran **"Kardex"**.
+2. Arriba de la grilla tienes el botoncito normal rojo para Excel. Púlsalo.
+3. Ábrelo en Microsoft Excel y haz tus columnas dinámicas y filtros de siempre para inspeccionar qué tipeó mal.
 
 🧠 La Verdad del Sistema (Trazabilidad)
-Es una **foto instantánea**. No importa qué fechas filtres, te dice qué hay "ahora". Su valor total debe coincidir con el Dashboard de la gerencia perfectamente.
+Esto pasa todos los meses. Sacas de la página web tus miles de líneas y el Excel te dice solito cosas rápidas, por si acaso un chico puso salida de material a medianoche donde no hay gente operando.
 
 ---
 
-📝 Ejercicio #22: El Rastro del Papel (Kardex en Excel)
+📝 Ejercicio #23: El Conteo Físico Real
 🎯 OBJETIVO PRÁCTICO:
-Analizar miles de movimientos para detectar errores de digitación.
+Evitar que el operario adivine la cantidad, obligándolo a contar físicamente en el almacén.
 
 🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Descarga el **"Kardex de Movimientos Lógicos"** filtrando por el **mes actual**.
-2. Usa una tabla dinámica en Excel para resumir por operario o por tipo de movimiento.
+1. Baja con la ruedita o el ratón hasta llegar súper abajo en el menú oscuro (ERP/WMS) para pulsar la hoja que diga **"Hojas de Conteo"**.
+2. Clickea a la primerita tarjeta color azul y blanca que diré **"Por Sistema / Serie"**.
+3. A la derecha y al medio hay una perillita o **Interruptor 'Modo Conteo Ciego'**, púlsalo de frente.
+4. Tienes que ver que oscurezca a color gris y bote un logo pequeñito de Ojo Tachado (Ojo Cerrado).
+5. Abajo de todo y a la margen izquierda tienes tu botonazo negro y grande: **"Generar PDF"**. Imprime los papeles.
 
 🧠 La Verdad del Sistema (Trazabilidad)
-Es la "caja negra" de la empresa. Aquí descubres quién cometió un error o si se están registrando demasiadas mermas sospechosas.
+Imprime un papel para el guardián sin indicarle cuáles eran tus saldos anotados (los va a ver vacíos). Así, lo forces a revisar, doblar, mover y sudar contándote cuántas varillas enteras agarró con ambas manos reales. Mentirá menos.
 
 ---
 
-📝 Ejercicio #23: El Conteo Ciego (Honestidad)
+📝 Ejercicio #24: Inventario Veloz de Alta Gama (Clase A)
 🎯 OBJETIVO PRÁCTICO:
-Garantizar que el personal cuente material real sin ser influenciado por la pantalla.
+Contar por las mañanas nomás y rápido las varillas grandotas sin tener que detener todo tu galpón días y días enteros perdiendo tiempo valioso ganadero.
 
 🖱️ Ejecución en el Sistema (Paso a Paso)
-1. Ve a **"Hojas de Conteo"** y elige el modo **"Por Sistema"**.
-2. Activa el interruptor de **"Modo Conteo Ciego"**.
-3. Escribe el nombre del operario y selecciona la **Serie 25**.
-4. Haz clic en el botón **"Generar PDF"**.
+1. No te salgas de la página de **"Hojas de Conteo"**. Oprime el segundo cuadro grande color casi agua de nombre **"Filtros Personalizados"**.
+2. Te despegará a la derecha nuevas listas cortitas para que de verdad busques en ellas.
+3. Desplegar los cuadritos blancos al escoger solamente los productos llamados puramente que contengan valor clase **A**.
+4. Haz igual e imprime ahora esa listita exclusiva y mándala a bodega.
 
 🧠 La Verdad del Sistema (Trazabilidad)
-El PDF oculta la columna de stock esperado. El operario **tiene** que contar. Si la hoja dijera "Hay 50", muchos pondrían "50" por pereza. Esto garantiza la verdad física.
+Tu listita te dará tu veinte por ciento del total de varas en catálogo general. Las vas a contar sin apuros y le diste la extremaunción a esos temibles y carísimos inventarios generales donde detienes y espantas producciones semanales ininterrumpidas cerrando local innecesariamente total, siendo eficiente un breve momento en matinais.
 
 ---
-
-📝 Ejercicio #24: La Auditoría Quirúrgica (Cíclico Clase A)
-🎯 OBJETIVO PRÁCTICO:
-Auditar solo lo valioso rápidamente sin parar las operaciones de la planta.
-
-🖱️ Ejecución en el Sistema (Paso a Paso)
-1. En "Hojas de Conteo", usa **"Filtros Personalizados"**.
-2. Filtra por Marca: **"Limatambo / Corrales"** y Clase ABC: **"A"**.
-3. (Opcional) Pon **"Stock Máximo = 0"** para buscar material que debería estar agotado.
-4. Genera el documento y audita solo esos 10 o 20 productos críticos.
-
-🧠 La Verdad del Sistema (Trazabilidad)
-Se llama **"Inventario Cíclico"**. Contar todo el almacén tarda días. Contar lo más valioso cada mañana tarda 15 minutos y protege el 80% de tu inversión.
-
----
-**¡Felicitaciones! Has completado el entrenamiento maestro.**
-*Disciplina en el registro = Éxito en el negocio.*
+**¡Felicitaciones! Has completado el entrenamiento base.**
+*Buenos registros reales = Éxito para todos.*

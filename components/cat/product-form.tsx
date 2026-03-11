@@ -1,10 +1,24 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +55,7 @@ interface ProductFormProps {
 export function ProductFormCmp({ onSuccess, initialData }: ProductFormProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [openPlantilla, setOpenPlantilla] = useState(false);
 
   // Fetch auxiliaries
   const { data: plantillas } = useQuery({
@@ -284,29 +299,89 @@ export function ProductFormCmp({ onSuccess, initialData }: ProductFormProps) {
             <FormField
               control={form.control}
               name="id_plantilla"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Plantilla *</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value || undefined}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {plantillas?.map((p: any) => (
-                        <SelectItem key={p.id_plantilla} value={p.id_plantilla}>
-                          {p.nombre_generico} ({p.id_plantilla})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const selectedPlantilla = plantillas?.find(
+                  (p: any) => p.id_plantilla === field.value
+                );
+                return (
+                  <FormItem className="flex flex-col pt-[5px]">
+                    <FormLabel>Plantilla *</FormLabel>
+                    <Popover open={openPlantilla} onOpenChange={setOpenPlantilla}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "w-full justify-between font-normal mt-0",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            <span className="truncate">
+                              {field.value && selectedPlantilla
+                                ? `${selectedPlantilla.nombre_generico} (${selectedPlantilla.id_plantilla})`
+                                : "Seleccionar"}
+                            </span>
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[300px] sm:w-[350px] p-0" align="start">
+                        <Command
+                          filter={(value, search) => {
+                            if (value.toLowerCase().includes(search.toLowerCase())) return 1;
+                            return 0;
+                          }}
+                        >
+                          <CommandInput placeholder="Buscar por SKU o nombre..." />
+                          <CommandList>
+                            <CommandEmpty>No se encontró plantilla.</CommandEmpty>
+                            <CommandGroup>
+                              {plantillas?.map((p: any) => (
+                                <CommandItem
+                                  value={`${p.nombre_generico} ${p.id_plantilla}`}
+                                  key={p.id_plantilla}
+                                  onSelect={() => {
+                                    form.setValue("id_plantilla", p.id_plantilla, {
+                                      shouldValidate: true,
+                                    });
+                                    setOpenPlantilla(false);
+                                  }}
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    form.setValue("id_plantilla", p.id_plantilla, {
+                                      shouldValidate: true,
+                                    });
+                                    setOpenPlantilla(false);
+                                  }}
+                                  className="cursor-pointer"
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4 flex-shrink-0",
+                                      p.id_plantilla === field.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  <div className="flex flex-col truncate">
+                                    <span className="truncate">{p.nombre_generico}</span>
+                                    <span className="text-xs text-muted-foreground font-mono">
+                                      {p.id_plantilla}
+                                    </span>
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
             <FormField
               control={form.control}

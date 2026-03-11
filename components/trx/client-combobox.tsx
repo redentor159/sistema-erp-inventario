@@ -74,6 +74,12 @@ export function ClientCombobox({
                     onChange(cliente.id_cliente);
                     setOpen(false);
                   }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onChange(cliente.id_cliente);
+                    setOpen(false);
+                  }}
                   className="cursor-pointer"
                 >
                   <Check
