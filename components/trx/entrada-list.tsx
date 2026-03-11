@@ -53,7 +53,7 @@ export function EntradaList({ active }: { active: boolean }) {
   const [selectedEntrada, setSelectedEntrada] = useState<any>(null);
 
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(100);
+  const [pageSize, setPageSize] = useState(50);
 
   // SORTING LOGIC
   const handleSort = (key: string) => {
@@ -139,9 +139,9 @@ export function EntradaList({ active }: { active: boolean }) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="50">50</SelectItem>
                 <SelectItem value="100">100</SelectItem>
-                <SelectItem value="500">500</SelectItem>
-                <SelectItem value="1000">1000</SelectItem>
+                <SelectItem value="200">200</SelectItem>
               </SelectContent>
             </Select>
           </div>
