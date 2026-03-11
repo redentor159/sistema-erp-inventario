@@ -71,18 +71,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="min-h-screen flex bg-slate-50">
       {/* Panel izquierdo — Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-white border-r border-gray-200 flex-col items-center justify-center p-12">
+      <div className="hidden lg:flex lg:w-1/2 bg-blue-900 text-white shadow-2xl z-10 relative flex-col items-center justify-center p-12">
         <div className="max-w-sm text-center space-y-6">
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-gray-900 flex items-center justify-center shadow-lg">
+          <div className="mx-auto w-16 h-16 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-sm flex items-center justify-center shadow-md">
             <span className="text-white font-bold text-2xl">E</span>
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+            <h1 className="text-3xl font-bold text-white tracking-tight">
               ERP/WMS
             </h1>
-            <p className="text-gray-500 mt-2 text-sm">
+            <p className="text-blue-200 mt-2 text-sm">
               Sistema de Gestión para Vidriería
             </p>
           </div>
@@ -95,9 +95,9 @@ export default function LoginPage() {
             ].map((f) => (
               <div
                 key={f}
-                className="flex items-center gap-3 text-sm text-gray-600"
+                className="flex items-center gap-3 text-sm text-white"
               >
-                <CheckCircle className="h-4 w-4 text-gray-400 shrink-0" />
+                <CheckCircle className="h-4 w-4 text-blue-400 shrink-0" />
                 <span>{f}</span>
               </div>
             ))}
@@ -107,23 +107,23 @@ export default function LoginPage() {
 
       {/* Panel derecho — Formulario */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <div className="w-full max-w-sm space-y-8">
+        <div className="w-full max-w-sm bg-white shadow-lg rounded-2xl p-8 border border-slate-200 space-y-8">
           {/* Mobile logo */}
           <div className="lg:hidden text-center">
-            <div className="mx-auto w-12 h-12 rounded-xl bg-gray-900 flex items-center justify-center mb-3">
+            <div className="mx-auto w-12 h-12 rounded-xl bg-blue-900 flex items-center justify-center mb-3 shadow-md">
               <span className="text-white font-bold text-xl">E</span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">ERP/WMS</h1>
+            <h1 className="text-2xl font-bold text-slate-900">ERP/WMS</h1>
           </div>
 
           {/* Login Form */}
           {screen === "login" && (
             <>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">
+                <h2 className="text-2xl font-bold text-slate-900">
                   Iniciar sesión
                 </h2>
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-slate-500">
                   Ingresa tus credenciales para acceder al sistema
                 </p>
               </div>
@@ -132,12 +132,12 @@ export default function LoginPage() {
                 <div className="space-y-1">
                   <label
                     htmlFor="email"
-                    className="text-sm font-medium text-gray-700"
+                    className="text-sm font-medium text-slate-700"
                   >
                     Correo electrónico
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <input
                       id="email"
                       type="email"
@@ -145,7 +145,7 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="usuario@empresa.com"
-                      className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                      className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 focus:bg-white transition"
                     />
                   </div>
                 </div>
@@ -154,7 +154,7 @@ export default function LoginPage() {
                   <div className="flex justify-between items-center">
                     <label
                       htmlFor="password"
-                      className="text-sm font-medium text-gray-700"
+                      className="text-sm font-medium text-slate-700"
                     >
                       Contraseña
                     </label>
@@ -164,13 +164,13 @@ export default function LoginPage() {
                         setScreen("forgot");
                         setError(null);
                       }}
-                      className="text-xs text-gray-500 hover:text-gray-900 transition"
+                      className="text-xs text-slate-500 hover:text-slate-900 transition"
                     >
                       ¿Olvidaste tu contraseña?
                     </button>
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <input
                       id="password"
                       type="password"
@@ -178,7 +178,7 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                      className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 focus:bg-white transition"
                     />
                   </div>
                 </div>
@@ -193,14 +193,14 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2.5 px-4 bg-gray-900 hover:bg-gray-800 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition flex items-center justify-center gap-2"
+                  className="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 border border-amber-600/20 flex items-center justify-center gap-2"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                   {loading ? "Verificando..." : "Ingresar al sistema"}
                 </button>
               </form>
 
-              <p className="text-xs text-center text-gray-400">
+              <p className="text-xs text-center text-slate-400">
                 El acceso está restringido a usuarios autorizados.
                 <br />
                 Contacta al administrador para obtener una cuenta.
@@ -217,15 +217,15 @@ export default function LoginPage() {
                     setScreen("login");
                     setError(null);
                   }}
-                  className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 mb-4 transition"
+                  className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900 mb-4 transition"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Volver al inicio de sesión
                 </button>
-                <h2 className="text-2xl font-bold text-gray-900">
+                <h2 className="text-2xl font-bold text-slate-900">
                   Recuperar contraseña
                 </h2>
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-slate-500">
                   Ingresa tu correo y recibirás un enlace para restablecer tu
                   contraseña.
                 </p>
@@ -235,12 +235,12 @@ export default function LoginPage() {
                 <div className="space-y-1">
                   <label
                     htmlFor="reset-email"
-                    className="text-sm font-medium text-gray-700"
+                    className="text-sm font-medium text-slate-700"
                   >
                     Correo electrónico
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <input
                       id="reset-email"
                       type="email"
@@ -248,7 +248,7 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="usuario@empresa.com"
-                      className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                      className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 focus:bg-white transition"
                     />
                   </div>
                 </div>
@@ -263,7 +263,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2.5 px-4 bg-gray-900 hover:bg-gray-800 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition flex items-center justify-center gap-2"
+                  className="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 border border-amber-600/20 flex items-center justify-center gap-2"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                   {loading ? "Enviando..." : "Enviar enlace de recuperación"}
@@ -279,15 +279,15 @@ export default function LoginPage() {
                 <CheckCircle className="h-7 w-7 text-green-600" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900">
+                <h2 className="text-xl font-bold text-slate-900">
                   Correo enviado
                 </h2>
-                <p className="mt-2 text-sm text-gray-500">
+                <p className="mt-2 text-sm text-slate-500">
                   Si el correo <strong>{email}</strong> está registrado,
                   recibirás un enlace para restablecer tu contraseña en los
                   próximos minutos.
                 </p>
-                <p className="mt-2 text-xs text-gray-400">
+                <p className="mt-2 text-xs text-slate-400">
                   Revisa también tu carpeta de spam.
                 </p>
               </div>
@@ -296,7 +296,7 @@ export default function LoginPage() {
                   setScreen("login");
                   setError(null);
                 }}
-                className="text-sm text-gray-600 hover:text-gray-900 underline transition"
+                className="text-sm text-slate-600 hover:text-slate-900 underline transition"
               >
                 Volver al inicio de sesión
               </button>
