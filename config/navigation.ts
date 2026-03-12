@@ -8,6 +8,7 @@ import {
   Trello,
   FileSpreadsheet,
   ClipboardList,
+  Database,
 } from "lucide-react";
 
 export type NavItemConfig = {
@@ -35,6 +36,7 @@ export const MAIN_NAVIGATION: NavGroupConfig[] = [
   {
     label: "Maestros",
     items: [
+      { href: "/maestros", icon: Database, label: "Datos Maestros" },
       { href: "/configuracion", icon: Settings, label: "Configuración" },
       { href: "/maestros/series", icon: Box, label: "Sistemas y Series" },
       { href: "/recetas", icon: FileText, label: "Recetas", matchPrefix: true },

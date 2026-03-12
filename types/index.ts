@@ -98,6 +98,11 @@ export interface MstAcabado {
   sufijo_sku?: string;
 }
 
+export interface MstAlmacen {
+  id_almacen: string;
+  nombre_almacen: string;
+}
+
 export interface MstSerieEquivalencia {
   id_sistema: string;
   nombre_comercial: string;
