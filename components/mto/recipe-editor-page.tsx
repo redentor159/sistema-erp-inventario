@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Ruler } from "lucide-react";
+import { FileText } from "lucide-react";
 import { RecipeModelList } from "./recipe-model-list";
 import { RecipeEditor } from "./recipe-editor";
 import { RecipeMassAudit } from "./recipe-mass-audit";
@@ -15,7 +15,7 @@ export function RecipeEditorPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Ruler className="h-6 w-6 text-slate-600" />
+            <FileText className="h-6 w-6 text-slate-600" />
             <h1 className="text-3xl font-bold tracking-tight text-slate-900">
               Editor de Recetas
             </h1>

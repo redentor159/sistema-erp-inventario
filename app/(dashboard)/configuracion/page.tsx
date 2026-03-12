@@ -1,5 +1,5 @@
 import { ConfigGeneralFormCmp } from "@/components/mst/config-general-form";
-import { Settings2 } from "lucide-react";
+import { Settings } from "lucide-react";
 import { SecretDangerZone } from "@/components/mst/secret-danger-zone";
 
 export default function SettingsPage() {
@@ -8,7 +8,7 @@ export default function SettingsPage() {
       <div className="flex items-center justify-between space-y-2">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Settings2 className="h-6 w-6 text-slate-600" />
+            <Settings className="h-6 w-6 text-slate-600" />
             <h2 className="text-3xl font-bold tracking-tight text-slate-900">
               Configuración General
             </h2>

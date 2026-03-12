@@ -1,5 +1,5 @@
 import { SupplierList } from "@/components/mst/supplier-list";
-import { Truck } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 
 export default function SuppliersPage() {
   return (
@@ -7,7 +7,7 @@ export default function SuppliersPage() {
       <div className="flex items-center justify-between space-y-2">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Truck className="h-6 w-6 text-slate-600" />
+            <ShoppingCart className="h-6 w-6 text-slate-600" />
             <h2 className="text-3xl font-bold tracking-tight text-slate-900">
               Directorio de Proveedores
             </h2>

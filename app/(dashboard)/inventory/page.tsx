@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { trxApi } from "@/lib/api/trx";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Warehouse } from "lucide-react";
+import { Box } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -32,7 +32,7 @@ export default function InventoryPage() {
       <div className="flex items-center justify-between space-y-2">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Warehouse className="h-6 w-6 text-slate-600" />
+            <Box className="h-6 w-6 text-slate-600" />
             <h2 className="text-3xl font-bold tracking-tight text-slate-900">
               Gestión de Inventario
             </h2>
