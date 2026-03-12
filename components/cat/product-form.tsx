@@ -1,24 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Check, ChevronsUpDown } from "lucide-react";
+import { Loader2, Check, ChevronsUpDown, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -55,7 +42,32 @@ interface ProductFormProps {
 export function ProductFormCmp({ onSuccess, initialData }: ProductFormProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // State for the custom Plantilla dropdown
   const [openPlantilla, setOpenPlantilla] = useState(false);
+  const [plantillaSearch, setPlantillaSearch] = useState("");
+  const plantillaContainerRef = useRef<HTMLDivElement>(null);
+  const plantillaInputRef = useRef<HTMLInputElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!openPlantilla) return;
+    function handleClick(e: MouseEvent) {
+      if (plantillaContainerRef.current && !plantillaContainerRef.current.contains(e.target as Node)) {
+        setOpenPlantilla(false);
+        setPlantillaSearch("");
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [openPlantilla]);
+
+  // Focus input when dropdown opens
+  useEffect(() => {
+    if (openPlantilla) {
+      setTimeout(() => plantillaInputRef.current?.focus(), 0);
+    }
+  }, [openPlantilla]);
 
   // Fetch auxiliaries
   const { data: plantillas } = useQuery({
@@ -126,6 +138,18 @@ export function ProductFormCmp({ onSuccess, initialData }: ProductFormProps) {
         : 0,
     },
   });
+
+  // Filtered plantillas for the dropdown
+  const filteredPlantillas = useMemo(() => {
+    if (!plantillas) return [];
+    if (!plantillaSearch.trim()) return plantillas as any[];
+    const s = plantillaSearch.toLowerCase();
+    return (plantillas as any[]).filter(
+      (p: any) =>
+        p.id_plantilla?.toLowerCase().includes(s) ||
+        p.nombre_generico?.toLowerCase().includes(s)
+    );
+  }, [plantillas, plantillaSearch]);
 
   // Watch fields for Auto-SKU
   const [idMaterial, idPlantilla, idAcabado, idMarca] = form.watch([
@@ -300,84 +324,91 @@ export function ProductFormCmp({ onSuccess, initialData }: ProductFormProps) {
               control={form.control}
               name="id_plantilla"
               render={({ field }) => {
-                const selectedPlantilla = plantillas?.find(
+                const selectedPlantilla = (plantillas as any[])?.find(
                   (p: any) => p.id_plantilla === field.value
                 );
                 return (
-                  <FormItem className="flex flex-col pt-[5px]">
+                  <FormItem className="flex flex-col">
                     <FormLabel>Plantilla *</FormLabel>
-                    <Popover open={openPlantilla} onOpenChange={setOpenPlantilla}>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            className={cn(
-                              "w-full justify-between font-normal mt-0",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            <span className="truncate">
-                              {field.value && selectedPlantilla
-                                ? `${selectedPlantilla.nombre_generico} (${selectedPlantilla.id_plantilla})`
-                                : "Seleccionar"}
-                            </span>
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[300px] sm:w-[350px] p-0" align="start">
-                        <Command
-                          filter={(value, search) => {
-                            if (value.toLowerCase().includes(search.toLowerCase())) return 1;
-                            return 0;
-                          }}
+                    <FormControl>
+                      <div ref={plantillaContainerRef} className="relative">
+                        {/* Trigger button */}
+                        <button
+                          type="button"
+                          onClick={() => setOpenPlantilla((v) => !v)}
+                          className={cn(
+                            "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm",
+                            "hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                            !field.value && "text-muted-foreground"
+                          )}
                         >
-                          <CommandInput placeholder="Buscar por SKU o nombre..." />
-                          <CommandList>
-                            <CommandEmpty>No se encontró plantilla.</CommandEmpty>
-                            <CommandGroup>
-                              {plantillas?.map((p: any) => (
-                                <CommandItem
-                                  value={`${p.nombre_generico} ${p.id_plantilla}`}
-                                  key={p.id_plantilla}
-                                  onSelect={() => {
-                                    form.setValue("id_plantilla", p.id_plantilla, {
-                                      shouldValidate: true,
-                                    });
-                                    setOpenPlantilla(false);
-                                  }}
-                                  onMouseDown={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    form.setValue("id_plantilla", p.id_plantilla, {
-                                      shouldValidate: true,
-                                    });
-                                    setOpenPlantilla(false);
-                                  }}
-                                  className="cursor-pointer"
-                                >
-                                  <Check
+                          <span className="truncate">
+                            {field.value && selectedPlantilla
+                              ? `${selectedPlantilla.nombre_generico} (${selectedPlantilla.id_plantilla})`
+                              : "Seleccionar"}
+                          </span>
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </button>
+
+                        {/* Dropdown */}
+                        {openPlantilla && (
+                          <div
+                            className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md flex flex-col overflow-hidden"
+                            style={{ maxHeight: "280px" }}
+                          >
+                            {/* Search */}
+                            <div className="flex items-center border-b px-3 py-2 flex-shrink-0">
+                              <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                              <input
+                                ref={plantillaInputRef}
+                                value={plantillaSearch}
+                                onChange={(e) => setPlantillaSearch(e.target.value)}
+                                placeholder="Buscar por SKU o nombre..."
+                                className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                              />
+                            </div>
+                            {/* List */}
+                            <div className="overflow-y-auto flex-1">
+                              {filteredPlantillas.length === 0 ? (
+                                <div className="py-6 text-center text-sm text-muted-foreground">
+                                  No se encontró plantilla.
+                                </div>
+                              ) : (
+                                filteredPlantillas.map((p: any) => (
+                                  <div
+                                    key={p.id_plantilla}
+                                    onMouseDown={(e) => {
+                                      e.preventDefault();
+                                      form.setValue("id_plantilla", p.id_plantilla, { shouldValidate: true });
+                                      setOpenPlantilla(false);
+                                      setPlantillaSearch("");
+                                    }}
                                     className={cn(
-                                      "mr-2 h-4 w-4 flex-shrink-0",
-                                      p.id_plantilla === field.value
-                                        ? "opacity-100"
-                                        : "opacity-0"
+                                      "flex cursor-pointer items-center gap-2 px-3 py-2 text-sm",
+                                      "hover:bg-accent hover:text-accent-foreground",
+                                      p.id_plantilla === field.value && "bg-accent/60 font-medium"
                                     )}
-                                  />
-                                  <div className="flex flex-col truncate">
-                                    <span className="truncate">{p.nombre_generico}</span>
-                                    <span className="text-xs text-muted-foreground font-mono">
-                                      {p.id_plantilla}
-                                    </span>
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "h-4 w-4 flex-shrink-0",
+                                        p.id_plantilla === field.value ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    <div className="flex flex-col min-w-0">
+                                      <span className="truncate">{p.nombre_generico}</span>
+                                      <span className="text-xs text-muted-foreground font-mono">
+                                        {p.id_plantilla}
+                                      </span>
+                                    </div>
                                   </div>
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
+                                ))
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 );
