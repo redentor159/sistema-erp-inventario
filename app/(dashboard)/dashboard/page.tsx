@@ -63,7 +63,27 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="flex flex-1 gap-6 overflow-hidden min-h-0">
+      <div className="flex flex-1 gap-6 overflow-hidden min-h-0 flex-col md:flex-row">
+        {/* Mobile Navigation (Horizontal Scroll) */}
+        <div className="md:hidden flex overflow-x-auto pb-2 -mx-6 px-6 snap-x hide-scrollbar">
+          <div className="flex space-x-2">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveView(item.id as "executive" | "analytics" | "commercial")}
+                className={cn(
+                  "flex items-center px-4 py-2.5 text-sm font-medium rounded-md whitespace-nowrap transition-colors snap-start",
+                  activeView === item.id
+                    ? "bg-slate-100 text-slate-900 ring-1 ring-slate-900/5 shadow-sm"
+                    : "text-slate-600 hover:bg-slate-50 border border-transparent"
+                )}
+              >
+                <item.icon className="mr-2 h-4 w-4" />
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
         {/* Sidebar Navigation */}
         <aside className="w-64 flex-none hidden md:block border-r pr-4 space-y-2">
           {navItems.map((item) => (
