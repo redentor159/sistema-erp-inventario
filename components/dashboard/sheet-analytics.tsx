@@ -99,7 +99,7 @@ export function SheetAnalytics() {
 
   return (
     <div className="space-y-6 p-1">
-      <div className="flex justify-between items-center bg-muted/30 p-4 rounded-lg border">
+      <div className="flex justify-between items-center bg-white dark:bg-slate-950 p-6 rounded-md shadow-sm ring-1 ring-slate-900/5 border-0">
         <div>
           <h3 className="text-lg font-medium">
             Analítica de Inventarios (ABC & Quiebres)
@@ -115,7 +115,7 @@ export function SheetAnalytics() {
 
       <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
         {/* Stockout Monitor (The "Red List") */}
-        <Card className="flex flex-col border-red-200 dark:border-red-900/50">
+        <Card className="flex flex-col shadow-none ring-1 ring-inset ring-red-600/20 dark:ring-red-900/50">
           <CardHeader className="bg-red-50 dark:bg-red-900/10 pb-2">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
@@ -189,7 +189,7 @@ export function SheetAnalytics() {
         </Card>
 
         {/* Zombie Stock Table */}
-        <Card className="flex flex-col border-orange-200 bg-orange-50/20 dark:bg-orange-950/10">
+        <Card className="flex flex-col shadow-none ring-1 ring-inset ring-orange-600/20 bg-orange-50/20 dark:bg-orange-950/10 dark:ring-orange-900/50">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-orange-700 dark:text-orange-400 flex items-center gap-2">
@@ -404,7 +404,7 @@ export function SheetAnalytics() {
         </Card>
 
         {/* Offcut Treasure Card - Fixed Height/Grid */}
-        <Card className="col-span-1 md:col-span-2 lg:col-span-3 border-emerald-200 bg-emerald-50/20 dark:bg-emerald-950/10 h-[450px]">
+        <Card className="col-span-1 md:col-span-2 lg:col-span-3 shadow-none ring-1 ring-inset ring-emerald-600/20 bg-emerald-50/20 dark:bg-emerald-950/10 dark:ring-emerald-900/50 h-[450px]">
           <CardHeader>
             <CardTitle className="flex items-center text-emerald-700 dark:text-emerald-400 gap-2">
               <Gem className="h-5 w-5" />

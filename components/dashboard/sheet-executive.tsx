@@ -68,7 +68,7 @@ export function SheetExecutive() {
   return (
     <div className="space-y-6">
       {/* Header / Controls */}
-      <div className="flex justify-between items-center bg-muted/30 p-4 rounded-lg border">
+      <div className="flex justify-between items-center bg-white dark:bg-slate-950 p-6 rounded-md shadow-sm ring-1 ring-slate-900/5 border-0">
         <div>
           <h3 className="text-lg font-medium">
             Resumen Ejecutivo de Valorización

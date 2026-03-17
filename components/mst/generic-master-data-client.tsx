@@ -191,7 +191,7 @@ export function GenericMasterDataClient({
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center p-12 space-y-4">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-slate-500" />
         <p className="text-sm text-muted-foreground">Cargando datos...</p>
       </div>
     );
@@ -199,40 +199,37 @@ export function GenericMasterDataClient({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-lg border border-slate-200/60 shadow-sm">
-        <div className="relative w-full md:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+      <div className="flex justify-between items-center bg-white p-4 rounded-md ring-1 ring-slate-900/5 shadow-sm">
+        <div className="relative w-72">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={`Buscar por ${labels.name}...`}
-            className="pl-9 h-10 border-slate-200"
+            className="pl-9 bg-background"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-slate-500">Mostrar:</span>
-            <Select
-              value={pageSize.toString()}
-              onValueChange={(v) => {
-                setPageSize(Number(v));
-                setPage(0);
-              }}
-            >
-              <SelectTrigger className="w-[80px] h-10 border-slate-200">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="50">50</SelectItem>
-                <SelectItem value="100">100</SelectItem>
-                <SelectItem value="200">200</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
+        <div className="flex items-center gap-2 w-full md:w-auto mt-2 md:mt-0 justify-end">
+          <span className="text-sm text-muted-foreground hidden md:inline">Mostrar:</span>
+          <Select
+            value={pageSize.toString()}
+            onValueChange={(v) => {
+              setPageSize(Number(v));
+              setPage(0);
+            }}
+          >
+            <SelectTrigger className="w-[80px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="50">50</SelectItem>
+              <SelectItem value="100">100</SelectItem>
+              <SelectItem value="200">200</SelectItem>
+            </SelectContent>
+          </Select>
           {isAdmin && (
-            <Button onClick={() => handleOpenForm()} className="h-10 px-4">
+            <Button onClick={() => handleOpenForm()} className="shadow-sm ml-2">
               <Plus className="mr-2 h-4 w-4" />
               Nuevo
             </Button>
@@ -240,47 +237,38 @@ export function GenericMasterDataClient({
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader className="bg-slate-50/50">
-              <TableRow className="hover:bg-transparent border-b border-slate-100/80">
+      <div className="bg-white rounded-md shadow-sm ring-1 ring-slate-900/5 overflow-hidden pointer-events-auto">
+        <div className="hidden md:block overflow-x-auto">
+          <Table className="whitespace-nowrap">
+            <TableHeader className="bg-slate-50 border-b border-slate-100/80">
+              <TableRow>
                 <TableHead
-                  className="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 cursor-pointer hover:text-primary transition-colors"
+                  className="font-semibold cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm text-slate-700"
                   onClick={() => handleSort(idColumn)}
                 >
-                  <div className="flex items-center gap-1">
-                    {labels.id}
-                    {sortConfig?.key === idColumn && (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </div>
+                  {labels.id} {sortConfig?.key === idColumn && (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TableHead>
                 <TableHead
-                  className="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 cursor-pointer hover:text-primary transition-colors"
+                  className="font-semibold cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm text-slate-700"
                   onClick={() => handleSort(nameColumn)}
                 >
-                  <div className="flex items-center gap-1">
-                    {labels.name}
-                    {sortConfig?.key === nameColumn && (sortConfig.direction === "asc" ? "↑" : "↓")}
-                  </div>
+                  {labels.name} {sortConfig?.key === nameColumn && (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TableHead>
                 {extraColumn && (
                   <TableHead
-                    className="py-3 px-4 text-xs font-semibold uppercase tracking-wider text-slate-500 cursor-pointer hover:text-primary transition-colors"
+                    className="font-semibold cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm text-slate-700"
                     onClick={() => handleSort(extraColumn)}
                   >
-                    <div className="flex items-center gap-1">
-                      {labels.extra}
-                      {sortConfig?.key === extraColumn && (sortConfig.direction === "asc" ? "↑" : "↓")}
-                    </div>
+                    {labels.extra} {sortConfig?.key === extraColumn && (sortConfig.direction === "asc" ? "↑" : "↓")}
                   </TableHead>
                 )}
-                {isAdmin && <TableHead className="py-3 px-4 text-right">Acciones</TableHead>}
+                {isAdmin && <TableHead className="text-right font-semibold w-[100px] py-2 px-3 text-sm text-slate-700">Acciones</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginatedData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={extraColumn ? 4 : 3} className="h-32 text-center text-slate-400">
+                  <TableCell colSpan={extraColumn ? 4 : 3} className="text-center h-24 text-sm text-muted-foreground py-2 px-3">
                     No se encontraron registros.
                   </TableCell>
                 </TableRow>
@@ -288,27 +276,33 @@ export function GenericMasterDataClient({
                 paginatedData.map((item) => (
                   <TableRow
                     key={item[idColumn]}
-                    className="hover:bg-slate-50/50 border-b border-slate-100/80 transition-colors"
+                    className="hover:bg-slate-50 transition-colors border-b border-slate-100/80"
                   >
-                    <TableCell className="py-3 px-4 text-sm font-mono text-slate-500">
-                      {item[idColumn]}
+                    <TableCell className="font-medium py-2 px-3 text-sm">
+                      <div className="flex flex-col">
+                        <span>{item[idColumn]}</span>
+                      </div>
                     </TableCell>
-                    <TableCell className="py-3 px-4 text-sm font-medium text-slate-900">
-                      {item[nameColumn]}
+                    <TableCell className="py-2 px-3 text-sm">
+                      <span className="font-medium text-slate-900">
+                        {item[nameColumn]}
+                      </span>
                     </TableCell>
                     {extraColumn && (
-                      <TableCell className="py-3 px-4 text-sm text-slate-600">
-                        {item[extraColumn] || <span className="text-slate-300 italic">-</span>}
+                      <TableCell className="py-2 px-3 text-sm">
+                        <span className="text-sm">
+                          {item[extraColumn] || <span className="text-muted-foreground italic text-xs">-</span>}
+                        </span>
                       </TableCell>
                     )}
                     {isAdmin && (
-                      <TableCell className="py-3 px-4 text-right">
+                      <TableCell className="text-right py-2 px-3 text-sm">
                         <div className="flex justify-end gap-1">
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => handleOpenForm(item)}
-                            className="h-8 w-8 text-slate-400 hover:text-primary"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -316,7 +310,7 @@ export function GenericMasterDataClient({
                             variant="ghost"
                             size="icon"
                             onClick={() => handleConfirmDelete(item)}
-                            className="h-8 w-8 text-slate-400 hover:text-red-500"
+                            className="h-8 w-8 text-muted-foreground hover:text-red-600"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -331,30 +325,29 @@ export function GenericMasterDataClient({
         </div>
 
         {/* Pagination Controls */}
-        <div className="bg-slate-50/30 px-4 py-3 flex items-center justify-between border-t border-slate-100">
-          <p className="text-xs text-slate-500">
-            Mostrando <span className="font-medium">{paginatedData.length}</span> de{" "}
-            <span className="font-medium">{filteredData.length}</span> registros
-          </p>
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between px-4 py-4 border-t">
+          <div className="text-sm text-muted-foreground">
+            Mostrando {filteredData.length > 0 ? page * pageSize + 1 : 0} a{" "}
+            {Math.min((page + 1) * pageSize, filteredData.length)} de{" "}
+            {filteredData.length}
+          </div>
+          <div className="flex items-center space-x-2">
             <Button
               variant="outline"
               size="sm"
+              onClick={() => setPage(p => Math.max(0, p - 1))}
               disabled={page === 0}
-              onClick={() => setPage(p => p - 1)}
-              className="h-8 text-xs font-medium border-slate-200"
             >
               Anterior
             </Button>
-            <div className="px-3 py-1 bg-white border border-slate-200 rounded-md text-xs font-bold text-slate-600">
-              {page + 1} / {Math.max(1, totalPages)}
+            <div className="text-sm font-medium">
+              Página {page + 1} de {Math.max(1, totalPages)}
             </div>
             <Button
               variant="outline"
               size="sm"
+              onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
-              onClick={() => setPage(p => p + 1)}
-              className="h-8 text-xs font-medium border-slate-200"
             >
               Siguiente
             </Button>

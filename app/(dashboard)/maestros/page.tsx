@@ -125,38 +125,36 @@ export default function MaestrosPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center flex-1 h-[70vh] gap-4">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <Loader2 className="h-10 w-10 animate-spin text-slate-500" />
         <p className="text-slate-500 font-medium">Cargando módulo de maestros...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col flex-1 p-6 space-y-6 bg-slate-50/30">
-      <div className="flex flex-col gap-2 border-b border-slate-200 pb-6">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <Database className="h-6 w-6 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+    <div className="flex-1 space-y-6 p-6">
+      <div className="flex items-center justify-between space-y-2">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Database className="h-6 w-6 text-slate-600" />
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900">
               Datos Maestros
-            </h1>
-            <p className="text-slate-500 font-medium">
-              Gestión centralizada de entidades paramétricas y configuraciones base.
-            </p>
+            </h2>
           </div>
+          <p className="text-muted-foreground mt-1">
+            Gestión centralizada de entidades paramétricas y configuraciones base.
+          </p>
         </div>
       </div>
 
-      <Tabs defaultValue="familias" className="w-full space-y-6">
-        <div className="bg-white p-1 rounded-xl border border-slate-200 shadow-sm inline-flex w-full md:w-auto">
-          <TabsList className="bg-transparent border-none w-full overflow-x-auto flex-nowrap snap-x [&::-webkit-scrollbar]:hidden h-11">
+      <Tabs defaultValue="familias" className="w-full space-y-4">
+        <div className="bg-white p-1 rounded-md ring-1 ring-slate-900/5 shadow-sm inline-flex w-full md:w-auto overflow-hidden pointer-events-auto">
+          <TabsList className="bg-transparent border-none w-full overflow-x-auto flex-nowrap h-9 p-0">
             {sections.map((section) => (
               <TabsTrigger
                 key={section.id}
                 value={section.id}
-                className="data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all px-6 font-semibold gap-2 border-none rounded-lg snap-start"
+                className="data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-sm transition-all px-4 font-medium text-sm gap-2 border-none rounded-sm text-slate-600 hover:text-slate-900"
               >
                 <section.icon className="h-4 w-4" />
                 {section.label}

@@ -21,7 +21,16 @@ import {
   Trash2,
   Save,
   XCircle,
+  Settings2,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect, useRef } from "react";
 import { format, differenceInDays, parseISO } from "date-fns";
@@ -113,6 +122,11 @@ export function ProductList({ active }: { active: boolean }) {
   const [sistemaFilter, setSistemaFilter] = useState("ALL");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(50);
+
+  // Column Visibility Defaults
+  const [showAlmacen, setShowAlmacen] = useState(false);
+  const [showPmp, setShowPmp] = useState(false);
+  const [showInversion, setShowInversion] = useState(false);
 
   const [open, setOpen] = useState(false); // Create Dialog
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -335,6 +349,28 @@ export function ProductList({ active }: { active: boolean }) {
               </SelectContent>
             </Select>
 
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="hidden lg:flex">
+                  <Settings2 className="mr-2 h-4 w-4" />
+                  Vista
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Alternar Columnas</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuCheckboxItem checked={showAlmacen} onCheckedChange={setShowAlmacen}>
+                  Almacén
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem checked={showPmp} onCheckedChange={setShowPmp}>
+                  PMP (Unit)
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem checked={showInversion} onCheckedChange={setShowInversion}>
+                  Inversión (Total)
+                </DropdownMenuCheckboxItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button>
@@ -505,12 +541,14 @@ export function ProductList({ active }: { active: boolean }) {
                 >
                   Acabado {sortConfig?.key === "nombre_acabado" && (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
-                  onClick={() => handleSort("nombre_almacen")}
-                >
-                  Almacén {sortConfig?.key === "nombre_almacen" && (sortConfig.direction === "asc" ? "↑" : "↓")}
-                </TableHead>
+                {showAlmacen && (
+                  <TableHead 
+                    className="cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                    onClick={() => handleSort("nombre_almacen")}
+                  >
+                    Almacén {sortConfig?.key === "nombre_almacen" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                  </TableHead>
+                )}
                 <TableHead 
                   className="text-right w-[140px] cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
                   onClick={() => handleSort("costo_mercado_unit")}
@@ -523,18 +561,22 @@ export function ProductList({ active }: { active: boolean }) {
                 >
                   Stock Actual {sortConfig?.key === "stock_actual" && (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TableHead>
-                <TableHead 
-                  className="text-right cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
-                  onClick={() => handleSort("costo_promedio")}
-                >
-                  PMP (Unit) {sortConfig?.key === "costo_promedio" && (sortConfig.direction === "asc" ? "↑" : "↓")}
-                </TableHead>
-                <TableHead 
-                  className="text-right cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
-                  onClick={() => handleSort("inversion_total")}
-                >
-                  Inversión (Total) {sortConfig?.key === "inversion_total" && (sortConfig.direction === "asc" ? "↑" : "↓")}
-                </TableHead>
+                {showPmp && (
+                  <TableHead 
+                    className="text-right cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                    onClick={() => handleSort("costo_promedio")}
+                  >
+                    PMP (Unit) {sortConfig?.key === "costo_promedio" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                  </TableHead>
+                )}
+                {showInversion && (
+                  <TableHead 
+                    className="text-right cursor-pointer hover:bg-slate-100 transition-colors py-2 px-3 text-sm font-semibold text-slate-700"
+                    onClick={() => handleSort("inversion_total")}
+                  >
+                    Inversión (Total) {sortConfig?.key === "inversion_total" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                  </TableHead>
+                )}
                 <TableHead className="text-right py-2 px-3 text-sm font-semibold text-slate-700">Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -605,38 +647,40 @@ export function ProductList({ active }: { active: boolean }) {
                           {product.nombre_acabado || "-"}
                         </span>
                       </TableCell>
-                      <TableCell className="py-2 px-3 text-sm">
-                        {isEditMode ? (
-                          <select
-                            className={`text-[10px] w-full bg-transparent border rounded px-1 py-1 cursor-pointer hover:bg-slate-50 focus:outline-none focus:ring-1 focus:ring-blue-400 ${pendingAlmacenChanges[product.id_sku] !== undefined ? "bg-yellow-50 border-yellow-400 font-bold" : "border-slate-200"}`}
-                            value={pendingAlmacenChanges[product.id_sku] !== undefined ? pendingAlmacenChanges[product.id_sku] : (product.id_almacen || "")}
-                            onChange={(e) => {
-                              const newAlmacen = e.target.value;
-                              if (newAlmacen !== (product.id_almacen || "")) {
-                                setPendingAlmacenChanges((prev) => ({
-                                  ...prev,
-                                  [product.id_sku]: newAlmacen,
-                                }));
-                              } else {
-                                setPendingAlmacenChanges((prev) => {
-                                  const next = { ...prev };
-                                  delete next[product.id_sku];
-                                  return next;
-                                });
-                              }
-                            }}
-                          >
-                            <option value="">Sin Asignar</option>
-                            {almacenes?.map((a: any) => (
-                              <option key={a.id_almacen} value={a.id_almacen}>{a.nombre_almacen}</option>
-                            ))}
-                          </select>
-                        ) : (
-                          <span className="text-xs font-medium text-slate-600">
-                            {product.nombre_almacen || "Sin Asignar"}
-                          </span>
-                        )}
-                      </TableCell>
+                      {showAlmacen && (
+                        <TableCell className="py-2 px-3 text-sm">
+                          {isEditMode ? (
+                            <select
+                              className={`text-[10px] w-full bg-transparent border rounded px-1 py-1 cursor-pointer hover:bg-slate-50 focus:outline-none focus:ring-1 focus:ring-blue-400 ${pendingAlmacenChanges[product.id_sku] !== undefined ? "bg-yellow-50 border-yellow-400 font-bold" : "border-slate-200"}`}
+                              value={pendingAlmacenChanges[product.id_sku] !== undefined ? pendingAlmacenChanges[product.id_sku] : (product.id_almacen || "")}
+                              onChange={(e) => {
+                                const newAlmacen = e.target.value;
+                                if (newAlmacen !== (product.id_almacen || "")) {
+                                  setPendingAlmacenChanges((prev) => ({
+                                    ...prev,
+                                    [product.id_sku]: newAlmacen,
+                                  }));
+                                } else {
+                                  setPendingAlmacenChanges((prev) => {
+                                    const next = { ...prev };
+                                    delete next[product.id_sku];
+                                    return next;
+                                  });
+                                }
+                              }}
+                            >
+                              <option value="">Sin Asignar</option>
+                              {almacenes?.map((a: any) => (
+                                <option key={a.id_almacen} value={a.id_almacen}>{a.nombre_almacen}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <span className="text-xs font-medium text-slate-600">
+                              {product.nombre_almacen || "Sin Asignar"}
+                            </span>
+                          )}
+                        </TableCell>
+                      )}
                       <TableCell className="text-right text-xs font-mono py-2 px-3">
                         {isEditMode ? (
                           <div className="flex items-center gap-1">
@@ -709,18 +753,22 @@ export function ProductList({ active }: { active: boolean }) {
                           minimumFractionDigits: 2,
                         })}
                       </TableCell>
-                      <TableCell className="text-right font-mono text-xs py-2 px-3 text-slate-700">
-                        {pmp.toLocaleString("es-PE", {
-                          style: "currency",
-                          currency: "PEN",
-                        })}
-                      </TableCell>
-                      <TableCell className="text-right font-medium text-xs py-2 px-3 text-slate-900">
-                        {inversion.toLocaleString("es-PE", {
-                          style: "currency",
-                          currency: "PEN",
-                        })}
-                      </TableCell>
+                      {showPmp && (
+                        <TableCell className="text-right font-mono text-xs py-2 px-3 text-slate-700">
+                          {pmp.toLocaleString("es-PE", {
+                            style: "currency",
+                            currency: "PEN",
+                          })}
+                        </TableCell>
+                      )}
+                      {showInversion && (
+                        <TableCell className="text-right font-medium text-xs py-2 px-3 text-slate-900">
+                          {inversion.toLocaleString("es-PE", {
+                            style: "currency",
+                            currency: "PEN",
+                          })}
+                        </TableCell>
+                      )}
                       <TableCell className="text-right py-2 px-3 text-sm">
                         <div className="flex items-center justify-end gap-1">
                           {/* Detail View */}
@@ -853,9 +901,9 @@ export function ProductList({ active }: { active: boolean }) {
                   <div className="flex justify-between items-center py-2 bg-slate-50 dark:bg-slate-900/50 rounded-md px-3 border border-slate-100 dark:border-slate-800">
                     <div className="flex flex-col">
                       <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">
-                        Acabado | Almacén
+                        {showAlmacen ? "Acabado | Almacén" : "Acabado"}
                       </span>
-                      {isEditMode ? (
+                      {isEditMode && showAlmacen ? (
                         <div className="flex items-center gap-1 mt-1">
                           <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
                             {product.nombre_acabado || "-"} |
@@ -887,7 +935,7 @@ export function ProductList({ active }: { active: boolean }) {
                         </div>
                       ) : (
                         <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                          {product.nombre_acabado || "-"} | {product.nombre_almacen || "N/A"}
+                          {product.nombre_acabado || "-"} {showAlmacen && `| ${product.nombre_almacen || "N/A"}`}
                         </span>
                       )}
                     </div>

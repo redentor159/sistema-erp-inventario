@@ -9,14 +9,14 @@ export default function DashboardLayout({
 }) {
   return (
     <AuthGuard>
-      <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+      <div className="flex h-screen bg-slate-50 dark:bg-slate-900">
         {/* Sidebar */}
         <AppSidebar />
 
         {/* Main Content */}
         <main className="flex-1 flex flex-col overflow-y-auto">
           {/* Mobile Header */}
-          <header className="md:hidden flex items-center h-14 px-4 border-b bg-white dark:bg-gray-800 shrink-0 print:hidden">
+          <header className="md:hidden flex items-center h-14 px-4 border-b bg-white dark:bg-slate-950 shrink-0 print:hidden">
             <MobileSidebar />
             <span className="ml-3 font-bold text-lg tracking-tight">
               ERP Yahiro

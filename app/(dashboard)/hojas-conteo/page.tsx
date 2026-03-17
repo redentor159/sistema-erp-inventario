@@ -49,7 +49,7 @@ const PRESETS = [
         borderCls: "border-blue-200 hover:border-blue-400",
         activeBg: "bg-blue-50",
         activeBorder: "border-blue-500",
-        badgeCls: "bg-blue-100 text-blue-800",
+        badgeCls: "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20",
     },
     {
         id: "POR_FAMILIA" as const,
@@ -61,7 +61,7 @@ const PRESETS = [
         borderCls: "border-green-200 hover:border-green-400",
         activeBg: "bg-green-50",
         activeBorder: "border-green-500",
-        badgeCls: "bg-green-100 text-green-800",
+        badgeCls: "bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20",
     },
     {
         id: "POR_ABC" as const,
@@ -73,7 +73,7 @@ const PRESETS = [
         borderCls: "border-violet-200 hover:border-violet-400",
         activeBg: "bg-violet-50",
         activeBorder: "border-violet-500",
-        badgeCls: "bg-violet-100 text-violet-800",
+        badgeCls: "bg-violet-50 text-violet-700 ring-1 ring-inset ring-violet-600/20",
     },
     {
         id: "RETAZOS" as const,
@@ -85,7 +85,7 @@ const PRESETS = [
         borderCls: "border-amber-200 hover:border-amber-400",
         activeBg: "bg-amber-50",
         activeBorder: "border-amber-500",
-        badgeCls: "bg-amber-100 text-amber-800",
+        badgeCls: "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20",
     },
     {
         id: "STOCK_CRITICO" as const,
@@ -97,7 +97,7 @@ const PRESETS = [
         borderCls: "border-red-200 hover:border-red-400",
         activeBg: "bg-red-50",
         activeBorder: "border-red-500",
-        badgeCls: "bg-red-100 text-red-800",
+        badgeCls: "bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20",
     },
     {
         id: "CUSTOM" as const,
@@ -109,7 +109,7 @@ const PRESETS = [
         borderCls: "border-teal-200 hover:border-teal-400",
         activeBg: "bg-teal-50",
         activeBorder: "border-teal-500",
-        badgeCls: "bg-teal-100 text-teal-800",
+        badgeCls: "bg-teal-50 text-teal-700 ring-1 ring-inset ring-teal-600/20",
     },
 ];
 
@@ -158,7 +158,7 @@ function SectionAccordion({
 }) {
     const [open, setOpen] = useState(defaultOpen);
     return (
-        <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm bg-white">
+        <div className="bg-white dark:bg-slate-950 rounded-md shadow-sm ring-1 ring-slate-900/5 border-0 overflow-hidden">
             <button
                 type="button"
                 onClick={() => setOpen(!open)}
@@ -310,7 +310,7 @@ export default function HojasConteoPage() {
 
                 {/* ══ Left: Quick Presets + Summary ══════════════════════════════════ */}
                 <div className="space-y-4">
-                    <div className="border border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden">
+                    <div className="bg-white dark:bg-slate-950 shadow-sm ring-1 ring-slate-900/5 border-0 rounded-md overflow-hidden">
                         <div className="pb-3 border-b border-slate-100 px-4 pt-4">
                             <h3 className="text-lg font-semibold flex items-center gap-2">
                                 <Zap className="h-5 w-5 text-slate-500" />
@@ -503,7 +503,7 @@ export default function HojasConteoPage() {
                     </div>
 
                     {/* Summary Card */}
-                    <div className="border border-slate-200 shadow-sm bg-white rounded-xl overflow-hidden">
+                    <div className="bg-white dark:bg-slate-950 shadow-sm ring-1 ring-slate-900/5 border-0 rounded-md overflow-hidden">
                         <div className="pb-3 border-b border-slate-100 px-4 pt-4">
                             <h3 className="text-lg font-semibold flex items-center gap-2">
                                 <BarChart2 className="h-5 w-5 text-slate-500" />
@@ -660,7 +660,7 @@ export default function HojasConteoPage() {
                     {/* Section B: Filtros Avanzados (CUSTOM only) */}
                     <SectionAccordion
                         title="B.  Filtros Avanzados (Modo Personalizado)"
-                        defaultOpen={config.modo === "CUSTOM"}
+                        defaultOpen
                     >
                         {config.modo !== "CUSTOM" && (
                             <p className="text-xs text-slate-400 italic py-2">
@@ -761,7 +761,7 @@ export default function HojasConteoPage() {
                     </SectionAccordion>
 
                     {/* Section C: Ordenamiento */}
-                    <SectionAccordion title="C.  Ordenamiento y Agrupación" defaultOpen={false}>
+                    <SectionAccordion title="C.  Ordenamiento y Agrupación" defaultOpen>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <FieldLabel>Ordenar por</FieldLabel>
@@ -801,7 +801,7 @@ export default function HojasConteoPage() {
                     </SectionAccordion>
 
                     {/* Section D: Formato */}
-                    <SectionAccordion title="D.  Ayuda y Referencia" defaultOpen={false}>
+                    <SectionAccordion title="D.  Ayuda y Referencia" defaultOpen>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-600">
                             <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
                                 <p className="font-semibold text-blue-800 mb-1">📄 Formato del PDF</p>

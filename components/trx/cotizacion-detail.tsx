@@ -563,7 +563,7 @@ export function CotizacionDetail({ id }: { id: string }) {
 
       {/* Bulk Actions Toolbar */}
       {selectedItems.length > 0 && (
-        <div className="bg-muted/50 p-2 rounded-md flex items-center gap-2 animate-in fade-in slide-in-from-top-2 flex-wrap">
+        <div className="bg-white dark:bg-slate-950 shadow-sm ring-1 ring-slate-900/5 border-0 p-3 rounded-md flex items-center gap-2 animate-in fade-in slide-in-from-top-2 flex-wrap">
           <span className="text-sm font-medium ml-2">
             {selectedItems.length} seleccionados
           </span>

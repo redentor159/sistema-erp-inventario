@@ -313,7 +313,7 @@ export function RecipeEditor({ modelId }: RecipeEditorProps) {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-white shrink-0">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200/60 bg-white dark:bg-slate-950 shrink-0">
         <div>
           <h2 className="text-base font-bold">
             {modelo?.nombre_comercial || modelId}
@@ -358,7 +358,7 @@ export function RecipeEditor({ modelId }: RecipeEditorProps) {
       </div>
 
       {/* ===== CONFIGURACIÓN VISUAL DEL MODELO ===== */}
-      <div className="px-4 py-2 border-b bg-gradient-to-r from-indigo-50 to-slate-50 shrink-0">
+      <div className="px-4 py-2 border-b border-slate-200/60 bg-slate-50 dark:bg-slate-900 shrink-0">
         <div className="flex items-center gap-4 flex-wrap">
           <span className="text-[10px] text-indigo-600 font-semibold tracking-wide">DIBUJO:</span>
 
@@ -495,7 +495,7 @@ export function RecipeEditor({ modelId }: RecipeEditorProps) {
 
       {/* Preview vars */}
       {previewOpen && (
-        <div className="px-4 py-1.5 bg-blue-50 border-b flex items-center gap-3 shrink-0 flex-wrap">
+        <div className="px-4 py-1.5 bg-slate-50/80 border-b border-slate-200/60 flex items-center gap-3 shrink-0 flex-wrap">
           <span className="text-[10px] text-blue-600 font-semibold">
             PREVIEW:
           </span>
@@ -597,9 +597,9 @@ function SectionBlock({
         <CollapsibleTrigger asChild>
           <button
             className={cn(
-              "w-full flex items-center gap-2 px-4 py-1.5 text-sm font-semibold transition-colors text-left",
+              "w-full flex items-center gap-2 px-4 py-1.5 text-sm font-semibold transition-all duration-200 text-left",
               open
-                ? "bg-slate-100 text-slate-800"
+                ? "bg-slate-50 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-900/5"
                 : "bg-white hover:bg-slate-50 text-slate-500",
             )}
           >
@@ -678,7 +678,7 @@ function PerfilTable({
   return (
     <table className="w-full text-xs border-collapse">
       <thead>
-        <tr className="bg-blue-50/60 text-blue-900 border-b text-[11px]">
+        <tr className="bg-slate-50 text-slate-700 border-b border-slate-200/60 text-[11px]">
           <th className="text-left py-1.5 px-3 font-semibold w-[200px]">
             Perfil (Plantilla)
           </th>
@@ -740,7 +740,7 @@ function PerfilRow({
   const perfilML = perfP && !perfP.error ? perfP.value / 1000 : null;
 
   return (
-    <tr className="border-b border-slate-100 hover:bg-blue-50/20 group">
+    <tr className="border-b border-slate-100 hover:bg-slate-50/60 transition-colors group">
       {/* Plantilla selector — same UX as inventory module */}
       <td className="py-1 px-3">
         <PlantillaSelector
@@ -971,7 +971,7 @@ function AccesorioTable({
   return (
     <table className="w-full text-xs border-collapse">
       <thead>
-        <tr className="bg-amber-50/60 text-amber-900 border-b text-[11px]">
+        <tr className="bg-slate-50 text-slate-700 border-b border-slate-200/60 text-[11px]">
           <th className="text-left py-1.5 px-3 font-semibold w-[250px]">
             SKU (Catálogo)
           </th>
@@ -1079,7 +1079,7 @@ function AccesorioRow({
     catalogProduct?.costo_mercado_unit ?? r.precio_unitario_manual ?? 0;
 
   return (
-    <tr className="border-b border-slate-100 hover:bg-amber-50/20 group">
+    <tr className="border-b border-slate-100 hover:bg-slate-50/60 transition-colors group">
       {/* SKU — shows SKU code prominently */}
       <td className="py-1 px-3">
         <CatalogSkuSelector
@@ -1192,9 +1192,9 @@ function InlineFormula({
       <input
         type="text"
         className={cn(
-          "w-full bg-transparent border-0 border-b font-mono text-xs px-0 py-0.5 outline-none transition-colors",
+          "w-full bg-transparent border-b text-xs px-1 py-0.5 outline-none transition-all duration-200 rounded-sm focus:bg-white focus:ring-1 focus:ring-slate-900/10 focus:border-slate-300",
           dirty
-            ? "border-blue-400 text-blue-800 font-medium"
+            ? "border-slate-400 text-slate-900 font-medium bg-slate-50"
             : "border-transparent hover:border-slate-300",
           validation && !validation.valid && local
             ? "border-red-400 text-red-600"
