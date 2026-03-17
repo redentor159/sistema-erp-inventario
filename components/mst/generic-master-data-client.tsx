@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Search, Plus, Edit, Trash2, Loader2 } from "lucide-react";
 import {
@@ -322,6 +323,74 @@ export function GenericMasterDataClient({
               )}
             </TableBody>
           </Table>
+        </div>
+
+        {/* Mobile Cards View */}
+        <div className="md:hidden flex flex-col divide-y divide-border">
+          {paginatedData.length === 0 && (
+            <div className="p-8 text-center text-sm text-muted-foreground">
+              No se encontraron registros.
+            </div>
+          )}
+          {paginatedData.map((item) => (
+            <div
+              key={item[idColumn]}
+              className="p-4 flex flex-col gap-3 hover:bg-slate-50 transition-colors"
+            >
+              <div className="flex justify-between items-start gap-2">
+                <div className="flex-1">
+                  <h4 className="font-bold text-sm text-primary leading-tight">
+                    {item[nameColumn]}
+                  </h4>
+                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] font-mono bg-background text-muted-foreground px-1.5 py-0"
+                    >
+                      {labels.id}: {item[idColumn]}
+                    </Badge>
+                  </div>
+                </div>
+                {isAdmin && (
+                  <div className="flex gap-1 flex-shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleOpenForm(item)}
+                      className="h-8 w-8 text-muted-foreground hover:text-primary bg-muted/20"
+                    >
+                      <Edit className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleConfirmDelete(item)}
+                      className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 bg-muted/20"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {extraColumn && (
+                <div className="flex flex-col gap-1.5 text-xs text-muted-foreground mt-1 bg-slate-50 p-2.5 rounded-md border border-slate-100/80">
+                  <div className="flex items-start gap-2">
+                    <span className="font-semibold w-24 flex-shrink-0 uppercase text-[9px] tracking-wider mt-0.5 text-foreground/60">
+                      {labels.extra}:
+                    </span>
+                    <span className="font-medium text-foreground">
+                      {item[extraColumn] || (
+                        <span className="italic font-normal opacity-50">
+                          -
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
 
         {/* Pagination Controls */}
