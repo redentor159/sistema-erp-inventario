@@ -1,0 +1,286 @@
+[
+  {
+    "id": "h-tutorial",
+    "isHeader": true,
+    "title": "📚 Tutoriales para Usuarios"
+  },
+  {
+    "id": "T01",
+    "title": "T01 DASHBOARD",
+    "path": "/docs/tutoriales/T01_TUTORIAL_DASHBOARD.md",
+    "category": "tutorial"
+  },
+  {
+    "id": "T02",
+    "title": "T02 COTIZACIONES",
+    "path": "/docs/tutoriales/T02_TUTORIAL_COTIZACIONES.md",
+    "category": "tutorial"
+  },
+  {
+    "id": "T03",
+    "title": "T03 CATALOGO",
+    "path": "/docs/tutoriales/T03_TUTORIAL_CATALOGO.md",
+    "category": "tutorial"
+  },
+  {
+    "id": "T04",
+    "title": "T04 INVENTARIO",
+    "path": "/docs/tutoriales/T04_TUTORIAL_INVENTARIO.md",
+    "category": "tutorial"
+  },
+  {
+    "id": "T05",
+    "title": "T05 ENTRADAS",
+    "path": "/docs/tutoriales/T05_TUTORIAL_ENTRADAS.md",
+    "category": "tutorial"
+  },
+  {
+    "id": "T06",
+    "title": "T06 SALIDAS",
+    "path": "/docs/tutoriales/T06_TUTORIAL_SALIDAS.md",
+    "category": "tutorial"
+  },
+  {
+    "id": "T07",
+    "title": "T07 KARDEX",
+    "path": "/docs/tutoriales/T07_TUTORIAL_KARDEX.md",
+    "category": "tutorial"
+  },
+  {
+    "id": "T08",
+    "title": "T08 RECETAS",
+    "path": "/docs/tutoriales/T08_TUTORIAL_RECETAS.md",
+    "category": "tutorial"
+  },
+  {
+    "id": "T09",
+    "title": "T09 PRODUCCION",
+    "path": "/docs/tutoriales/T09_TUTORIAL_PRODUCCION.md",
+    "category": "tutorial"
+  },
+  {
+    "id": "T10",
+    "title": "T10 EXPORTADOR",
+    "path": "/docs/tutoriales/T10_TUTORIAL_EXPORTADOR.md",
+    "category": "tutorial"
+  },
+  {
+    "id": "T11",
+    "title": "T11 CLIENTES PROVEEDORES",
+    "path": "/docs/tutoriales/T11_TUTORIAL_CLIENTES_PROVEEDORES.md",
+    "category": "tutorial"
+  },
+  {
+    "id": "T12",
+    "title": "T12 CONFIGURACION",
+    "path": "/docs/tutoriales/T12_TUTORIAL_CONFIGURACION.md",
+    "category": "tutorial"
+  },
+  {
+    "id": "T13",
+    "title": "T13 DATOS MAESTROS",
+    "path": "/docs/tutoriales/T13_TUTORIAL_DATOS_MAESTROS.md",
+    "category": "tutorial"
+  },
+  {
+    "id": "h-idx",
+    "isHeader": true,
+    "title": "📋 Índice y Referencia Rápida"
+  },
+  {
+    "id": "00-indice-maestro",
+    "title": "00 INDICE MAESTRO",
+    "path": "/docs/00_INDICE_MAESTRO.md",
+    "category": "indice"
+  },
+  {
+    "id": "01-arquitectura-general",
+    "title": "01 ARQUITECTURA GENERAL",
+    "path": "/docs/01_ARQUITECTURA_GENERAL.md",
+    "category": "tecnico"
+  },
+  {
+    "id": "02-esquema-base-datos",
+    "title": "02 ESQUEMA BASE DATOS",
+    "path": "/docs/02_ESQUEMA_BASE_DATOS.md",
+    "category": "tecnico"
+  },
+  {
+    "id": "03-modulos-y-funcionalidades",
+    "title": "03 MODULOS Y FUNCIONALIDADES",
+    "path": "/docs/03_MODULOS_Y_FUNCIONALIDADES.md",
+    "category": "tecnico"
+  },
+  {
+    "id": "04-api-referencia",
+    "title": "04 API REFERENCIA",
+    "path": "/docs/04_API_REFERENCIA.md",
+    "category": "tecnico"
+  },
+  {
+    "id": "05-guia-desarrollador",
+    "title": "05 GUIA DESARROLLADOR",
+    "path": "/docs/05_GUIA_DESARROLLADOR.md",
+    "category": "tecnico"
+  },
+  {
+    "id": "05-manual-supervivencia-produccion",
+    "title": "05 MANUAL SUPERVIVENCIA PRODUCCION",
+    "path": "/docs/05_MANUAL_SUPERVIVENCIA_PRODUCCION.md",
+    "category": "tecnico"
+  },
+  {
+    "id": "06-blindaje-arquitectonico",
+    "title": "06 BLINDAJE ARQUITECTONICO",
+    "path": "/docs/06_BLINDAJE_ARQUITECTONICO.md",
+    "category": "tecnico"
+  },
+  {
+    "id": "07-guia-despliegue-estatico",
+    "title": "07 GUIA DESPLIEGUE ESTATICO",
+    "path": "/docs/07_GUIA_DESPLIEGUE_ESTATICO.md",
+    "category": "tecnico"
+  },
+  {
+    "id": "08-arquitectura-recetas",
+    "title": "08 ARQUITECTURA RECETAS",
+    "path": "/docs/08_ARQUITECTURA_RECETAS.md",
+    "category": "tecnico"
+  },
+  {
+    "id": "09-diccionario-datos",
+    "title": "09 DICCIONARIO DATOS",
+    "path": "/docs/09_DICCIONARIO_DATOS.md",
+    "category": "tecnico"
+  },
+  {
+    "id": "10-flujos-de-negocio",
+    "title": "10 FLUJOS DE NEGOCIO",
+    "path": "/docs/10_FLUJOS_DE_NEGOCIO.md",
+    "category": "tecnico"
+  },
+  {
+    "id": "11-autenticacion-y-roles",
+    "title": "11 AUTENTICACION Y ROLES",
+    "path": "/docs/11_AUTENTICACION_Y_ROLES.md",
+    "category": "tecnico"
+  },
+  {
+    "id": "12-guia-supabase",
+    "title": "12 GUIA SUPABASE",
+    "path": "/docs/12_GUIA_SUPABASE.md",
+    "category": "tecnico"
+  },
+  {
+    "id": "13-contingencia-recuperacion",
+    "title": "13 CONTINGENCIA RECUPERACION",
+    "path": "/docs/13_CONTINGENCIA_RECUPERACION.md",
+    "category": "tecnico"
+  },
+  {
+    "id": "14-guia-definitiva-produccion",
+    "title": "14 GUIA DEFINITIVA PRODUCCION",
+    "path": "/docs/14_GUIA_DEFINITIVA_PRODUCCION.md",
+    "category": "tecnico"
+  },
+  {
+    "id": "15-guia-mantenimiento-devops",
+    "title": "15 GUIA MANTENIMIENTO DevOps",
+    "path": "/docs/15_GUIA_MANTENIMIENTO_DevOps.md",
+    "category": "tecnico"
+  },
+  {
+    "id": "h-ops",
+    "isHeader": true,
+    "title": "⚙️ Operaciones y Soporte"
+  },
+  {
+    "id": "contingencia-supabase",
+    "title": "CONTINGENCIA SUPABASE",
+    "path": "/docs/CONTINGENCIA_SUPABASE.md",
+    "category": "ops"
+  },
+  {
+    "id": "csv-a-sql-upsert",
+    "title": "CSV A SQL UPSERT",
+    "path": "/docs/CSV_A_SQL_UPSERT.md",
+    "category": "ops"
+  },
+  {
+    "id": "handoff-maestro",
+    "title": "HANDOFF MAESTRO",
+    "path": "/docs/HANDOFF_MAESTRO.md",
+    "category": "ops"
+  },
+  {
+    "id": "migration-guide",
+    "title": "Migration Guide",
+    "path": "/docs/migration_guide.md",
+    "category": "ops"
+  },
+  {
+    "id": "plan-migracion-masiva",
+    "title": "PLAN MIGRACION MASIVA",
+    "path": "/docs/PLAN_MIGRACION_MASIVA.md",
+    "category": "ops"
+  },
+  {
+    "id": "prompt-para-migracion-datos",
+    "title": "Prompt Para Migracion Datos",
+    "path": "/docs/prompt_para_migracion_datos.md",
+    "category": "ops"
+  },
+  {
+    "id": "h-entrenamiento",
+    "isHeader": true,
+    "title": "📖 Manual de Entrenamiento"
+  },
+  {
+    "id": "man-00_RESUMEN_ENTRENAMIENTO",
+    "title": "00 RESUMEN ENTRENAMIENTO",
+    "path": "/docs/manual_entrenamiento/00_RESUMEN_ENTRENAMIENTO.md",
+    "category": "entrenamiento"
+  },
+  {
+    "id": "man-01_modulo_catalogo",
+    "title": "01 Modulo Catalogo",
+    "path": "/docs/manual_entrenamiento/01_modulo_catalogo.md",
+    "category": "entrenamiento"
+  },
+  {
+    "id": "man-02_modulo_inventario",
+    "title": "02 Modulo Inventario",
+    "path": "/docs/manual_entrenamiento/02_modulo_inventario.md",
+    "category": "entrenamiento"
+  },
+  {
+    "id": "man-03_modulo_cotizaciones",
+    "title": "03 Modulo Cotizaciones",
+    "path": "/docs/manual_entrenamiento/03_modulo_cotizaciones.md",
+    "category": "entrenamiento"
+  },
+  {
+    "id": "man-04_modulo_produccion",
+    "title": "04 Modulo Produccion",
+    "path": "/docs/manual_entrenamiento/04_modulo_produccion.md",
+    "category": "entrenamiento"
+  },
+  {
+    "id": "man-05_modulo_analitica",
+    "title": "05 Modulo Analitica",
+    "path": "/docs/manual_entrenamiento/05_modulo_analitica.md",
+    "category": "entrenamiento"
+  },
+  {
+    "id": "man-06_modulo_reportes",
+    "title": "06 Modulo Reportes",
+    "path": "/docs/manual_entrenamiento/06_modulo_reportes.md",
+    "category": "entrenamiento"
+  },
+  {
+    "id": "man-MANUAL_OPERATIVO_MTO",
+    "title": "MANUAL OPERATIVO MTO",
+    "path": "/docs/manual_entrenamiento/MANUAL_OPERATIVO_MTO.md",
+    "category": "entrenamiento"
+  }
+]

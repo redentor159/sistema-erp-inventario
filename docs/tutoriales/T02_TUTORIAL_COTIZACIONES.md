@@ -122,6 +122,7 @@ Se abre un formulario con los datos generales:
 | **Costo Fijo Inst.** | ❌ No | Monto para instalación general, flete de equipo o embalajes |
 | **Términos Pers.** | ❌ No | Cláusulas redactadas específicamente para este cliente |
 | **Título Doc.** | ❌ No | Título alternativo ("Presupuesto Proforma", etc.) para el PDF |
+| **Aplica Detracción** | ❌ No | Activa el cálculo de detracción cuando aplica normativamente |
 | **Notas** | ❌ No | Observaciones internas o para el cliente |
 
 > **⚠️ Sobre la Marca:** La marca seleccionada aquí determina qué perfiles de aluminio se usan en el despiece. Si seleccionas "ALUVID", el sistema usará los SKUs de esa marca. Esto es crítico para que los costos sean correctos.
@@ -239,6 +240,53 @@ sequenceDiagram
 ```
 
 El sistema **calcula automáticamente** todos los materiales. Esto se llama **Despiece Automático** o **BOM (Bill of Materials)**.
+
+---
+
+## 🖼️ PARTE 4b: Dibujos SVG de Tipología
+
+Después de guardar un ítem, el sistema muestra automáticamente un **dibujo técnico SVG** que representa visualmente la ventana. Este dibujo aparece tanto en el detalle web como en el PDF de impresión.
+
+### ¿De dónde sale el dibujo?
+
+El dibujo se genera automáticamente a partir de la **receta del modelo** seleccionado, usando estos campos:
+
+```mermaid
+flowchart LR
+    TD["tipo_dibujo\ndel modelo de receta"] --> SVG["Generador SVG"]
+    CH["config_hojas_default"] --> SVG
+    DIM["Ancho × Alto\ndel ítem"] --> SVG
+    SVG --> WEB["🖥️ Dibujo en\nel detalle web"]
+    SVG --> PDF["🖨️ Dibujo en\nel PDF de impresión"]
+```
+
+### Tipos de Dibujo
+
+| Tipo (`tipo_dibujo`) | Representación Visual | Descripción |
+|---------------------|:---:|-------------|
+| **Corrediza** | ↔️ `[← →]` | Flechas horizontales indicando hojas que se deslizan |
+| **Proyectante** | ↗️ `[↗]` | Flecha diagonal indicando apertura hacia afuera |
+| **Batiente** | ↩️ `[↩]` | Arco indicando apertura como puerta |
+| **Fijo** | ▢ `[▢]` | Rectángulo sin indicadores de movimiento |
+| **Fijo_Sin_Marco** | ▢ `[  ]` | Similar a fijo pero sin marco perimetral |
+
+### Configuración de Hojas
+
+La disposición de los paneles se controla con `config_hojas_default`:
+
+| Config | Significado | Dibujo |
+|--------|-------------|--------|
+| **CC** | 2 hojas Corredizas | `[← →]` |
+| **CCC** | 3 hojas Corredizas | `[← → ←]` |
+| **FCCF** | Fijo + 2 Corredizas + Fijo | `[│ ← → │]` |
+| **P** | 1 hoja Proyectante | `[↗]` |
+| **A** | 1 hoja Abatible (Batiente) | `[↩]` |
+| **F** | 1 paño Fijo | `[▢]` |
+| **FF** | 2 paños Fijos | `[▢▢]` |
+
+> **💡 Tip:** Si el dibujo no se muestra correctamente, verifica que el modelo de receta tenga `tipo_dibujo` y `config_hojas_default` configurados. Ver [T08_TUTORIAL_RECETAS.md](./T08_TUTORIAL_RECETAS.md) → PARTE 4.
+
+> **💡 Tamaño del dibujo en PDF:** El tamaño del dibujo SVG en la impresión se controla desde el **Editor de Impresión** (PARTE 9 de este tutorial) con las opciones S/M/L/XL.
 
 ---
 

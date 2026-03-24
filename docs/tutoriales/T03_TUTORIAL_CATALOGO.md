@@ -3,7 +3,7 @@
 > **Módulo:** Catálogo  
 > **Ruta en la app:** `/catalog`  
 > **Rol requerido:** ADMIN (edición completa); SECRETARIA, OPERARIO (lectura)  
-> **Última actualización:** Febrero 2026  
+> **Última actualización:** Marzo 2026  
 
 ---
 
@@ -118,7 +118,18 @@ Al hacer clic en cualquier fila de la tabla, se abre un **panel lateral** con to
 ## ➕ Crear Plantillas y SKUs
 
 1. **Crear Plantilla**: Clic en "+ Nueva Plantilla". Se define la "Serie 25 Riel Superior" sin marca ni color.
-2. **Crear SKU (Variante)**: Clic en "+ Nueva SKU". Se selecciona la plantilla, se le asigna Marca (ALUPEX) y Color (Natural). Se define su **Stock Mínimo**.
+2. **Crear SKU (Variante)**: Clic en "+ Nueva SKU". Se selecciona la plantilla, se le asigna Marca (ALUPEX) y Color (Natural). Se define su **Stock Mínimo** y **Almacén**.
+
+### Campos del SKU relevantes para reabastecimiento
+
+| Campo | Para qué sirve |
+|-------|-----------|
+| **Stock Mínimo** | Debajo de este valor, el semáforo muestra 🔴 Crítico |
+| **Punto de Pedido** | Nivel en el que deberías generar una orden de compra |
+| **Tiempo Reposición** | Días que tarda el proveedor en entregar (para planificación) |
+| **Lote Econ. Compra** | Cantidad óptima a pedir cada vez |
+| **Demanda Promedio** | Consumo diario promedio del SKU |
+| **Almacén** | Almacén físico donde se ubica el SKU (seleccionar desde Datos Maestros) |
 
 ---
 
@@ -159,3 +170,4 @@ El sistema clasifica los SKUs automáticamente según el capital que inmovilizan
 - [T04_TUTORIAL_INVENTARIO.md](./T04_TUTORIAL_INVENTARIO.md) — Dónde registrar los movimientos físicos que afectan a este stock.
 - [T05_TUTORIAL_ENTRADAS.md](./T05_TUTORIAL_ENTRADAS.md) — Cómo ingresar compras.
 - [T06_TUTORIAL_SALIDAS.md](./T06_TUTORIAL_SALIDAS.md) — Cómo registrar las salidas a producción.
+- [T13_TUTORIAL_DATOS_MAESTROS.md](./T13_TUTORIAL_DATOS_MAESTROS.md) — Gestionar familias, marcas, materiales, acabados y almacenes.

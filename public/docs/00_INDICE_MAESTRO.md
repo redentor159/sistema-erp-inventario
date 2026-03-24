@@ -2,7 +2,7 @@
 
 > **Sistema:** ERP de Inventario y Cotizaciones — Carpintería Metálica / Vidriería de Aluminio  
 > **Versión Stack:** Next.js 16 + Supabase PostgreSQL 17 + TanStack Query  
-> **Última actualización:** Febrero 2026  
+> **Última actualización:** Marzo 2026  
 
 ---
 
@@ -37,6 +37,7 @@ graph TD
 | T10 | [Exportador Excel](./tutoriales/T10_TUTORIAL_EXPORTADOR.md) | Exportador | `/export` | Admin, Secretaria |
 | T11 | [Clientes y Proveedores](./tutoriales/T11_TUTORIAL_CLIENTES_PROVEEDORES.md) | CRM | `/clients`, `/suppliers` | Admin, Secretaria |
 | T12 | [Configuración del Sistema](./tutoriales/T12_TUTORIAL_CONFIGURACION.md) | Configuración | `/configuracion` | Solo Admin |
+| T13 | [Datos Maestros](./tutoriales/T13_TUTORIAL_DATOS_MAESTROS.md) | Datos Maestros | `/maestros` | Admin (edición), Todos (lectura) |
 
 ---
 
@@ -70,7 +71,9 @@ graph TD
 | 11 | [Flujos de Negocio](./11_FLUJOS_DE_NEGOCIO.md) | Diagramas de secuencia de los procesos clave |
 | 12 | [Autenticación y Roles](./12_AUTENTICACION_Y_ROLES.md) | JWT, RLS, políticas de acceso |
 | 13 | [Guía Supabase](./13_GUIA_SUPABASE.md) | Configuración, API, monitoreo, backups |
-| 14 | [Contingencia y Recuperación](./14_CONTINGENCIA_RECUPERACION.md) | Self-hosting, backups, keep-alive, disaster recovery |
+| 14 | [Guía Definitiva de Producción](./14_GUIA_DEFINITIVA_PRODUCCION.md) | Checklist de producción, entrega y calidad |
+| 15 | [Guía de Mantenimiento DevOps](./15_GUIA_MANTENIMIENTO_DevOps.md) | Mantenimiento operacional, backups, monitoreo |
+| 16 | [Reglas Arquitectónicas](./16_REGLAS_ARQUITECTONICAS.md) | Antipatrones, reglas de código, convenciones |
 
 ---
 

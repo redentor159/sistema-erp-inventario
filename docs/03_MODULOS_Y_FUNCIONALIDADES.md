@@ -1,6 +1,6 @@
 # 03 — Módulos y Funcionalidades
 
-> **Última actualización:** 2026-02-21
+> **Última actualización:** 2026-03-23
 
 ## Documentos Relacionados
 
@@ -42,9 +42,10 @@ graph TB
         EXP["📊 Exportador Excel"]
     end
 
-    subgraph "CONFIGURACIÓN"
+    subgraph "CONFIGURACIÓN Y MAESTROS"
         CONF["⚙️ Configuración General"]
         PROV["🏢 Proveedores"]
+        MST["📁 Datos Maestros"]
     end
 
     COT --> PRINT
@@ -197,12 +198,18 @@ graph TB
 | **Componentes** | `components/production/kanban-board.tsx` |
 
 ### Funcionalidades
-- **Tablero Drag & Drop** con 6 columnas de estado
-- **Creación manual** de órdenes de trabajo
-- **Importación automática** desde cotizaciones aprobadas
-- **Historial de cambios** por orden
-- **Estadísticas** de producción con gráficos
+- **Tablero Drag & Drop** con 5 columnas: Pedidos Confirmados → En Corte → En Ensamblaje → Listo para Instalar → Finalizado
+- **Creación manual** de órdenes de trabajo (campos de texto libre sin FK al ERP)
+- **Rework tracking**: detector automático de movimientos hacia atrás (retrabajo)
+- **WIP Limits**: límites configurables por columna con alerta visual en rojo
+- **Copiar/Pegar** órdenes para duplicar fácilmente
+- **Archivado batch**: mover todas las órdenes finalizadas al historial
+- **Historial de movimientos** por orden (JSONB `movement_history`)
+- **Estadísticas** de producción con gráficos (desde historial)
 - **Exportación** del tablero a Excel
+- **Búsqueda** en tiempo real por ID, cliente, producto o marca
+
+> **⚠️ Aislamiento:** El Kanban es transaccionalmente independiente — no tiene FK al módulo de Cotizaciones, Clientes ni Inventario.
 
 ---
 
@@ -239,3 +246,47 @@ graph TB
 - **Bancarios**: Cuentas BCP y BBVA en soles y dólares
 - **Textos**: Condiciones, garantía, formas de pago (para impresión)
 - **Personalización**: Color primario, moneda default, validez de cotización
+- **Danger Zone**: Purga de transacciones ERP/Kanban con confirmación por frase
+
+---
+
+## 11. 📁 Datos Maestros
+
+| Propiedad | Valor |
+|-----------|-------|
+| **Ruta** | `/maestros` y `/maestros/series` |
+| **Componente** | `components/mst/generic-master-data-client.tsx` |
+
+### Funcionalidades
+- **5 pestañas**: Familias, Marcas, Materiales, Acabados/Colores, Almacenes
+- **CRUD genérico** con un solo componente reutilizable
+- **Control por rol**: Solo ADMIN edita; SECRETARIA y OPERARIO solo lectura
+- **Restricción FK**: Error visual al eliminar registros en uso
+- **Series** (`/maestros/series`): Tabla de equivalencias de códigos entre distribuidores
+
+---
+
+## 12. 📋 Hojas de Conteo
+
+| Propiedad | Valor |
+|-----------|-------|
+| **Ruta** | `/hojas-conteo` |
+| **Servicio** | `lib/export/hojas-conteo-excel.ts` |
+
+### Funcionalidades
+- Genera hojas de conteo Excel para toma de inventario físico
+- Incluye hojas de conteo de retazos
+
+---
+
+## 13. 👥 Clientes y Proveedores
+
+| Propiedad | Clientes | Proveedores |
+|-----------|----------|---------|
+| **Ruta** | `/clients` | `/suppliers` |
+| **API** | `lib/api/clients.ts` | `lib/api/suppliers.ts` |
+
+### Funcionalidades
+- **CRUD completo** de entidades con paginación y búsqueda
+- **Clientes**: Tipo EMPRESA/PERSONA, RUC/DNI, dirección de obra, teléfono
+- **Proveedores**: Razón social, contacto, días crédito, moneda predeterminada

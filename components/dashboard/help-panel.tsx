@@ -143,245 +143,57 @@ type DocItem =
     category?: never;
   };
 
-const DOCS_LIST: DocItem[] = [
-  // ── ÍNDICE ──────────────────────────────────────────────
-  { id: "h-idx", isHeader: true, title: "📋 Índice y Referencia Rápida" },
-  {
-    id: "00",
-    title: "00 Índice Maestro",
-    path: "/docs/00_INDICE_MAESTRO.md",
-    category: "indice",
-  },
+// Fallback mínimo para mientras carga el manifest
+const DEFAULT_DOC: Extract<DocItem, { isHeader?: false }> = {
+  id: "00",
+  title: "00 Índice Maestro",
+  path: "/docs/00_INDICE_MAESTRO.md",
+  category: "indice",
+};
 
-  // ── TUTORIALES DE USUARIO ────────────────────────────────
-  { id: "h-tut", isHeader: true, title: "📚 Tutoriales para Usuarios" },
-  {
-    id: "T01",
-    title: "T01 Dashboard KPI",
-    path: "/docs/tutoriales/T01_TUTORIAL_DASHBOARD.md",
-    category: "tutorial",
-  },
-  {
-    id: "T02",
-    title: "T02 Cotizaciones",
-    path: "/docs/tutoriales/T02_TUTORIAL_COTIZACIONES.md",
-    category: "tutorial",
-  },
-  {
-    id: "T03",
-    title: "T03 Catálogo de Productos",
-    path: "/docs/tutoriales/T03_TUTORIAL_CATALOGO.md",
-    category: "tutorial",
-  },
-  {
-    id: "T04",
-    title: "T04 Inventario / Stock",
-    path: "/docs/tutoriales/T04_TUTORIAL_INVENTARIO.md",
-    category: "tutorial",
-  },
-  {
-    id: "T05",
-    title: "T05 Entradas (Compras)",
-    path: "/docs/tutoriales/T05_TUTORIAL_ENTRADAS.md",
-    category: "tutorial",
-  },
-  {
-    id: "T06",
-    title: "T06 Salidas (Despachos)",
-    path: "/docs/tutoriales/T06_TUTORIAL_SALIDAS.md",
-    category: "tutorial",
-  },
-  {
-    id: "T07",
-    title: "T07 Kardex",
-    path: "/docs/tutoriales/T07_TUTORIAL_KARDEX.md",
-    category: "tutorial",
-  },
-  {
-    id: "T08",
-    title: "T08 Recetas de Ingeniería",
-    path: "/docs/tutoriales/T08_TUTORIAL_RECETAS.md",
-    category: "tutorial",
-  },
-  {
-    id: "T09",
-    title: "T09 Producción (Kanban)",
-    path: "/docs/tutoriales/T09_TUTORIAL_PRODUCCION.md",
-    category: "tutorial",
-  },
-  {
-    id: "T10",
-    title: "T10 Exportador Excel",
-    path: "/docs/tutoriales/T10_TUTORIAL_EXPORTADOR.md",
-    category: "tutorial",
-  },
-  {
-    id: "T11",
-    title: "T11 Clientes y Proveedores",
-    path: "/docs/tutoriales/T11_TUTORIAL_CLIENTES_PROVEEDORES.md",
-    category: "tutorial",
-  },
-  {
-    id: "T12",
-    title: "T12 Configuración del Sistema",
-    path: "/docs/tutoriales/T12_TUTORIAL_CONFIGURACION.md",
-    category: "tutorial",
-  },
-
-  // ── DOCUMENTACIÓN TÉCNICA ────────────────────────────────
-  { id: "h-tec", isHeader: true, title: "🔧 Documentación Técnica" },
-  {
-    id: "01",
-    title: "01 Arquitectura General",
-    path: "/docs/01_ARQUITECTURA_GENERAL.md",
-    category: "tecnico",
-  },
-  {
-    id: "02",
-    title: "02 Esquema Base de Datos",
-    path: "/docs/02_ESQUEMA_BASE_DATOS.md",
-    category: "tecnico",
-  },
-  {
-    id: "03",
-    title: "03 Módulos y Funcionalidades",
-    path: "/docs/03_MODULOS_Y_FUNCIONALIDADES.md",
-    category: "tecnico",
-  },
-  {
-    id: "04",
-    title: "04 API Referencia",
-    path: "/docs/04_API_REFERENCIA.md",
-    category: "tecnico",
-  },
-  {
-    id: "05",
-    title: "05 Guía Desarrollador",
-    path: "/docs/05_GUIA_DESARROLLADOR.md",
-    category: "tecnico",
-  },
-  {
-    id: "06",
-    title: "06 Blindaje Arquitectónico",
-    path: "/docs/06_BLINDAJE_ARQUITECTONICO.md",
-    category: "tecnico",
-  },
-  {
-    id: "07",
-    title: "07 Guía Despliegue Estático",
-    path: "/docs/07_GUIA_DESPLIEGUE_ESTATICO.md",
-    category: "tecnico",
-  },
-  {
-    id: "08",
-    title: "08 Arquitectura Recetas",
-    path: "/docs/08_ARQUITECTURA_RECETAS.md",
-    category: "tecnico",
-  },
-  {
-    id: "09",
-    title: "09 Diccionario de Datos",
-    path: "/docs/09_DICCIONARIO_DATOS.md",
-    category: "tecnico",
-  },
-  {
-    id: "10",
-    title: "10 Flujos de Negocio",
-    path: "/docs/10_FLUJOS_DE_NEGOCIO.md",
-    category: "tecnico",
-  },
-  {
-    id: "11",
-    title: "11 Autenticación y Roles",
-    path: "/docs/11_AUTENTICACION_Y_ROLES.md",
-    category: "tecnico",
-  },
-  {
-    id: "12",
-    title: "12 Guía Completa Supabase",
-    path: "/docs/12_GUIA_SUPABASE.md",
-    category: "tecnico",
-  },
-  {
-    id: "13",
-    title: "13 Contingencia y Backups",
-    path: "/docs/13_CONTINGENCIA_RECUPERACION.md",
-    category: "tecnico",
-  },
-  {
-    id: "14",
-    title: "14 Guía Definitiva Producción",
-    path: "/docs/14_GUIA_DEFINITIVA_PRODUCCION.md",
-    category: "tecnico",
-  },
-  {
-    id: "15",
-    title: "15 Guía Mantenimiento DevOps",
-    path: "/docs/15_GUIA_MANTENIMIENTO_DevOps.md",
-    category: "tecnico",
-  },
-
-  // ── OPERACIONES ──────────────────────────────────────────
-  { id: "h-ops", isHeader: true, title: "⚙️ Operaciones y Soporte" },
-  {
-    id: "handoff",
-    title: "Handoff Maestro",
-    path: "/docs/HANDOFF_MAESTRO.md",
-    category: "ops",
-  },
-  {
-    id: "supervivencia",
-    title: "Manual Supervivencia Producción",
-    path: "/docs/05_MANUAL_SUPERVIVENCIA_PRODUCCION.md",
-    category: "ops",
-  },
-  {
-    id: "cont-legacy",
-    title: "Contingencia Supabase (Resumen)",
-    path: "/docs/CONTINGENCIA_SUPABASE.md",
-    category: "ops",
-  },
-  {
-    id: "csv",
-    title: "CSV a SQL Upsert",
-    path: "/docs/CSV_A_SQL_UPSERT.md",
-    category: "ops",
-  },
-  {
-    id: "mig",
-    title: "Plan Migración Masiva",
-    path: "/docs/PLAN_MIGRACION_MASIVA.md",
-    category: "ops",
-  },
-  {
-    id: "mig-guide",
-    title: "Guía de Migración",
-    path: "/docs/migration_guide.md",
-    category: "ops",
-  },
-  {
-    id: "mig-prompt",
-    title: "Prompt Migración Datos",
-    path: "/docs/prompt_para_migracion_datos.md",
-    category: "ops",
-  },
-];
-
-// Solo los items seleccionables (excluye headers)
-const SELECTABLE_DOCS = DOCS_LIST.filter(
-  (d): d is Extract<DocItem, { isHeader?: false }> => !d.isHeader,
-);
+// Helper: filtra items seleccionables
+function getSelectableDocs(list: DocItem[]) {
+  return list.filter(
+    (d): d is Extract<DocItem, { isHeader?: false }> => !d.isHeader,
+  );
+}
 
 export function HelpPanel({ collapsed }: { collapsed?: boolean }) {
   const [open, setOpen] = useState(false);
+  const [docsList, setDocsList] = useState<DocItem[]>([]);
   const [selectedDoc, setSelectedDoc] = useState<
     Extract<DocItem, { isHeader?: false }>
-  >(SELECTABLE_DOCS[0]);
+  >(DEFAULT_DOC);
   const [docContent, setDocContent] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const contentRef = useRef<HTMLDivElement>(null);
 
+  // Fetch manifest on first open
+  useEffect(() => {
+    if (!open || docsList.length > 0) return;
+
+    const fetchManifest = async () => {
+      try {
+        const res = await fetch("/docs/manifest.json");
+        if (!res.ok) throw new Error("Manifest not found");
+        const data: DocItem[] = await res.json();
+        setDocsList(data);
+        // Select the first selectable doc
+        const first = data.find(
+          (d): d is Extract<DocItem, { isHeader?: false }> => !d.isHeader,
+        );
+        if (first) setSelectedDoc(first);
+      } catch {
+        console.error("Failed to load docs manifest, using fallback");
+        setDocsList([DEFAULT_DOC]);
+      }
+    };
+
+    fetchManifest();
+  }, [open, docsList.length]);
+
+  // Fetch doc content when selected doc changes
   useEffect(() => {
     if (!open) return;
 
@@ -404,21 +216,25 @@ export function HelpPanel({ collapsed }: { collapsed?: boolean }) {
     fetchDoc();
   }, [open, selectedDoc]);
 
+  const selectableDocs = useMemo(() => getSelectableDocs(docsList), [docsList]);
+
   const filteredDocs = useMemo(() => {
-    if (!searchQuery) return DOCS_LIST;
+    if (!searchQuery) return docsList;
     const q = searchQuery.toLowerCase();
-    // When searching, only show matching selectable docs (no headers)
-    return SELECTABLE_DOCS.filter((doc) => doc.title.toLowerCase().includes(q));
-  }, [searchQuery]);
+    return selectableDocs.filter((doc: Extract<DocItem, { isHeader?: false }>) =>
+      doc.title.toLowerCase().includes(q),
+    );
+  }, [searchQuery, docsList, selectableDocs]);
 
   const handleLinkClick = (href: string | undefined, e: React.MouseEvent) => {
     if (!href) return;
 
-    // Intercept local .md links to navigate nicely
     if (href.endsWith(".md") && !href.startsWith("http")) {
       e.preventDefault();
       const fileName = href.split("/").pop() || "";
-      const targetDoc = SELECTABLE_DOCS.find((d) => d.path.endsWith(fileName));
+      const targetDoc = selectableDocs.find((d: Extract<DocItem, { isHeader?: false }>) =>
+        d.path.endsWith(fileName),
+      );
       if (targetDoc) {
         setSelectedDoc(targetDoc);
       }

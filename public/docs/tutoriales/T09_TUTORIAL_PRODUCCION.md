@@ -2,230 +2,311 @@
 
 > **Módulo:** Producción  
 > **Ruta en la app:** `/production`  
-> **Rol requerido:** ADMIN (todos los permisos); OPERARIO (mover tarjetas, ver); SECRETARIA (solo ver)  
-> **Última actualización:** Febrero 2026  
+> **Rol requerido:** ADMIN (todos los permisos); OPERARIO (mover tarjetas, crear, editar); SECRETARIA (solo ver)  
+> **Última actualización:** Marzo 2026  
 
 ---
 
 ## 📋 ¿Qué es el Módulo de Producción?
 
-El módulo de Producción es un **tablero Kanban** que permite seguir el avance físico de fabricación de cada pedido. Cada ventana o ítem de una cotización aprobada se convierte en una "tarjeta" que avanza por columnas según su etapa de fabricación.
+El módulo de Producción es un **tablero Kanban visual** para seguir el avance de fabricación de cada pedido. Cada orden de trabajo es una "tarjeta" que avanza por columnas arrastrándola con el mouse (o tocándola en celular).
 
-> **🏭 Ejemplo de uso diario:** El operario llega a la fábrica, abre el Kanban, ve qué ventanas están en CORTE, termina de cortar una y arrastra la tarjeta a ARMADO. El jefe lo ve en tiempo real desde su celular.
+> **⚠️ Aislamiento Transaccional:** El Kanban opera de forma **100% independiente** del resto del ERP. Los campos como Cliente, Producto, Marca, etc. son **texto libre** — no están vinculados a las tablas de clientes ni cotizaciones. Esto significa que puedes crear órdenes sin tener el cliente registrado en el sistema.
+
+> **🏭 Ejemplo de uso diario:** El operario llega a la fábrica, abre el Kanban, ve qué ventanas están "En Corte", termina de cortar una y la arrastra a "En Ensamblaje". El jefe lo ve desde su computadora al recargar.
 
 ---
 
-## 🗂️ Las 6 Columnas del Kanban
+## 🗂️ Las 5 Columnas del Tablero
 
 ```mermaid
 flowchart LR
-    A["📋 BACKLOG<br/>(Por Planificar)"] -- "Drag" --> B["✂️ CORTE<br/>(En Fábrica)"]
-    B -- "Drag" --> C["🔧 ARMADO<br/>(Ensamblaje)"]
-    C -- "Drag" --> D["🎨 ACABADO<br/>(Pintura/Anodizo)"]
-    D -- "Drag" --> E["🔍 CONTROL<br/>(Inspección QC)"]
-    E -- "Drag" --> F["✅ ENTREGADO<br/>(Completo)"]
+    A["📋 PEDIDOS\nCONFIRMADOS"] -- "Drag" --> B["✂️ EN CORTE"]
+    B -- "Drag" --> C["🔧 EN\nENSAMBLAJE"]
+    C -- "Drag" --> D["📦 LISTO PARA\nINSTALAR"]
+    D -- "Drag" --> E["✅ FINALIZADO"]
 ```
 
-| Columna | Color | Significado |
-|---------|-------|------------|
-| **BACKLOG** | Gris | Pedido recibido, aún no se empieza a fabricar |
-| **CORTE** | Azul | Se está cortando el aluminio y vidrio |
-| **ARMADO** | Naranja | Se están ensamblando las piezas |
-| **ACABADO** | Morado | Pintura, anodizado u otros acabados finales |
-| **CONTROL** | Amarillo | Inspección de calidad (QC) antes de entrega |
-| **ENTREGADO** | Verde | Pedido entregado al cliente ✅ |
+| Columna | Color de Encabezado | Significado |
+|---------|:---:|------------|
+| **Pedidos Confirmados** | Gris oscuro | Pedido recibido, aún no se empieza a fabricar |
+| **En Corte** | Cian | Se está cortando el aluminio y vidrio |
+| **En Ensamblaje** | Ámbar | Se están ensamblando las piezas cortadas |
+| **Listo para Instalar** | Naranja | Producto terminado, pendiente de entrega/instalación |
+| **Finalizado** | Verde | Pedido entregado al cliente ✅ |
 
 ---
 
-## 🖥️ Vista del Tablero Kanban
+## 🖥️ Vista General del Tablero
 
 ```
-┌────────────────────────────────────────────────────────────────────────────┐
-│  🏭 TABLERO DE PRODUCCIÓN         [+ Nueva Orden] [📊 Estadísticas] [🔧]  │
-├───────────┬───────────┬───────────┬───────────┬───────────┬────────────────┤
-│ BACKLOG   │  CORTE    │  ARMADO   │  ACABADO  │  CONTROL  │  ENTREGADO    │
-│    (3)    │    (5)    │    (2)    │    (1)    │    (1)    │    (12)       │
-├───────────┼───────────┼───────────┼───────────┼───────────┼────────────────┤
-│ ┌───────┐ │ ┌───────┐ │ ┌───────┐ │ ┌───────┐ │ ┌───────┐ │ ┌───────────┐ │
-│ │COT-045│ │ │COT-042│ │ │COT-041│ │ │COT-039│ │ │COT-040│ │ │COT-035    │ │
-│ │J.Gómez│ │ │M.López│ │ │E.SAC  │ │ │R.Díaz │ │ │A.Cruz │ │ │Entregado  │ │
-│ │3 vent.│ │ │2 vent.│ │ │5 vent.│ │ │1 mampa│ │ │2 vent.│ │ │15/02/26   │ │
-│ │Pend.  │ │ │Urgente│ │ │Nor.   │ │ │       │ │ │       │ │ └───────────┘ │
-│ └───────┘ │ └───────┘ │ └───────┘ │ └───────┘ │ └───────┘ │               │
-│           │ ┌───────┐ │           │           │           │               │
-│           │ │COT-043│ │           │           │           │               │
-│           │ │...    │ │           │           │           │               │
-│           │ └───────┘ │           │           │           │               │
-└───────────┴───────────┴───────────┴───────────┴───────────┴────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────┐
+│  🏭 Tablero de Producción  [🔍 Buscar...]                                      │
+│  [⚙️ Configuración] [📊 Estadísticas] [📥 Exportar] [📦 Archivar Finalizados] │
+│  [📋 Pegar] [+ Nueva Orden] [❓]                                               │
+├────────────┬──────────┬───────────┬──────────────┬───────────────────────────────┤
+│ PEDIDOS    │ EN CORTE │ EN        │ LISTO PARA   │ FINALIZADO                   │
+│CONFIRMADOS│   4/4    │ENSAMBLAJE │ INSTALAR     │                              │
+│    (3)     │          │   2/3     │     (1)      │    (12)                      │
+├────────────┼──────────┼───────────┼──────────────┼──────────────────────────────│
+│ [+ Nueva]  │┌────────┐│┌─────────┐│┌────────────┐│┌───────────────────────────┐│
+│ [📋 Pegar] ││OT-25001││ │OT-24312││ │OT-25010   │││OT-24998                   ││
+│┌──────────┐││Cliente: │││Cliente: │││Cliente:    │││Archivado automáticamente  ││
+││OT-25042  │││María L. │││Emp. SAC │││R.Díaz     │││                           ││
+││Cliente:  │││1200×900 │││2400×2100│││1800×1200  ││└───────────────────────────┘│
+││Juan G.   │││Marca:COR│││Color:BLA│││Entrega:   ││                             │
+││Producto: │││Entrega: │││Retrabajo│││28/03/2026 ││                             │
+││VCA Ser.25│││25/03/26 │││⚠️ 1    ││└────────────┘│                             │
+│└──────────┘│└────────┘│└─────────┘│              │                              │
+└────────────┴──────────┴───────────┴──────────────┴──────────────────────────────┘
 ```
 
 ---
 
 ## 🖱️ PARTE 1: Mover Tarjetas (Drag & Drop)
 
-### ¿Cómo avanzar una orden al siguiente estado?
+### ¿Cómo avanzar una orden?
 
-1. **Haz clic y mantén presionado** sobre la tarjeta de la orden
-2. **Arrastra** la tarjeta hacia la columna siguiente
+1. **Haz clic y mantén presionado** sobre la tarjeta
+2. **Arrastra** la tarjeta hacia la columna destino
 3. **Suelta** — el estado se actualiza automáticamente en la base de datos
 
 ```
- [CORTE]              [ARMADO]
-  ┌───────┐    →→→    ┌───────┐
-  │COT-042│  ─────▶   │COT-042│
-  │M.López│  (drag)   │M.López│
-  └───────┘           └───────┘
+ [EN CORTE]              [EN ENSAMBLAJE]
+  ┌────────┐    →→→    ┌────────┐
+  │OT-25001│  ─────▶   │OT-25001│
+  │María L.│  (drag)   │María L.│
+  └────────┘           └────────┘
 ```
 
-> **📱 En celular:** El drag & drop también funciona táctilmente. Mantén presionada la tarjeta por 1 segundo hasta que "flote", luego arrástrala.
+> **📱 En celular:** Mantén presionada la tarjeta por 1 segundo hasta que "flote", luego arrástrala.
 
-### Reglas del movimiento
+### Movimiento hacia atrás (Retrabajo)
 
-- **Solo puedes mover hacia adelante o atrás** (no puedes saltar de BACKLOG directo a ENTREGADO)
-- Cualquier movimiento queda registrado en el **historial** con fecha, hora y usuario que lo hizo
+Si mueves una tarjeta **hacia la izquierda** (por ejemplo, de "En Ensamblaje" de vuelta a "En Corte"), el sistema detecta un **retrabajo**:
+
+- Se incrementa automáticamente el **contador de rework** (⚠️)
+- Se registra en el `rework_history` con fecha y columnas origen/destino
+- La tarjeta mostrará una alerta naranja con el número de retrabajos
+
+> **⚠️ Significado de rework:** Si una tarjeta muestra "⚠️ 2", significa que esa orden ha regresado 2 veces a etapas anteriores. Esto es un indicador de calidad.
+
+### Historial de movimientos
+
+Cada vez que mueves una tarjeta, el sistema registra automáticamente en `movement_history`:
+- La **columna** a la que se movió
+- La **fecha y hora** de entrada
+- La **fecha y hora** de salida (cuando se mueve a la siguiente)
+
+Este historial se usa para calcular tiempos de permanencia en cada etapa (visible en Estadísticas).
 
 ---
 
 ## ➕ PARTE 2: Crear una Nueva Orden de Trabajo
 
-Hay **dos formas** de crear órdenes en el Kanban:
+Haz clic en el botón **"+ Nueva Orden"** (o el botón **"+ Nueva"** dentro de la columna Pedidos Confirmados).
 
-### Método A: Importar desde una Cotización Aprobada (Recomendado)
-
-1. Asegúrate de que la cotización esté en estado **"Aprobada"**
-2. En el tablero, haz clic en **"+ Nueva Orden"**
-3. Selecciona **"Importar desde Cotización"**
-4. Selecciona la cotización de la lista
-5. El sistema crea automáticamente una tarjeta en BACKLOG con todos los detalles del pedido
-
-### Método B: Crear Manualmente
-
-1. Haz clic en **"+ Nueva Orden"** → **"Crear manualmente"**
-2. Llena el formulario:
+### Formulario de nueva orden
 
 ```
 ┌─────────────────────────────────────────────────────┐
 │  NUEVA ORDEN DE TRABAJO                             │
 ├─────────────────────────────────────────────────────│
-│  Título:      [Ventanas para obra Miraflores]       │
-│  Cliente:     [Constructora Lima SAC]               │
-│  Descripción: [3 ventanas corredizas + 1 mampara]   │
-│  Prioridad:   ● Normal  ○ Urgente  ○ Pausado        │
-│  Fecha       │
-│  solicitada: [28/02/2026]                           │
-│  Cotización: [COT-0045] (opcional)                  │
+│  Cliente:       [Constructora Lima SAC]  (texto)    │
+│  Producto:      [Ventana Corrediza S25]  (texto)    │
+│  Descripción:   [3 ventanas + 1 mampara] (texto)   │
+│  Marca:         [Corrales]               (texto)    │
+│  Color:         [Blanco]                 (texto)    │
+│  Tipo Cristal:  [Templado 6mm Incoloro]  (texto)    │
+│  Ancho (mm):    [1200]                              │
+│  Alto (mm):     [900]                               │
+│  Fecha Entrega: [28/03/2026]             (fecha)    │
+│  [Cancelar]                    [Guardar]            │
 └─────────────────────────────────────────────────────┘
 ```
 
+| Campo | Obligatorio | Qué ingresar |
+|-------|:-:|-------------|
+| **Cliente** | ✅ | Nombre del cliente (texto libre, sin vinculación al ERP) |
+| **Producto** | ✅ | Tipo de producto a fabricar (ej: "VCA Serie 25") |
+| **Descripción** | ❌ | Detalle adicional (ej: "3 ventanas para obra Miraflores") |
+| **Marca** | ❌ | Marca de aluminio que se usará |
+| **Color** | ❌ | Color/acabado del aluminio |
+| **Tipo Cristal** | ❌ | Tipo de vidrio (ej: "Templado 6mm Incoloro") |
+| **Ancho (mm)** | ✅ | Ancho de la ventana en milímetros |
+| **Alto (mm)** | ✅ | Alto de la ventana en milímetros |
+| **Fecha Entrega** | ✅ | Fecha comprometida de entrega al cliente |
+
+> **💡 ID automático:** El sistema genera automáticamente un ID como `OT-25XXXX` (OT = Orden de Trabajo, 25 = año, XXXX = número aleatorio).
+
+Al guardar, la tarjeta aparece en la columna **"Pedidos Confirmados"**.
+
 ---
 
-## 📋 PARTE 3: Ver el Detalle de una Orden
+## 📋 PARTE 3: Información en la Tarjeta
 
-Haz clic en cualquier tarjeta para ver su detalle completo:
+Cada tarjeta muestra esta información:
 
 ```
-┌──────────────────────────────────────────────────────┐
-│  ORDEN: COT-0042 — María López                      │
-│  Estado actual: CORTE  🔴 URGENTE                   │
-│  ─────────────────────────────────────────────────  │
-│  ÍTEMS DE LA ORDEN:                                  │
-│  • Ventana Corrediza S25 1200×900 (×2)               │
-│  • Mampara Fija S100 2400×2100 (×1)                  │
-│  ─────────────────────────────────────────────────  │
-│  HISTORIAL DE ESTADOS:                               │
-│  BACKLOG → CORTE:  21/02/26 08:15 (juan@empresa.com)│
-│  Creada:           20/02/26 16:30 (admin@empresa)    │
-│  ─────────────────────────────────────────────────  │
-│  FECHA SOLICITADA: 25/02/2026                        │
-│  OBSERVACIONES: Cliente pide entrega urgente          │
-│  ─────────────────────────────────────────────────  │
-│  [✏️ Editar]  [📋 Historial]  [🗑️ Eliminar]         │
-└──────────────────────────────────────────────────────┘
+┌──────────────────────────────────┐
+│ [Color del encabezado = columna] │
+│  OT-25001          [📋][✏️][🗑️] │
+├──────────────────────────────────┤
+│  Cliente: María López            │
+│  Producto: VCA Ser.25 - 2H       │
+│  Medidas: 120cm x 90cm           │
+│  ─────────────────────────       │
+│  Marca: Corrales   Color: BLA    │
+│  Cristal: Temp 6mm Creación: ... │
+│  ─────────────────────────       │
+│  ⚠️ 1         Entrega: 25/03/26 │
+└──────────────────────────────────┘
 ```
 
-### Botones del detalle de orden
+| Elemento | Qué muestra |
+|----------|------------|
+| **Encabezado** (color) | Color de la columna actual. Contiene ID, botones copiar/editar/eliminar |
+| **Cliente** | Nombre del cliente (texto libre) |
+| **Producto** + Descripción | Nombre del producto + descripción adicional si tiene |
+| **Medidas** | Ancho × Alto convertidos de mm a cm |
+| **Marca / Color / Cristal** | Detalles de material en grid compacto |
+| **Creación** | Fecha en que se creó la orden |
+| **⚠️ N** | Contador de retrabajos (solo visible si > 0, en naranja) |
+| **Entrega** | Fecha de entrega prometida. **Se pone roja** si ya venció |
+
+### Botones de la tarjeta
 
 | Botón | Qué hace |
 |-------|----------|
-| **✏️ Editar** | Modifica título, descripción, prioridad, fecha |
-| **📋 Historial** | Muestra todos los cambios de estado con fecha/hora/usuario |
-| **🗑️ Eliminar** | Elimina la orden (solo ADMIN, irreversible) |
+| **📋 Copiar** | Copia los datos de esta orden para pegarla como nueva |
+| **✏️ Editar** | Abre el formulario para modificar cualquier campo de la orden |
+| **🗑️ Eliminar** | Archiva la orden al historial y la elimina del tablero (pide confirmación) |
 
 ---
 
-## 📊 PARTE 4: Estadísticas de Producción
+## 📋 PARTE 4: Copiar y Pegar Órdenes
 
-Haz clic en el botón **"📊 Estadísticas"** para ver métricas del tablero:
+Para crear una orden similar a otra existente:
+
+1. Haz clic en **📋 Copiar** en la tarjeta de la orden base
+2. Aparece el toast "Copiado" y se activa el botón **"Pegar"** en la barra superior
+3. Haz clic en **"📋 Pegar"** — se abre el formulario prellenado con los datos copiados
+4. Modifica lo que necesites y guarda
+
+> **💡 Tip:** Copiar/Pegar es útil cuando un cliente pide varios productos similares (ej: 5 ventanas del mismo modelo pero diferentes medidas).
+
+---
+
+## ⚙️ PARTE 5: Configuración del Tablero (WIP Limits)
+
+El botón **"⚙️ Configuración"** abre un diálogo para configurar **límites WIP** (Work In Progress):
+
+```
+┌─────────────────────────────────────────────────────┐
+│  CONFIGURACIÓN DEL TABLERO                          │
+├─────────────────────────────────────────────────────│
+│  Límite WIP — En Corte:        [4]                  │
+│  Límite WIP — En Ensamblaje:   [3]                  │
+│                                                      │
+│  [Cancelar]                          [Guardar]      │
+└─────────────────────────────────────────────────────┘
+```
+
+| Configuración | Qué es | Ejemplo |
+|---------------|--------|---------|
+| **Límite WIP En Corte** | Máximo de órdenes simultáneas en corte | 4 (si hay 5, la columna se pone roja) |
+| **Límite WIP En Ensamblaje** | Máximo de órdenes simultáneas en ensamblaje | 3 |
+
+> **🔴 Columna en rojo:** Cuando una columna supera su límite WIP, el borde de la columna cambia a **rojo** como alerta visual. Esto indica que el equipo está sobrecargado en esa etapa.
+
+---
+
+## 📊 PARTE 6: Estadísticas de Producción
+
+El botón **"📊 Estadísticas"** abre un panel con métricas calculadas desde el historial de órdenes archivadas:
 
 | Métrica | Qué mide |
 |---------|----------|
-| **Órdenes por estado** | Cuántas hay en cada columna ahora mismo |
-| **Tiempo promedio en cada etapa** | Cuántos días pasa una orden en CORTE, ARMADO, etc. |
-| **OTIF Acumulado** | Porcentaje de entregas a tiempo |
-| **Órdenes del mes** | Entrada y salida del tablero este mes |
+| **Órdenes por estado** | Distribución actual: cuántas hay en cada columna |
+| **Tiempo promedio por etapa** | Días promedio que una orden permanece en cada columna |
+| **Lead Time total** | Tiempo total desde Pedido Confirmado hasta Finalizado |
+| **Retrabajos** | Porcentaje de órdenes que han tenido al menos un retrabajo |
+| **Tendencia mensual** | Evolución de la producción mes a mes |
+
+> **💡 Tip:** Las estadísticas se alimentan del historial (`trx_kanban_history`). Cuantas más órdenes archives, más precisas serán las métricas.
 
 ---
 
-## 🔧 PARTE 5: Configuración del Tablero
+## 📥 PARTE 7: Exportar el Tablero a Excel
 
-El botón **"🔧 Configurar"** permite ajustar:
-
-| Configuración | Qué hace |
-|--------------|----------|
-| **Alertas de tiempo** | Cuántos días en un estado antes de marcar como retrasado |
-| **Columnas visibles** | Mostrar/ocultar columnas no usadas |
-| **Vista compacta** | Ver más tarjetas en pantalla reduciendo tamaño |
-| **Ordenamiento** | Por fecha, prioridad o cliente |
+El botón **"📥 Exportar"** descarga un archivo Excel con los datos del tablero y el historial para análisis externo.
 
 ---
 
-## 🎯 Prioridades de las Órdenes
+## 📦 PARTE 8: Archivar Órdenes Finalizadas
 
+El botón **"📦 Archivar Finalizados"** mueve **todas** las órdenes de la columna "Finalizado" al historial (`trx_kanban_history`) en una sola operación:
+
+```mermaid
+flowchart LR
+    A["Órdenes en\nFINALIZADO"] -->|"Archivar"| B["fn_archive_kanban_batch()"]
+    B --> C["trx_kanban_history\n(registro permanente)"]
+    B --> D["Se eliminan de\ntrx_kanban_orders"]
 ```
-🔴 URGENTE   → Borde rojo en la tarjeta. Entrega inminente.
-🔵 NORMAL    → Sin borde especial.
-⏸️ PAUSADO   → Borde gris. Trabajo detenido temporalmente.
-```
 
-Para cambiar la prioridad, edita la orden y selecciona el nivel de prioridad.
+- Pide confirmación antes de ejecutar
+- Las órdenes archivadas siguen visibles en Estadísticas
+- Es irreversible: una vez archivadas, no vuelven al tablero activo
 
 ---
 
-## 📤 PARTE 6: Exportar el Tablero a Excel
+## 🔍 PARTE 9: Buscar Órdenes
 
-1. Haz clic en el ícono de Excel **📥** en la esquina del tablero
-2. Se descarga un archivo con todas las órdenes, estados e historial
+La **barra de búsqueda** filtra tarjetas en tiempo real por:
+- ID de la orden (ej: "OT-25001")
+- Nombre del cliente
+- Nombre del producto
+- Marca
+- Descripción adicional
 
 ---
 
 ## ❓ Preguntas Frecuentes
 
 **¿El Kanban descuenta stock del inventario cuando muevo una tarjeta?**
-> No automáticamente. El descuento de stock se hace manualmente en el módulo de Salidas cuando físicamente despachas el material.
+> No. El Kanban es transaccionalmente **independiente** del inventario. El descuento de stock se hace manualmente en el módulo de Salidas cuando físicamente despachas el material.
+
+**¿El Kanban está vinculado a las cotizaciones?**
+> No. Los campos del Kanban son texto libre. Si tienes una cotización COT-0042, puedes poner ese número en el campo Producto o Descripción como referencia, pero no hay ningún vínculo automático.
 
 **¿Quién puede mover tarjetas?**
-> ADMIN y OPERARIO pueden mover tarjetas. SECRETARIA solo puede ver el tablero.
+> ADMIN y OPERARIO pueden mover, crear y editar tarjetas. SECRETARIA solo puede ver el tablero.
 
 **¿Puedo tener el Kanban abierto en varios dispositivos?**
-> Sí. Los cambios se sincronizan en tiempo real con Supabase. Si el operario mueve una tarjeta en el taller, el gerente lo ve en su computadora al recargar.
+> Sí. Los cambios se guardan en Supabase. Al recargar la página en otro dispositivo, se ven los cambios actualizados.
 
-**¿Qué pasa si cierro la venta antes de que llegue a ENTREGADO?**
-> Nada automático. El Kanban y las cotizaciones son independientes. Puedes marcarla como ENTREGADO cuando corresponda independientemente del estado de la cotización.
+**¿Qué es el "retrabajo" (rework)?**
+> Cuando mueves una tarjeta **hacia atrás** (ej: de Ensamblaje a Corte), el sistema lo detecta como un retrabajo y aumenta el contador ⚠️. Esto es un KPI de calidad: muchos retrabajos indican problemas en el proceso.
+
+**¿Qué pasa con las órdenes finalizadas si no las archivo?**
+> Se quedan en la columna Finalizado indefinidamente. No afectan el rendimiento, pero es buena práctica archivarlas periódicamente para mantener el tablero limpio y alimentar las estadísticas.
 
 ---
 
 ## ⚠️ Errores Comunes
 
 | Situación | Causa | Solución |
-|-----------|-------|---------|
+|-----------|-------|---------| 
 | No puedo arrastrar tarjetas | Sin permiso (rol SECRETARIA) | Pedir al ADMIN cambiar tu rol a OPERARIO |
-| Tarjeta no se mueve al soltar | Conexión lenta | Esperar y verificar en el historial |
-| No aparece la cotización en "Importar" | Cotización no está Aprobada | Cambiar estado de la cotización a Aprobada primero |
+| Tarjeta no se mueve al soltar | Conexión lenta o error de red | Esperar y recargar la página. El movimiento se revierte automáticamente si falla |
+| Columna se pone en rojo | Se excedió el límite WIP configurado | Terminar órdenes de esa columna antes de agregar más, o ajustar el límite en Configuración |
+| Fecha de entrega en rojo | La fecha ya pasó y la orden no está finalizada | Entregar el pedido y mover a Finalizado, o editar la fecha |
 
 ---
 
 ## 🔗 Documentos Relacionados
 
-- [T02_TUTORIAL_COTIZACIONES.md](./T02_TUTORIAL_COTIZACIONES.md) — Aprobar cotizaciones para importar al Kanban
+- [T02_TUTORIAL_COTIZACIONES.md](./T02_TUTORIAL_COTIZACIONES.md) — Crear cotizaciones (referencia opcional para el Kanban)
 - [T06_TUTORIAL_SALIDAS.md](./T06_TUTORIAL_SALIDAS.md) — Descontar el material usado en producción
 - [10_FLUJOS_DE_NEGOCIO.md](../10_FLUJOS_DE_NEGOCIO.md) — Diagrama técnico del flujo de producción
+- [02_ESQUEMA_BASE_DATOS.md](../02_ESQUEMA_BASE_DATOS.md) — Diagrama de tablas Kanban (sección 1b)

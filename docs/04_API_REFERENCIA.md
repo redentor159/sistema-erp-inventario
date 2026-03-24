@@ -2,7 +2,7 @@
 
 > **Ubicación:** `lib/api/`  
 > **Patrón:** Todas las APIs son objetos exportados con métodos `async` que llaman directamente a Supabase desde el navegador.  
-> **Última actualización:** 2026-02-21
+> **Última actualización:** 2026-03-23
 
 ## Documentos Relacionados
 
@@ -175,3 +175,96 @@ const mutation = useMutation({
     }
 })
 ```
+
+---
+
+## 6. `kanbanApi` — Producción Kanban
+
+**Archivo:** [`lib/api/kanban.ts`](../lib/api/kanban.ts)
+
+> **⚠️ Aislamiento:** Todas las operaciones Kanban son independientes del ERP. No hay FK a `mst_clientes` ni `trx_cotizaciones_cabecera`.
+
+| Método | Parámetros | Descripción |
+|--------|-----------|-------------|
+| `getBoard()` | — | Todas las órdenes activas (`trx_kanban_orders`) |
+| `createOrder(order)` | `KanbanOrder` | Crea nueva orden en `column-pedidos-confirmados` |
+| `updateOrder(id, updates)` | `string, Partial` | Edita campos de una orden |
+| `moveCard(id, col, idx)` | `string, string, number` | Mueve a columna. Detecta rework automáticamente si va hacia atrás |
+| `archiveOrder(id, status, col)` | `string, string, string` | Archiva vía `fn_archive_kanban_order` RPC |
+| `archiveAllFinished()` | — | Archiva batch vía `fn_archive_kanban_batch` RPC |
+| `getHistory()` | — | Historial archivado (`trx_kanban_history`) |
+| `getConfig()` | — | Configuración (`mst_kanban_config.main_config`) |
+| `updateConfig(settings)` | `{wip_limits}` | Actualiza límites WIP |
+| `generateDemoData()` | — | Genera 500 registros históricos de prueba |
+
+---
+
+## 7. `dashboardApi` — Dashboard KPI
+
+**Archivo:** [`lib/api/dashboard.ts`](../lib/api/dashboard.ts)
+
+| Método | Vista/Fuente | Descripción |
+|--------|-------------|-------------|
+| `getKPIs()` | Múltiples `vw_kpi_*` | Obtiene todos los KPIs: conversión, ticket, margen, OTIF |
+| `getTopProductos()` | `vw_kpi_top_productos` | Top 10 productos vendidos |
+| `getStockValorizado()` | `vw_kpi_valorizacion` | Valor total de inventario PEN/USD |
+| `getStockZombie()` | `vw_kpi_stock_zombie` | Stock inmovilizado 90+ días |
+
+---
+
+## 8. `configApi` — Configuración General
+
+**Archivo:** [`lib/api/config.ts`](../lib/api/config.ts)
+
+| Método | Descripción |
+|--------|-------------|
+| `getConfig()` | Obtiene todos los parámetros de `mst_config_general` |
+| `updateConfig(data)` | Actualiza parámetros globales (IGV, markup, tipo cambio, etc.) |
+
+---
+
+## 9. Funciones RPC (llamadas vía `supabase.rpc()`)
+
+Estas funciones PostgreSQL se invocan directamente desde el frontend:
+
+### Motor de Cotización
+
+| Función | Llamada por | Propósito |
+|---------|------------|--------|
+| `fn_crear_cotizacion_mto()` | `cotizacionesApi.createCotizacion()` | Crea cabecera + detalles + despiece en 1 transacción |
+| `fn_agregar_linea_cotizacion()` | `cotizacionesApi.addLineItem()` | Inserta línea + auto-despiece |
+| `fn_generar_despiece_ingenieria()` | `cotizacionesApi.triggerDespiece()` | Motor BOM: evalúa fórmulas, resuelve SKUs, calcula costos |
+| `fn_evaluar_formula()` | Interna (usada por despiece) | Evaluador seguro de fórmulas matemáticas |
+| `fn_calcular_sku_real()` | Interna (usada por despiece) | Resolución dinámica de código SKU |
+| `fn_clonar_cotizacion()` | `cotizacionesApi.clonarCotizacion()` | Duplica cotización completa |
+| `fn_clonar_item_cotizacion()` | `cotizacionesApi.clonarItem()` | Duplica un ítem individual |
+
+### Producción
+
+| Función | Llamada por | Propósito |
+|---------|------------|--------|
+| `fn_archive_kanban_order()` | `kanbanApi.archiveOrder()` | Mueve orden a historial y elimina del tablero |
+| `fn_archive_kanban_batch()` | `kanbanApi.archiveAllFinished()` | Archiva todas las órdenes de `column-finalizado` |
+
+### Inventario
+
+| Función | Propósito |
+|---------|--------|
+| `rename_sku()` | Renombra SKU con propagación cascada a movimientos, entradas, salidas, desglose, retazos |
+| `update_costos_mercado_bulk()` | Actualización masiva de `costo_mercado_unit` desde JSON |
+| `fn_refresh_stock_materializada()` | Refresh concurrente de `mvw_stock_realtime` |
+
+### Análisis
+
+| Función | Propósito |
+|---------|--------|
+| `get_abc_analysis_v2(p_dias)` | Análisis ABC parametrizado por ventana temporal |
+| `get_abc_inventory_valuation()` | Clasificación ABC por valor de inventario actual |
+
+### Administración
+
+| Función | Propósito |
+|---------|--------|
+| `get_user_role()` | Retorna el rol del usuario autenticado (`SECURITY DEFINER`) |
+| `fn_reset_erp_transactions()` | **Danger Zone:** Purga transacciones ERP |
+| `fn_reset_kanban_data()` | **Danger Zone:** Purga datos Kanban |

@@ -201,8 +201,46 @@ flowchart TD
 
 ---
 
+## ☢️ SECCIÓN 7: Zona de Peligro (Danger Zone)
+
+Al final de la página de configuración existe una sección **oculta** llamada "Zona de Peligro". No es visible a simple vista — requiere hacer scroll hasta el fondo de la página y cumplir ciertos requisitos.
+
+> **⚠️ ADVERTENCIA EXTREMA:** Las operaciones de esta sección son **IRREVERSIBLES**. Eliminan datos permanentemente de la base de datos. No hay forma de recuperar los datos después de ejecutarlas.
+
+### Operaciones disponibles:
+
+| Operación | RPC | Qué elimina |
+|-----------|------|-----------|
+| **Reset ERP** | `fn_reset_erp_transactions()` | TODAS las transacciones del ERP: cotizaciones, entradas, salidas, movimientos, desglose, retazos. **Las tablas maestras (clientes, proveedores, catálogo) NO se eliminan.** |
+| **Reset Kanban** | `fn_reset_kanban_data()` | TODAS las órdenes activas y el historial del Kanban. La configuración (`mst_kanban_config`) NO se toca. |
+
+### Cómo funciona la activación:
+
+```
+┌─────────────────────────────────────────────────────┐
+│  ☢️ ZONA DE PELIGRO                                │
+├─────────────────────────────────────────────────────│
+│  ⚠️ Estas acciones son IRREVERSIBLES.              │
+│                                                      │
+│  [🗑️ Reset ERP]     [🗑️ Reset Kanban]             │
+│                                                      │
+│  Para confirmar, escribe la frase exacta:            │
+│  ┌──────────────────────────────────────────────┐   │
+│  │  ELIMINAR TODOS LOS DATOS                    │   │
+│  └──────────────────────────────────────────────┘   │
+│                               [Confirmar Borrado]   │
+└─────────────────────────────────────────────────────┘
+```
+
+> **🔒 Cuándo usar:** Únicamente para reiniciar la base de datos de demo/staging o tras datos de prueba. **NUNCA** en producción con datos reales.
+
+> **💡 Qué se preserva:** Las tablas maestras (familias, marcas, materiales, acabados, almacenes, proveedores, clientes, plantillas, SKUs, recetas) NO se eliminan. Solo las transacciones.
+
+---
+
 ## 🔗 Documentos Relacionados
 
 - [11_AUTENTICACION_Y_ROLES.md](../11_AUTENTICACION_Y_ROLES.md) — Gestión detallada de usuarios y roles
 - [T02_TUTORIAL_COTIZACIONES.md](./T02_TUTORIAL_COTIZACIONES.md) — Cómo se aplican estos parámetros
-- [12_GUIA_SUPABASE.md](../12_GUIA_SUPABASE.md) — Configuración avanzada en la base de datos
+- [T13_TUTORIAL_DATOS_MAESTROS.md](./T13_TUTORIAL_DATOS_MAESTROS.md) — Gestionar familias, marcas, materiales y acabados
+- [13_GUIA_SUPABASE.md](../13_GUIA_SUPABASE.md) — Configuración avanzada en la base de datos
