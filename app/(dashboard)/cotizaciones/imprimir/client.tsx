@@ -238,8 +238,8 @@ export default function CotizacionPrintPage({
       : "Cliente";
     const numCotizacion = cotizacion?.id_cotizacion || 'SN';
 
-    // Formato Ej: Cotizacion_COT-001_Cliente_Proyecto_20241025_1430
-    document.title = `Cot_${numCotizacion}_${safeCliente}_${safeProjectName}_${formattedDate}_${formattedTime}`;
+    // Formato Ej: Cot_Cliente_Proyecto_20241025_1430_COT-001
+    document.title = `Cot_${safeCliente}_${safeProjectName}_${formattedDate}_${formattedTime}_${numCotizacion}`;
 
     // 3. Ejecutar la ventana de impresión (El navegador atrapará el document.title para el nombre del PDF)
     window.print();
