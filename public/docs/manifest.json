@@ -190,6 +190,18 @@
     "category": "tecnico"
   },
   {
+    "id": "17-analisis-negocio-saas",
+    "title": "17 ANALISIS NEGOCIO SAAS",
+    "path": "/docs/17_ANALISIS_NEGOCIO_SAAS.md",
+    "category": "tecnico"
+  },
+  {
+    "id": "18-guia-migracion-saas",
+    "title": "18 GUIA MIGRACION SAAS",
+    "path": "/docs/18_GUIA_MIGRACION_SAAS.md",
+    "category": "tecnico"
+  },
+  {
     "id": "h-ops",
     "isHeader": true,
     "title": "⚙️ Operaciones y Soporte"
