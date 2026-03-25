@@ -185,3 +185,21 @@ Tienes un producto técnico muy maduro alojado en infraestructura gratuita (Verc
 3. Visita talleres de metalmecánica y fábricas de muebles en Chiclayo. Enséñales la app en tu celular (es responsiva).
 4. Cóbrales S/ 100 o 200 al mes por Yape. Ábreles la cuenta a mano en Supabase.
 5. Cuando llegues a 10 clientes, formalizas pasarelas de pago y mejoras la app basándote en lo que ellos pidan.
+
+---
+
+## 7. Anexo: Otros "Trucos" Avanzados para Exprimir el Plan Gratis
+
+Además del hack del "Static Export" (que hace que Vercel pague por tu ancho de banda visual y Supabase solo envíe JSON ligero), aquí tienes 3 trucos nivel Dios que tu competencia que usa AWS o Azure no conoce:
+
+### Truco 1: Evadir el Límite de Emails (Auth)
+- **El Problema:** El plan gratis de Supabase te restringe a enviar máximo **3 correos por hora** (para recuperar contraseña o confirmar cuentas). Si 4 clientes olvidan su contraseña a la 1 PM, el cuarto no podrá entrar.
+- **Tu Solución:** Crea una cuenta gratuita en **Resend** (Startups de correos, te da 3,000 correos al mes gratis). Copias su API Key y la pegas en Settings > Auth > SMTP de Supabase. Instántaneamente tienes 100 correos gratis al día sin bloqueos.
+
+### Truco 2: Evadir el Límite de Storage (1 GB)
+- **El Problema:** 1 GB de disco duro gratuito en Supabase se puede llenar si subes imágenes pesadas.
+- **Tu Solución:** **Regla estricta:** NINGUNA imagen visual de la interfaz (Tu logo, los fondos, los íconos, gráficos genéricos) debe vivir en Storage. Todo eso debe ir adentro de la carpeta `public/` de Next.js. De esta forma, esas miles de imágenes las regala Vercel en su CDN. Supabase Storage *solo* se debe usar para cosas dinámicas (La foto del taller que subió tu cliente o sus PDFs generados).
+
+### Truco 3: Evasión del Cuello de Botella de Conexiones (60 DB Connections)
+- **El Problema:** El plan gratis limita a 60 conexiones simultáneas directas a la base de datos (PostgreSQL). Si 61 clientes abren la web exacto al mismo segundo, la base explota.
+- **Tu Solución Inconsciente:** Tú **no** estás usando conexiones directas de Postgres. Tu código usa `supabase-js`, el cual se comunica a través de **PostgREST** (una API HTTP). Las APIs son "stateless" (sin estado), entran, piden el dato y se desconectan en milisegundos. Gracias a esta arquitectura de API, puedes tener **cientos** de clientes concurrentes sin jamás chocar con el límite mortal de 60 conexiones directas de TCP. ¡Ya tienes el nivel de escalabilidad de Netflix sin haber escrito código complejo!
