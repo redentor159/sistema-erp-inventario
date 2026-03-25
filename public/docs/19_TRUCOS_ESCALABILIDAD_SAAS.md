@@ -128,3 +128,29 @@ graph TD
 | **Logo por URL (Lo que usas hoy)** | 0.00 MB (Atiende externo) | Capacidad Infinita | **Eterno.** Pero mala UX si el cliente no sabe crear URLs. |
 | **PDF Factura Digital genérico** | 0.05 MB (50 KB) | ~20,480 Documentos Totales | **Años.** Muy eficiente en espacio nativo. |
 | **Foto Comprimida (Con Truco 5)** | 0.15 MB (150 KB) | ~6,826 Imágenes Totales | **Años.** Escalabilidad en fotos físicas asegurada. |
+
+---
+
+## 💎 PARTE 3: ESTRATEGIA DE NEGOCIO Y ARQUITECTURA "MULTI-TENANT"
+
+### 1. ¿Es rentable usar un enlace de internet (URL) para su logo? ¿Podría seguir siendo así?
+¡Es **INFINITAMENTE RENTABLE**! Matemáticamente es el mejor negocio que puedes hacer. Al pedirles a tus clientes que peguen la URL de su logo (por ejemplo, sacándola de su página de Facebook o de Imgur), el costo de almacenamiento para ti es de **S/ 0.00** y el ancho de banda que gasta tu servidor al imprimirse en el PDF es de **S/ 0.00** (porque el peso del archivo lo asumen los servidores de Facebook, no el tuyo).
+
+Claro que **DEBERÍA** seguir siendo así. De hecho, lo que hacen los grandes SaaS (Software as a Service) es ofrecer diferentes planes:
+
+*   **Plan "MYPE Básico" (ej. S/ 50 al mes):** Solo pueden poner el logo mediante un Enlace URL. (Tus gastos son 0).
+*   **Plan "Empresarial ORO" (ej. S/ 150 al mes):** Les habilitas el botón para "Subir Archivo desde su PC", usando el Truco #5 de compresión para protegerte.
+
+### 2. ¿Cómo podría hacer para que cada imagen sea a un cliente y no se mezclen para su respectiva cotización?
+Esta es la magia del **"Multi-Tenant" (Múltiples Inquilinos)** y la **Seguridad a Nivel de Fila (RLS)** en PostgreSQL que vamos a implementar cuando empecemos a tocar el código.
+
+Actualmente, tu módulo de "Configuración" es una tabla global con una sola fila (porque el ERP era solo para tu empresa). El cambio arquitectónico que haremos será el siguiente:
+
+1.  Crearemos una tabla llamada `sys_empresas` (o `sys_tenants`). Si cierras 3 contratos, tendrás 3 filas (Carpintería Juan, Aluminio Pérez, Estructuras Gómez).
+2.  Tu módulo de configuración apuntará a una nueva tabla llamada `sys_configuracion_tenant`. Esta tabla tendrá obligatoriamente la columna **`tenant_id`**.
+    *   **Fila 1:** `tenant_id: 1` (Juan), `url_logo: http://fb.com/logo-juan.png`
+    *   **Fila 2:** `tenant_id: 2` (Pérez), `url_logo: http://imgur.com/logo-perez.png`
+3.  Cuando el usuario de Aluminio Pérez inicie sesión en la app, Supabase sabrá que pertenece al `tenant_id: 2`.
+4.  Cuando él imprima su cotización, la base de datos **automáticamente** (por sus reglas de seguridad RLS) bloqueará cryptográficamente las demás filas. Será matemáticamente imposible que, por un error de código, el sistema de Pérez cargue el logo o la firma de Juan, porque la base de datos rechaza cualquier consulta que no diga `tenant_id = 2`.
+
+*¿Está claro este concepto fundamental? Es la pieza central y la garantía legal que le vas a ofrecer a tus clientes de que su data nunca acabará impresa en el papel de su competencia.*
