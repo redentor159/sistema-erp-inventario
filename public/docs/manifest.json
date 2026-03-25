@@ -202,6 +202,12 @@
     "category": "tecnico"
   },
   {
+    "id": "19-trucos-escalabilidad-saas",
+    "title": "19 TRUCOS ESCALABILIDAD SAAS",
+    "path": "/docs/19_TRUCOS_ESCALABILIDAD_SAAS.md",
+    "category": "tecnico"
+  },
+  {
     "id": "h-ops",
     "isHeader": true,
     "title": "⚙️ Operaciones y Soporte"
