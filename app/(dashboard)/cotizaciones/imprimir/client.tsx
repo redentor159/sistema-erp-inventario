@@ -220,6 +220,36 @@ export default function CotizacionPrintPage({
   const isMinimalist = config.theme === "minimalist";
   const isModern = config.theme === "modern";
 
+  const handlePrint = () => {
+    // 1. Guardar el título original de la pestaña
+    const originalTitle = document.title;
+
+    // 2. Construir el nombre dinámico del archivo
+    const date = new Date();
+    const formattedDate = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}`;
+    const formattedTime = `${date.getHours().toString().padStart(2, '0')}${date.getMinutes().toString().padStart(2, '0')}`;
+
+    // Nombres seguros limpiando caracteres extraños para el archivo
+    const safeProjectName = cotizacion?.nombre_proyecto
+      ? cotizacion.nombre_proyecto.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30)
+      : "Sin_Proyecto";
+    const safeCliente = cotizacion?.mst_clientes?.nombre_completo
+      ? cotizacion.mst_clientes.nombre_completo.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20)
+      : "Cliente";
+    const numCotizacion = cotizacion?.id_cotizacion || 'SN';
+
+    // Formato Ej: Cotizacion_COT-001_Cliente_Proyecto_20241025_1430
+    document.title = `Cot_${numCotizacion}_${safeCliente}_${safeProjectName}_${formattedDate}_${formattedTime}`;
+
+    // 3. Ejecutar la ventana de impresión (El navegador atrapará el document.title para el nombre del PDF)
+    window.print();
+
+    // 4. Restaurar el título original inmediatamente
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 100);
+  };
+
   return (
     <div className="flex h-screen bg-slate-100 overflow-hidden font-sans">
       {/* =====================================================================================
@@ -494,7 +524,7 @@ export default function CotizacionPrintPage({
         </Tabs>
 
         <div className="p-4 border-t bg-slate-50 flex flex-col gap-2">
-          <Button className="w-full" size="lg" onClick={() => window.print()}>
+          <Button className="w-full" size="lg" onClick={handlePrint}>
             <Printer className="mr-2 h-4 w-4" /> Imprimir / PDF
           </Button>
         </div>
