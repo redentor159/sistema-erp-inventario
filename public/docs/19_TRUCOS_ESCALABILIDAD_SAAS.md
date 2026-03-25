@@ -84,18 +84,30 @@ sequenceDiagram
 ### 2. El Bypass del Límite de Optimización de Imágenes Frotend (Vercel)
 *   **El Escenario Extremo:** Un día pones un catálogo de tus aluminios en portada para vender más. Usas la etiqueta mágica de Next.js llamada `<Image src="...">`. 
 *   **El Problema:** `<Image>` llama un servidor oculto de Vercel que exprime y optimiza la imagen al tamaño perfecto (WebP). Tu plan gratis solo de da **1,000 optimizaciones al mes**. Si 100 usuarios ven 11 imágenes de aluminio en su catálogo, consumirías 1,100 créditos y Vercel literalmente dejará que tus fotos salgan rotas con error `<402 Payment Required>`.
-*   **El Truco Faltante:** Configurar `unoptimized: true` en el archivo `next.config.ts` o usar vulgarmente la etiqueta `<img>` de HTML viejo. Al hacer esto saltas completamente la inteligencia de Vercel. Entregarás fotos pesadas, pero gracias al *Truco de Re-Caché de Vercel* (Tu Ancho de banda gigante), entregarás infinito sin que Vercel te pueda frenar la compresión.
+*   **¿Puedo usar Google Drive para mis miles de fotos?** **JAMÁS.** Drive no es un servidor web (CDN). Si el sistema de Google detecta que cientos de personas en tu SaaS están "jalando" imágenes desde tus links al mismo tiempo, banean el link por "abuso de tráfico" y las fotos salen rotas.
+*   **El Truco Real Definitivo:** Si tienes un catálogo enorme (ej. 1 millón de productos), usas la etiqueta HTML antigua `<img>` (que NO usa el procesador de Vercel). Para hospedar las fotos usas **Cloudflare R2**. Cloudflare te regala 10 GB de disco duro y **CERO COSTO de ancho de banda (Egress)**. Con esto burlas simultáneamente a Google Drive, Vercel y Supabase.
+
+```mermaid
+graph TD
+    subgraph Catálogo_SaaS_Masivo
+        A[App Next.js] -- "Usa etiqueta <img> simple" --> B(Evade límite de 1000 optimizaciones de Vercel)
+        B -- "El src='' apunta a" --> C[(Cloudflare R2 Bucket)]
+        C -- "Envía imágenes (Banda ancha $0)" --> D((Cliente Final))
+        E[(Google Drive)] -- "Baneo por saturación de peticiones" --> X[Ruptura del SaaS]
+    end
+```
 
 ### 3. El Bypass de Analíticas (2,500 Monitoreos Mensuales)
 *   **El Escenario Extremo:** A las dos semanas de lanzamiento quieres saber qué parte de tu app SaaS es la más usada por tus clientes. Entras a la pestaña "Analytics" en el dashboard de Vercel, haces 1 simple clic para activarlo "gratis".
 *   **El Problema:** Esa trampa gratis muere al llegar a las **2,500 visitas web**. El mes 2, la gráfica queda plana y Vercel te pide sacar los $20 dólares.
-*   **El Truco Faltante:** Renunciar para siempre a cualquier cosa "analítica" o "estadística" que te regalen Vercel o Supabase allí dentro. Inyectaremos un código de "Telemetry Off-Grid" usando **Google Analytics 4** o **PostHog**. Ambas son empresas que regalan **1,000,000 de monitoreos gratis**. Tú verás tus reportes de forma ilimitada triangulando el muro de Vercel.
+*   **El Truco Faltante:** Renunciar para siempre a cualquier cosa "analítica" o "estadística" que te regalen Vercel o Supabase allí dentro. Inyectaremos un código de "Telemetry Off-Grid" usando **Google Analytics 4** o **PostHog**.
+*   **¿Se acaba el millón de monitoreos de PostHog?** Te dan 1,000,000 **NUEVOS cada mes** (se renueva mes a mes). Un "evento" es un clic o una página vista. Un cliente normal en un día de trabajo puede generar 20 eventos en tu ERP. Para agotarte tu cuota gratuita tendrías que tener a **2,500 usuarios usándolo sin parar todos los días del mes**. ¿Qué pasa si tienes tanto éxito que lo agotas el día 28 del mes? ¡Absolutamente nada! Tu aplicación sigue funcionando perfecta. PostHog simplemente deja de registrar nuevas gráficas por 2 días y se vuelve a encender gratis el día 1 del siguiente mes.
 
 ### Tabla Comparativa: Vercel vs PostHog (Eventos Mensuales)
 | Proveedor | Eventos Incluidos (Gratis) | ¿Qué pasa si te acabas el saldo? | Costo por exceso |
 | :--- | :--- | :--- | :--- |
 | **Vercel Analytics** | Apenas 2,500 eventos | Las métricas se congelan, exige pasar a Plan Pro | $20.00 dólares obligatorios |
-| **PostHog / GA4** | **1,000,000 eventos** (Se reinicia cada mes) | Solo dejas de ver nuevos clics ese mes (tu app NO se cae) | Fracciones de centavo ($0.0001) |
+| **PostHog / GA4** | **1,000,000 eventos** (Se reinicia cada mes) | Solo dejas de ver nuevos clics ese mes (tu app **NO** se cae) | Fracciones de centavo ($0.0001) |
 
 ### 4. El Bypass del Bloqueo Masivo de E-Mails (Restricción de Spam de Supabase Auth)
 *   **El Escenario Extremo:** Al ser un ERP, el dueño del taller (Admin) le creará una cuenta al "Maestro Soldador" de su plantilla enviándole un link "invitación" al correo, o un operario olvidará su contraseña.
@@ -104,13 +116,15 @@ sequenceDiagram
 
 ### 5. Compresión Local de Contenido Subido por el Cliente B2B (Manejo de Storage)
 *   **El Escenario Extremo:** Tu cliente, emocionado, sube fotos y documentos PDF en los anexos de sus cotizaciones pesando cada foto del portacelular de su Samsung nuevo: 8 MegaBytes. En menos de 2 meses, tus 125 clientes habrán llenado los **1,000 MegaBytes (1 GB)** de tope máximo del Storage gratuito.
-*   **El Problema:** Si suben directo, chocas con el límite duro físico y te bloquean la base de cotizaciones o pasas a cobranza obligatoria. 
-*   **El Truco Faltante:** Intercepción Cliente-Lado (Client-Side Hijack). Instalaremos un procesador en React (`browser-image-compression`) o un Canvas interceptor. Cuando el cliente arrastre su foto de 8 MegaBytes a tu interfaz, antes de decirle a Supabase "Guarda esto", el navegador del cliente comprimirá la foto, usando su procesador en casa, la bajará a hermosos **150 KiloBytes**, y eso es lo que finalmente tocará tu límite. Tu límite de 1 GB que se llenaba en 125 fotos, mágicamente ahora aguantaría más de **8,000 archivos adjuntos**. Crecimiento libre y despreocupado.
+*   **¿Por qué dejar subir archivos si no quieres?** Es cierto que actualmente tu módulo de configuración permite usar un "enlace de internet" (URL) para colocar el logo en el PDF, lo cual es una brillante solución temporal a costo 0. **PERO**, cuando empieces a vender el SaaS empresarial, el primer día el Cliente A te dirá: *"Mis instaladores necesitan adjuntar una foto al vuelo desde su celular de la pared embarrada del cliente a la cotización, no pueden crear un enlace de internet"*. Como CEO, vas a tener que habilitar subidas físicas directas para ganarte a la clientela B2B.
+*   **El Problema:** Si suben las fotos de pared directo desde el celular, chocas con el límite duro físico y te bloquean la base de cotizaciones o pasas a cobranza obligatoria. 
+*   **El Truco Faltante:** Intercepción Cliente-Lado (Client-Side Hijack). Cuando el cliente intente subir su foto de 8 MegaBytes, antes de decirle a Supabase "Guarda esto", el propio código React en el navegador del cliente comprimirá la foto usando el procesador de su propia computadora. La bajará a hermosos **150 KiloBytes**, y eso es lo que finalmente viajará a tu base. Tu límite de 1 GB que se llenaba en 125 fotos de celular, mágicamente ahora aguantará más de **6,000 fotos de la obra adjuntas por tus clientes**.
 
 ### Tabla de Maduración de Límite Storage (1GB) B2B
 
 | Tipo de Subida | Peso de 1 Archivo | Capacidad del Free Tier (1GB = 1,024 MB) | Vida Útil Proyectada (Con 50 Clientes SaaS) |
 | :--- | :--- | :--- | :--- |
-| **Foto Directa (Sin Truco)** | 8.00 MB | ~128 Imágenes Totales | **Semanas.** El storage se llena y el sistema colapsa. |
-| **PDF Factura Digital** | 0.05 MB (50 KB) | ~20,480 Documentos Totales | **Años.** Muy eficiente en espacio nativo. |
-| **Foto Comprimida (Con Truco 5)** | 0.15 MB (150 KB) | ~6,826 Imágenes Totales | **Muchos meses o años.** Escalabilidad asegurada. |
+| **Foto Directa Celular (Sin Truco)** | 8.00 MB | ~128 Imágenes Totales | **Semanas.** El storage se llena y el sistema colapsa. |
+| **Logo por URL (Lo que usas hoy)** | 0.00 MB (Atiende externo) | Capacidad Infinita | **Eterno.** Pero mala UX si el cliente no sabe crear URLs. |
+| **PDF Factura Digital genérico** | 0.05 MB (50 KB) | ~20,480 Documentos Totales | **Años.** Muy eficiente en espacio nativo. |
+| **Foto Comprimida (Con Truco 5)** | 0.15 MB (150 KB) | ~6,826 Imágenes Totales | **Años.** Escalabilidad en fotos físicas asegurada. |
