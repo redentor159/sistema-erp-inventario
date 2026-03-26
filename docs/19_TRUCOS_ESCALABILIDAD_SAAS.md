@@ -166,5 +166,59 @@ Actualmente, tu módulo de "Configuración" es una tabla global con una sola fil
     *   **Fila 2:** `tenant_id: 2` (Pérez), `url_logo: http://imgur.com/logo-perez.png`
 3.  Cuando el usuario de Aluminio Pérez inicie sesión en la app, Supabase sabrá que pertenece al `tenant_id: 2`.
 4.  Cuando él imprima su cotización, la base de datos **automáticamente** (por sus reglas de seguridad RLS) bloqueará cryptográficamente las demás filas. Será matemáticamente imposible que, por un error de código, el sistema de Pérez cargue el logo o la firma de Juan, porque la base de datos rechaza cualquier consulta que no diga `tenant_id = 2`.
-
 *¿Está claro este concepto fundamental? Es la pieza central y la garantía legal que le vas a ofrecer a tus clientes de que su data nunca acabará impresa en el papel de su competencia.*
+
+---
+
+## 💥 PARTE 4: EL ESCENARIO DEL DÍA DEL JUICIO (¿Dónde se rompe el sistema inevitablemente?)
+
+Incluso si configuras los **8 Trucos de Escalabilidad** perfectamente (Vercel Estático, Compresión de Fotos, Aspiradora VACUUM y Caching de Catálogos), existe una barrera de física cuántica que no puedes violar: **Los 500 MB máximos de capacidad de tu Base de Datos SQL en la capa Gratuita de Supabase.**
+
+Este será, matemáticamente hablando, el punto de ruptura inevitable donde te verás **obligado** a sacar la tarjeta de crédito y pagar los $25 USD mensuales del Plan Pro.
+
+### La Matemática del Colapso Estructural (500 MB de Texto Puro)
+
+El texto es increíblemente ligero. Para llenar 500 Megabytes a punta de puro texto (JSON, Nombres de Clientes, Detalles de Cotización), necesitas almacenar un volumen bestial de transacciones B2B.
+
+**Parámetros de la Ecuación:**
+1. Una `Cotizacion` estándar con sus datos de cliente y 10 `Detalles_Cotizacion` pesa en promedio **2 Kilobytes** en el motor PostgreSQL.
+2. El límite absoluto de Supabase Free es `500 MB = 512,000 KB`.
+3. Esto nos da un límite duro arquitectónico de **~256,000 Cotizaciones Históricas**.
+
+Si implementamos tu SaaS B2B "Zero-Cost" y tienes éxito reclutando talleres a nivel nacional, esta es la línea de tiempo hacia la falla catastrófica:
+
+### Tabla de Proyección de Colapso (Falla de 500MB)
+
+| Mes de Operación | Número de Clientes (SaaS) | Cotizaciones Diarias Totales | Nuevos KB Mensuales | Base de Datos Total (MB/500MB) | Ingresos Mensuales SaaS ($50 USD/Cliente) | Estado de Supervivencia |
+| :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| Mes 1 | 5 Clientes | 50 Diarias | 2,500 KB | **2 MB** | $250 USD | 🟢 Estructura Sana (Excedente 99%) |
+| Mes 6 | 20 Clientes | 200 Diarias | 12,000 KB | **50 MB** | $1,000 USD | 🟢 Estructura Sana (VACUUM Limpiando) |
+| Mes 12 | 50 Clientes | 500 Diarias | 30,000 KB | **140 MB** | $2,500 USD | 🟡 Alerta Temprana (Caching Vital) |
+| Mes 18 | 100 Clientes | 1,000 Diarias | 60,000 KB | **320 MB** | $5,000 USD | 🟠 Peligro: Espacio degradándose |
+| **Mes 23** | **150 Clientes** | **1,500 Diarias** | **90,000 KB** | **500 MB (Tope)** | **$7,500 USD** | 🛑 **FALLA CRÍTICA. READ-ONLY MODE.** |
+
+### El Gráfico del Día del Juicio (Proyección Cúbica)
+
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+xychart-beta
+    title "Proyección de Llenado vs Límite Supabase Free (Meses)"
+    x-axis "Duración SaaS (Meses)" [1, 6, 12, 18, 20, 22, 23, 24]
+    y-axis "Espacio Físico Ocupado (MB)" 0 --> 600
+    bar [2, 50, 140, 320, 370, 440, 500, 500]
+    line [500, 500, 500, 500, 500, 500, 500, 500]
+```
+*(La línea indica el Muro de la Muerte de los 500MB. Las barras rojas indican el consumo físico de los 150 inquilinos guardando data sin parar).*
+
+### Veredicto Técnico-Comercial Final
+
+¿Te das cuenta de lo **absurdo** de preocuparse por este colapso en este momento?
+El sistema obligatoriamente va a "romperse" y bloquearse en Modo Solo Lectura (Read-Only) por falta de espacio cuando llegues a la brutalidad de **256,000 cotizaciones** ejecutadas por más de 100 empresas carpinteras conectadas a tu sistema de manera simultánea.
+
+En el **Mes 23 (Día del Juicio)**, cuando tu Base de Datos finalmente colapse:
+*   El ERP estará facturando **$7,500 Dólares al mes en suscripciones** (a S/ 185 SOLES por cliente SaaS).
+*   En ese instante, simplemente entras al panel de Supabase y haces clic en **"Upgrade to Pro ($25/mes)"**.
+*   Los $25 dólares que le pagues a Supabase representarán el **0.33% de tus ganancias**. La capacidad de la Base de Datos automáticamente se inflará mágicamente de 500 MB a **8,000 MB (8 GB)**.
+*   Con 8 GB, ganarás inmediatamente otros **10 años de vida operativa ininterrumpida** antes de tener que preocuparte de nada más nuevamente.
+
+Esa es la genialidad detrás de aplicar estos 8 Trucos Extremos de Arquitectura desde el Día 1. Transformas un gasto técnico paralizante de Cloud Computing en un insignificante trámite administrativo.
