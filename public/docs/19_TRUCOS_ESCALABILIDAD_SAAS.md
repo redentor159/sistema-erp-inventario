@@ -129,14 +129,14 @@ sequenceDiagram
     participant CPU as Procesador PostgreSQL
     participant BD as Disco (500K filas)
 
-    rect rgb(127, 29, 29)
+    rect rgb(255, 230, 230)
     Note over PC, BD: ❌ SIN ÍNDICE — Sequential Scan
     PC->>CPU: SELECT * FROM cotizaciones (RLS: tenant_id = 'B')
     CPU->>BD: Escanea fila 1, fila 2... hasta fila 500,000
     BD-->>PC: Respuesta lenta (3,000 ms) — CPU al 100%
     end
 
-    rect rgb(21, 128, 61)
+    rect rgb(220, 255, 220)
     Note over PC, BD: ✅ CON ÍNDICE B-Tree
     PC->>CPU: SELECT * FROM cotizaciones (RLS: tenant_id = 'B')
     CPU->>BD: Salto directo al bloque físico del Taller B
@@ -170,14 +170,14 @@ sequenceDiagram
     participant Cache as IndexedDB / LocalStorage
     participant API as Supabase PostgREST
 
-    rect rgb(30, 41, 59)
+    rect rgb(230, 240, 255)
     Note over PC, API: Día 1 — Primera Sesión (Cache Vacía)
     PC->>API: GET /materiales, /acabados, /marcas, /familias
     API-->>PC: JSON Payload Completo (~50 KB)
     PC->>Cache: Guardar con TTL = 24 horas
     end
 
-    rect rgb(21, 128, 61)
+    rect rgb(220, 255, 220)
     Note over PC, API: Día 2+ — Sesiones Posteriores
     PC->>Cache: Leer Catálogos (Latencia: 0.01 ms)
     Cache-->>PC: Datos Instantáneos
