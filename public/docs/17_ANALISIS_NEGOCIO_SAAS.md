@@ -1,205 +1,261 @@
-# 📊 Análisis de Negocio: ERP Metalmecánica como SaaS en Perú
+# Documento Técnico-Ejecutivo: Análisis de Negocio — ERP Metalmecánica como SaaS B2B
 
-Este informe responde todas tus preguntas sobre rentabilidad, competencia, costos operativos (Supabase/Stripe/Dominios), y leyes de impuestos (SUNAT) para lanzar tu ERP como un SaaS desde Chiclayo, Perú.
+> **Clasificación:** Estrategia Comercial y Financiera — Mercado Peruano (Chiclayo)  
+> **Stack:** Next.js SPA Export · Supabase PostgreSQL · Vercel CDN  
+> **Versión:** 2.0 — Refactorizado con proyecciones financieras, análisis competitivo y marco tributario SUNAT
 
 ---
 
-## 1. ¿Es rentable? ¿Vale la pena intentarlo?
+## Tabla de Contenidos
 
-**SÍ, es extremadamente rentable y de riesgo CERO.**
-La belleza de tu arquitectura actual (SPA estática + Supabase) es que los costos de inicio son nulos.
-- **Tu costo actual de hospedaje (Vercel):** $0/mes.
-- **Tu costo de Base de Datos (Supabase):** $0/mes.
-- **Riesgo:** Si no consigues ni un solo cliente, no perdiste un solo centavo en servidores.
-- **Ganancia:** Si consigues 10 clientes pagando S/ 150 al mes, son S/ 1,500 de ingresos residuales casi netos.
+1. [Viabilidad Financiera y Análisis de Riesgo](#1-viabilidad-financiera-y-análisis-de-riesgo)
+2. [Análisis Competitivo del Mercado Peruano](#2-análisis-competitivo-del-mercado-peruano)
+3. [Estructura de Costos Operativos (Supabase + Vercel)](#3-estructura-de-costos-operativos)
+4. [Estrategia de Cobros y Pasarelas de Pago](#4-estrategia-de-cobros-y-pasarelas-de-pago)
+5. [Marco Tributario SUNAT para Software como Servicio](#5-marco-tributario-sunat)
+6. [Hoja de Ruta del Producto (MVP → Escala)](#6-hoja-de-ruta-del-producto)
+7. [Plan de Lanzamiento Operativo](#7-plan-de-lanzamiento-operativo)
 
-### Tabla de Proyección de Rentabilidad (MVP)
+---
 
-| Concepto | Escenario Inicial (3 Clientes) | Escenario Medio (10 Clientes) | Escenario Crecimiento (30 Clientes) |
-| :--- | :--- | :--- | :--- |
-| **Ingresos Brutos (S/ 150/mes)** | S/ 450 | S/ 1,500 | S/ 4,500 |
-| **Costo Hosting (Vercel)** | S/ 0 | S/ 0 | S/ 0 |
-| **Costo BD (Supabase)** | S/ 0 (Free Tier) | S/ 0 (Free Tier) | S/ 95 ($25 Plan Pro) |
-| **Costo Dominio (Mensualizado)** | S/ 5 ($1.25) | S/ 5 ($1.25) | S/ 5 ($1.25) |
-| **Utilidad Neta (Antes de imp.)** | **S/ 445 (98.8% Margen)** | **S/ 1,495 (99.6% Margen)** | **S/ 4,400 (97.7% Margen)** |
+## 1. Viabilidad Financiera y Análisis de Riesgo
+
+### 1.1. Modelo de Riesgo
+
+La arquitectura actual (SPA estática + Supabase Free Tier) genera un modelo de negocio con **riesgo financiero cero** en la fase de validación: si no se consigue ningún cliente, el costo acumulado de infraestructura es **$0.00 USD**. La única inversión obligatoria es la adquisición de un dominio comercial (~$15 USD/año).
+
+### 1.2. Proyección de Rentabilidad por Escenario
+
+Proyecciones basadas en un precio de suscripción mensual de **S/ 150.00** por tenant B2B:
+
+| Concepto | Escenario Inicial (3 Clientes) | Escenario Validado (10 Clientes) | Escenario Crecimiento (30 Clientes) | Escenario Escala (100 Clientes) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Ingresos Brutos Mensuales** | S/ 450 | S/ 1,500 | S/ 4,500 | S/ 15,000 |
+| Costo Hosting (Vercel CDN) | S/ 0 | S/ 0 | S/ 0 | S/ 0 |
+| Costo BD (Supabase) | S/ 0 (Free) | S/ 0 (Free) | S/ 95 ($25 Pro) | S/ 95 ($25 Pro) |
+| Costo Dominio (Mensualizado) | S/ 5 | S/ 5 | S/ 5 | S/ 5 |
+| Costo SMTP (Resend.com) | S/ 0 (Free) | S/ 0 (Free) | S/ 0 (Free) | S/ 0 (Free) |
+| **Utilidad Neta (Pre-Impuestos)** | **S/ 445** | **S/ 1,495** | **S/ 4,400** | **S/ 14,900** |
+| **Margen Operativo** | **98.8%** | **99.6%** | **97.7%** | **99.3%** |
 
 ```mermaid
-pie title Distribución de Ingresos (Escenario Medio - 10 Clientes)
-    "Utilidad Pura (S/ 1495)" : 99.6
-    "Costo Dominio (S/ 5)" : 0.4
+%%{init: {'theme': 'default'}}%%
+xychart-beta
+    title "Proyección de Utilidad Neta Mensual por Escenario (Soles)"
+    x-axis "Escenario" ["3 Clientes", "10 Clientes", "30 Clientes", "100 Clientes"]
+    y-axis "Utilidad Neta (S/)" 0 --> 16000
+    bar [445, 1495, 4400, 14900]
 ```
 
-**¿Tiene sentido con el "0 Mantenimiento" que programamos?**
-Tiene TODO el sentido del mundo. Tu app es una "SPA pura" estática. No hay un servidor de Linux que se caiga, no hay Node.js consumiendo RAM. Si entran 1 o 1,000 usuarios, Vercel sirve los archivos HTML/JS gratis. Toda la carga pesada la maneja Supabase (que está diseñado para escalar masivamente).
+### 1.3. Punto de Equilibrio
+
+El negocio genera **utilidad neta positiva desde el primer cliente** debido a que los costos fijos de infraestructura son $0. El único gasto recurrente (dominio: S/ 5/mes) se recupera con el **3.3% del primer cobro al primer cliente**.
 
 ---
 
-## 2. El Mercado: Competencia y tu Propuesta de Valor
+## 2. Análisis Competitivo del Mercado Peruano
 
-Investigué el mercado de software para metalmecánicas y vidrierías en Perú y Latinoamérica.
+### 2.1. Landscape Competitivo
 
-### Competidores Actuales
-Existen empresas como *Epicor*, *Acumatica*, *Visual México*, *Cimatic* y en Perú opciones como *Sistematic Vidrierías* o *Qlever*.
+El mercado de software para metalmecánicas y vidrierías en Perú y Latinoamérica está dominado por soluciones legacy con interfaces anticuadas, modelos de licenciamiento costosos y requerimientos de instalación local.
 
-### ¿Cuál es tu Propuesta de Valor y Diferenciador?
-Toda esa competencia sufre del mismo problema: **Son sistemas de los años 2000.**
-Son lentos, grises, parecen Windows 95, requieren instalación técnica en las computadoras del cliente (On-Premise) o, si están en la nube, cobran miles de dólares por implementación.
+| Dimensión | Competencia Tradicional (Epicor, Visual México, Sistematic, Qlever) | Tu ERP SaaS (Next.js + Supabase) | Ventaja Competitiva |
+| :--- | :--- | :--- | :---: |
+| **Modelo de Despliegue** | On-Premise (servidores locales) o Cloud con semanas de setup | 100% Cloud, acceso inmediato tras registro | 🟢 Crítica |
+| **Interfaz (UX/UI)** | Interfaces Windows 95/2000, grises y complejas | Dark mode moderno, componentes Shadcn/Radix, transiciones React | 🟢 Crítica |
+| **Velocidad de Navegación** | Recargas completas de página por cada acción | SPA (Single Page App), renderizado instantáneo client-side | 🟢 Alta |
+| **Costo de Entrada** | $2,000 - $50,000 USD por implementación inicial | S/ 150/mes, sin compromiso, sin setup | 🟢 Crítica |
+| **Especialización Vertical** | ERPs genéricos adaptados con personalización costosa | Nativo para perfiles de aluminio, cristales, retazos y fórmulas de despiece | 🟢 Alta |
+| **Acceso Móvil** | Nulo o limitado a apps nativas separadas | Responsive PWA desde cualquier navegador | 🟡 Media |
+| **Onboarding** | Requiere técnico presencial para instalación | Self-service: email + contraseña = sistema operativo | 🟢 Crítica |
 
-**Tu diferenciador (Por qué te comprarían a ti):**
-1. **UX/UI Moderno y Hermoso:** Tu sistema se ve espectacular, oscuro, moderno. La estética vende software.
-2. **Ultra Específico:** No es un "ERP para vender zapatos adaptado a ventanas". Está hecho 100% pensando en perfiles, retazos, cristales y despiece matemático.
-3. **Cero Fricción:** "Entra a esta web, pon tu correo, y ya tienes tu ERP funcionando sin instalar nada".
-4. **Velocidad:** Al ser React (Next.js SPA), las vistas cargan en milisegundos.
-
-### Cuadro Comparativo de Competencia
-
-| Característica | Competencia Tradicional (Epicor, Visual, Sistematic) | Tu ERP SaaS (Next.js + Supabase) |
-| :--- | :--- | :--- |
-| **Instalación** | Requiere servidores locales o semanas de setup | 100% Cloud, acceso inmediato (Cero Fricción) |
-| **Interfaz (UX/UI)** | Interfaces anticuadas, grises y complejas | Diseño oscuro, moderno, componentes Shadcn |
-| **Velocidad** | Cargas de página completas por cada clic | SPA (Single Page App), transiciones instantáneas |
-| **Costo de Entrada** | Miles de dólares solo por empezar | S/ 150 a S/ 200 al mes, sin compromiso |
-| **Especialidad** | Genéricos adaptados a la fuerza | Nativo para ventanas, cristales, retazos y fórmulas |
-
-¿Es una ventaja el diseño y la velocidad? **Absolutamente.** En B2B, la gente odia sus sistemas contables porque son feos y lentos. Un sistema rápido enamora a los operadores.
-
----
-
-## 3. Costos Operativos y Supabase Gratis
-
-### ¿Cuánto dura la versión "Gratis" de Supabase?
-Supabase es súper generoso. El plan gratis (Free Tier) te da:
-- **50,000 Usuarios Activos al Mes** (Te sobra, una carpintería tiene 2-5 usuarios).
-- **500 MB de Base de Datos** (El texto plano SQL pesa NADA. 500 MB son literalmente cientos de miles de cotizaciones).
-- **1 GB de Almacenamiento** (Para logos o PDFs).
-- *Única desventaja:* Si nadie se loguea en 7 días, el proyecto se "pausa" para ahorrar recursos (se reactiva con un clic).
-- **¿Cuándo pagarás?** Solo deberías pasar al Plan Pro ($25 USD/mes) cuando tu SaaS ya te esté dando dinero y necesites que nunca se pause, además de tener backups diarios automáticos (Point In Time Recovery). 
-
-### Tabla de Límites de Supabase (Free vs Pro)
-
-| Recurso | Nivel Gratis (Free Tier) | Nivel Pro ($25/mes) | ¿Es suficiente para ti hoy? |
-| :--- | :--- | :--- | :--- |
-| **Usuarios Mensuales** | 50,000 MAUs | 100,000 MAUs | Sí, de sobra (B2B tiene pocos usuarios) |
-| **Tamaño Base de Datos**| 500 MB | 8 GB | Sí, 500MB en texto SQL es masivo |
-| **Almacenamiento (Docs)**| 1 GB | 100 GB | Sí, si no suben fotos gigantes |
-| **Pausado por Inactividad**| A los 7 días sin uso | Nunca | **¡TRUCO ACTIVADO!** Tu workflow `keep-alive-supabase.yml` evita que te apaguen la base de datos simulando actividad cada unos días. |
-| **Backups Automáticos** | Diarios (Sin PITR) | Diarios (con PITR 7 días) | **¡TRUCO ACTIVADO!** Tu workflow `backup-base-datos.yml` corre todas las madrugadas y guarda un backup SQL en tu GitHub gratis. | 
-
-> **💡 Conclusión:** ¡Tienes mucha razón! Tienes las funciones clave del plan Premium de $25 (Tolerancia a inactividad y Backups Exportados) **completamente gratis** gracias a tus automatizaciones en GitHub Actions (`@[.github/workflows]`). Con este ecosistema inteligente que construiste, puedes mantener tu startup operando a S/ 0 al mes durante meses.
-
-### Dominios
-**Sí, necesitas comprar un dominio.** Nadie te pagará por un sistema alojado en `mi-erp-test.vercel.app`. Debes comprar algo como `acerosysistemas.com` o `tu-vidrieria-app.pe`.
-- **Costo:** Aproximadamente **$10 a $15 USD AL AÑO** (Namecheap, GoDaddy). Es el único gasto obligatorio.
-
----
-
-## 4. Cobros, Stripe y Menor Complejidad Posible
-
-### "Quiero la menor complejidad posible para empezar"
-**Regla de oro del emprendedor:** *Haz las cosas que no escalan al principio.*
-Para tus primeros 5-10 clientes, **NO PROGRAMES NINGUNA PASARELA DE PAGO.** No uses Stripe, ni Culqi.
-1. Haz que te paguen por Yape, Plin o Transferencia Bancaria del BCP/Interbank.
-2. Cuando te manden el voucher por WhatsApp, tú entras al panel de Supabase y manualmente les cambias el `estado_suscripcion` a "ACTIVO" hasta el próximo mes. 
-3. **Complejidad cero. Ingresos 100%.**
+### 2.2. Propuesta de Valor Diferenciada
 
 ```mermaid
-sequenceDiagram
-    participant C as Cliente (Carpintería)
-    participant W as Tu WhatsApp
-    participant BD as Supabase
-    participant ERP as Tu ERP
-
-    C->>W: Manda Voucher Yape (S/ 150)
-    W-->>C: Confirmas recepción
-    Note over BD: Activación Manual (Cero código extra)
-    W->>BD: Update tenant_status = 'ACTIVO'
-    BD-->>ERP: Cliente desbloqueado al instante
-```
-
-### ¿Y si crezco y quiero automatizar? ¿Me sirve Stripe?
-**Stripe NO opera oficialmente en Perú.** Si quieres usar Stripe desde Chiclayo, tendrías que abrir una empresa LLC en Estados Unidos (con Stripe Atlas, cuesta ~$500 USD).
-Si quieres automatizar cobros en Perú, tendrás que integrar API de pasarelas locales:
-- **Culqi / Niubiz / MercadoPago:** Te cobran un % alto (aprox 3.5% a 4% + IGV por cada transacción).
-- Por eso, quédate con transferencias bancarias directas el mayor tiempo posible.
-
-```mermaid
-graph TD
-    subgraph AutomatizacionFutura ["Automatización Futura (Stripe/Culqi)"]
-        A([Cliente Paga Suscripción]) -->|Culqi / Niubiz API| B(Pasarela procesa)
-        B -- Cobra 4% + IGV comisión --> C(Tu Banco)
-        B -- Webhook Automático --> D(Tu Servidor / Edge Function)
-        D -- Activa Base de Datos --> E[(Supabase)]
+graph LR
+    subgraph Propuesta de Valor
+        A["🎨 UX/UI Moderno<br/>Dark mode premium"] --> E["Diferenciador<br/>Emocional"]
+        B["🔧 Ultra Específico<br/>Fórmulas de aluminio nativas"] --> F["Diferenciador<br/>Funcional"]
+        C["⚡ Cero Fricción<br/>Sin instalación, sin técnico"] --> G["Diferenciador<br/>Operativo"]
+        D["💰 Precio Disruptivo<br/>S/ 150 vs miles de USD"] --> H["Diferenciador<br/>Financiero"]
     end
 ```
 
+> **Insight Estratégico:** En mercados B2B industriales, la estética de la interfaz es un factor de cierre de venta subestimado. Los operarios de taller rechazan activamente sistemas "feos y lentos", generando resistencia interna a la adopción. Un ERP visualmente moderno reduce la fricción de implementación y acelera el time-to-value del cliente.
+
 ---
 
-## 5. Impuestos (SUNAT) y Factor Legal
+## 3. Estructura de Costos Operativos
 
-> *"¿Sería 100% ingresos? ¿Hay que pagar impuestos o generar facturas en Perú?"*
+### 3.1. Límites del Free Tier de Supabase vs Plan Pro
 
-Lamentablemente, si haces negocios en Perú, **sí hay impuestos**. La SUNAT es estricta.
+| Recurso | Free Tier (Actual) | Plan Pro ($25/mes) | ¿Suficiente Hoy? | Hack Aplicado |
+| :--- | :---: | :---: | :---: | :--- |
+| **Usuarios Activos Mensuales (MAU)** | 50,000 | 100,000 | ✅ Sobrado (B2B = pocos usuarios) | N/A |
+| **Tamaño Base de Datos** | 500 MB | 8 GB | ✅ 500 MB = ~256K cotizaciones | VACUUM FULL periódico |
+| **Almacenamiento de Archivos** | 1 GB | 100 GB | ✅ Con compresión Client-Side | Compresión Canvas HTML5 a 150 KB |
+| **Egress (Ancho de Banda)** | 5 GB | 250 GB | ✅ JSON puro pesa KB | Caché Zustand + Distribución Asimétrica |
+| **Pausado por Inactividad** | 7 días sin uso → Pausa | Nunca | ✅ **Hack Activo** | `keep-alive-supabase.yml` Cron cada 5 días |
+| **Backups Automáticos** | Sin PITR | PITR 7 días | ✅ **Hack Activo** | `backup-base-datos.yml` con `pg_dump` diario |
+| **Correos Auth (Onboarding)** | 3/hora | Ilimitado | ⚠️ **Pendiente** | Resend.com SMTP Custom (3,000/mes gratis) |
+| **Conexiones Simultáneas** | 60 directas / 200 pooler | 60 / 200 (escala con compute) | ✅ **Hack Activo** | PostgREST Stateless (reciclaje en ~10ms) |
 
-1. **Vender Software es un Servicio Digital:**
-   Como estás alquilando un software en la nube, esto está gravado con el **IGV (18%)** y el **Impuesto a la Renta**.
-2. **Formalidad:**
-   Las carpinterías a las que les vendas (B2B) te van a pedir **Factura Electrónica** para deducir sus propios impuestos. No te van a aceptar un simple Yape sin comprobante a menos que sean muy informales.
-3. **¿Qué necesitas hacer?**
-   - Sacar tu **RUC 10 (Persona Natural con Negocio)** o formar una **SAC (RUC 20)** en Chiclayo.
-   - Ponerte en el Régimen MYPE Tributario o Régimen Especial (RER).
-   - Generar Facturas Electrónicas desde el portal gratis de la SUNAT (o usar un facturador).
-   - *Nota:* Si la mensualidad que cobras es S/ 150, la carpintería te exigirá factura. De esos S/ 150, separarás el 18% para el IGV, y al final de mes pagarás tu % de renta a la SUNAT.
+### 3.2. Costo del Dominio Comercial
 
-### Desglose Fiscal SUNAT para una Suscripción Mensual
+Un dominio profesional es el único gasto obligatorio para operar comercialmente. Nadie pagará por acceder a `mi-erp.vercel.app`.
 
-Asumiendo una suscripción de **S/ 150.00** bajo RUC de Régimen MYPE Tributario:
+| Proveedor | Extensión | Costo Anual | Costo Mensualizado |
+| :--- | :--- | :---: | :---: |
+| **Namecheap** | `.com` | ~$10 USD | ~S/ 3.20 |
+| **GoDaddy** | `.com` | ~$15 USD | ~S/ 4.80 |
+| **NIC.PE** | `.pe` | ~$50 USD | ~S/ 16.00 |
 
-| Concepto | Monto (Soles) | Porcentaje Aplicado | Quién se lo queda |
+> **Recomendación:** Adquirir un dominio `.com` por ~$10 USD/año. Configurar DNS apuntando a Vercel mediante el panel de Custom Domains (incluido en Vercel Free).
+
+---
+
+## 4. Estrategia de Cobros y Pasarelas de Pago
+
+### 4.1. Fase 1 — Manual (0 a 10 Clientes)
+
+Para la fase de validación comercial, la regla de oro es: **"Haz las cosas que no escalan al principio."**
+
+*   Cobrar vía **Yape, Plin o Transferencia Bancaria** (BCP/Interbank).
+*   El cliente envía voucher por WhatsApp.
+*   El administrador activa manualmente el `estado_suscripcion = 'ACTIVO'` en la tabla `sys_tenants` de Supabase.
+*   **Complejidad técnica: Cero. Ingresos: 100%.**
+
+```mermaid
+sequenceDiagram
+    participant C as Cliente B2B
+    participant W as WhatsApp del CEO
+    participant BD as Supabase Dashboard
+    participant ERP as ERP SaaS
+
+    rect rgb(230, 240, 255)
+    Note over C, ERP: Flujo de Cobro Manual (Fase 1)
+    C->>W: Envía voucher Yape (S/ 150)
+    W-->>C: Confirma recepción del pago
+    W->>BD: UPDATE sys_tenants SET estado = 'ACTIVO'
+    BD-->>ERP: Tenant desbloqueado instantáneamente
+    end
+```
+
+### 4.2. Fase 2 — Semi-Automatizada (10+ Clientes)
+
+| Pasarela | Disponibilidad en Perú | Comisión por Transacción | Complejidad de Integración | Requisito Legal |
+| :--- | :---: | :---: | :---: | :--- |
+| **Stripe** | ❌ No opera oficialmente | 2.9% + $0.30 | Alta | LLC en EE.UU. ($500 USD vía Stripe Atlas) |
+| **Culqi** | ✅ Nativa | 3.49% + IGV | Media | RUC peruano |
+| **Niubiz (VisaNet)** | ✅ Nativa | 3.5% - 4% + IGV | Alta | RUC + contrato comercial |
+| **MercadoPago** | ✅ Nativa | 3.49% + IGV | Baja | RUC peruano |
+| **Yape Empresas** | ✅ Nativa | 0% (transferencia directa) | Nula | Cuenta BCP |
+
+```mermaid
+graph TD
+    subgraph Automatización Futura
+        A["Cliente Paga Suscripción"] -->|"Culqi / Niubiz API"| B["Pasarela Procesa"]
+        B -- "Cobra ~4% + IGV de comisión" --> C["Tu Cuenta Bancaria"]
+        B -- "Webhook automático" --> D["Edge Function / API Route"]
+        D -- "UPDATE estado = ACTIVO" --> E["Supabase PostgreSQL"]
+    end
+```
+
+> **Recomendación Estratégica:** Mantener el cobro manual (Yape/Transferencia) el mayor tiempo posible. Las comisiones de pasarelas (3.5-4% + IGV) sobre S/ 150 representan ~S/ 6.30 perdidos por cliente por mes. Con 30 clientes, eso serían S/ 189/mes evaporados en comisiones que podrían ir directo a tu utilidad.
+
+---
+
+## 5. Marco Tributario SUNAT
+
+### 5.1. Clasificación Fiscal
+
+Vender software en la nube en Perú se clasifica como **Servicio Digital**, gravado con:
+*   **IGV (Impuesto General a las Ventas):** 18% sobre el valor de venta.
+*   **Impuesto a la Renta:** Variable según régimen tributario.
+
+### 5.2. Requisitos de Formalización
+
+| Requisito | Detalle | Costo Aproximado |
+| :--- | :--- | :---: |
+| **RUC** | Persona Natural con Negocio (RUC 10) o SAC (RUC 20) | Gratis (SUNAT) |
+| **Régimen Tributario** | MYPE Tributario o Régimen Especial (RER) | N/A |
+| **Facturación Electrónica** | Portal gratuito SUNAT o facturador externo (Nubefact, eBIZ) | S/ 0 - S/ 50/mes |
+| **Libros Electrónicos** | PLE (Programa de Libros Electrónicos) | Gratis (SUNAT) |
+
+> **Nota Crítica:** Los clientes B2B (talleres, carpinterías formales) exigirán **Factura Electrónica** para deducir el gasto en su propia contabilidad. No aceptarán un simple comprobante de Yape sin Factura asociada.
+
+### 5.3. Desglose Fiscal por Suscripción
+
+Análisis detallado de una suscripción mensual de **S/ 150.00** bajo Régimen MYPE Tributario:
+
+| Concepto | Monto (S/) | % del Total | Destino |
+| :--- | :---: | :---: | :--- |
+| **Precio Total Facturado al Cliente** | **S/ 150.00** | 100.0% | Lo paga el cliente |
+| Valor Venta (Base Imponible) | S/ 127.12 | 84.7% | Base para cálculos |
+| IGV (Débito Fiscal) | S/ 22.88 | 15.3% | Pago a SUNAT (reducible con Crédito Fiscal) |
+| Impuesto a la Renta Mensual (1%) | S/ 1.27 | 0.8% | Pago a cuenta SUNAT |
+| **Ingreso Efectivo Líquido** | **S/ 125.85** | **83.9%** | **Directo a tu bolsillo** |
+
+```mermaid
+%%{init: {'theme': 'default'}}%%
+pie title Distribución de cada S/ 150 cobrados
+    "Ingreso Líquido (S/ 125.85)" : 83.9
+    "IGV a SUNAT (S/ 22.88)" : 15.3
+    "Renta a Cuenta (S/ 1.27)" : 0.8
+```
+
+> **Optimización Fiscal:** El IGV pagado (S/ 22.88) es reducible mediante **Crédito Fiscal**. Las facturas de compras relacionadas al negocio (dominio, hosting futuro, equipos, recibo de luz de oficina, internet) generan IGV recuperable que se descuenta del débito fiscal mensual.
+
+### 5.4. Proyección Fiscal Anual por Escenario
+
+| Escenario | Ingresos Brutos Anuales | IGV Anual | Renta Anual (1%) | Ingreso Neto Anual |
+| :--- | :---: | :---: | :---: | :---: |
+| 3 Clientes | S/ 5,400 | S/ 823 | S/ 46 | **S/ 4,531** |
+| 10 Clientes | S/ 18,000 | S/ 2,746 | S/ 153 | **S/ 15,101** |
+| 30 Clientes | S/ 54,000 | S/ 8,237 | S/ 458 | **S/ 45,305** |
+| 100 Clientes | S/ 180,000 | S/ 27,458 | S/ 1,525 | **S/ 151,017** |
+
+---
+
+## 6. Hoja de Ruta del Producto
+
+### 6.1. Evolución por Fases
+
+| Fase | Producto | Funcionalidades Clave | Criterio de Transición |
 | :--- | :--- | :--- | :--- |
-| **Precio Total Facturado** | **S/ 150.00** | 100% | Cliente lo paga |
-| **Valor Venta (Sin IGV)** | S/ 127.12 | Base Imponible | Para Tu Empresa |
-| **IGV a Pagar (Débito Fiscal)** | S/ 22.88 | 18% del Valor Venta | Pago a SUNAT (Menos tus compras) |
-| **Impuesto a la Renta Mensual** | S/ 1.27 | 1% del Valor Venta | Pago a SUNAT a cuenta |
-| **Ingreso Efectivo Líquido** | **S/ 125.85** | ~83.9% | DIRECTO A TU BOLSILLO |
+| **MVP (Actual)** | ERP Single-Tenant | Cotización rápida, fórmulas estáticas, inventario, Kardex, Dashboard | Producto operativo y estable |
+| **SaaS v1** | ERP Multi-Tenant | `tenant_id` + RLS, onboarding self-service, cobro manual | Primer cliente externo pagando |
+| **SaaS v2** | ERP Multi-Tenant + Cobros | Pasarela de pago automatizada (Culqi), facturación electrónica | 10+ clientes activos |
+| **SaaS v3** | ERP con Diseñador Visual | Módulo SVG de tipologías de ventanas, catálogo visual con Cloudflare R2 | Demanda validada por clientes que pagan |
 
-*Nota: El IGV de S/ 22.88 que le pagas a la SUNAT se puede reducir si tienes compras relacionadas al negocio (hosting, dominios, recibo de luz de tu oficina) usando el Crédito Fiscal.*
-
----
-
-## 6. Evolución del Producto (Tipologías)
-
-> *"¿Tendría que desarrollar las tipologías visuales más adelante?"*
-
-Para arrancar el SaaS MVP (Producto Mínimo Viable), **NO.**
-Lo que tienes ahora (cotización rápida + fórmulas estáticas + inventario y tablero Kanban) es oro puro frente a llevar cuentas en cuadernos. 
-
-Cuando ya tengas clientes pagando y exigiendo diseño visual de ventanas, usas el dinero de esas suscripciones para financiar tu tiempo desarrollando el módulo SVG de tipologías que borramos hoy. **El software se construye escuchando a los clientes que pagan, no a los imaginarios.**
+> **Principio de Desarrollo:** *"El software se construye escuchando a los clientes que pagan, no a los imaginarios."* No invertir tiempo de desarrollo en funcionalidades especulativas hasta que la demanda sea validada con ingresos reales.
 
 ---
 
-## 🎯 Conclusión Final
-**Hazlo.**
-Tienes un producto técnico muy maduro alojado en infraestructura gratuita (Vercel + Supabase).
-1. Compra un dominio por $15.
-2. Saca tu RUC.
-3. Visita talleres de metalmecánica y fábricas de muebles en Chiclayo. Enséñales la app en tu celular (es responsiva).
-4. Cóbrales S/ 100 o 200 al mes por Yape. Ábreles la cuenta a mano en Supabase.
-5. Cuando llegues a 10 clientes, formalizas pasarelas de pago y mejoras la app basándote en lo que ellos pidan.
+## 7. Plan de Lanzamiento Operativo
 
----
+### 7.1. Checklist de Go-To-Market
 
-## 7. Anexo: Otros "Trucos" Avanzados para Exprimir el Plan Gratis
+```mermaid
+graph TD
+    subgraph Plan de Lanzamiento
+        A["1. Comprar Dominio<br/>~$15 USD/año"] --> B["2. Sacar RUC<br/>Persona Natural con Negocio"]
+        B --> C["3. Visitar Talleres<br/>Metalmecánicas de Chiclayo"]
+        C --> D["4. Demo en Celular<br/>El ERP es responsive/PWA"]
+        D --> E["5. Cerrar Primeros 3 Contratos<br/>S/ 100-200/mes por Yape"]
+        E --> F["6. Activar Tenants<br/>Manual en Supabase Dashboard"]
+        F --> G["7. Iterar con Feedback<br/>Mejorar según lo que pidan"]
+        G --> H["8. Escalar a 10+<br/>Formalizar cobros y facturación"]
+    end
+```
 
-Además del hack del "Static Export" (que hace que Vercel pague por tu ancho de banda visual y Supabase solo envíe JSON ligero), aquí tienes 3 trucos nivel Dios que tu competencia que usa AWS o Azure no conoce:
+### 7.2. Inversión Inicial Requerida
 
-### Truco 1: Evadir el Límite de Emails (Auth)
-- **El Problema:** El plan gratis de Supabase te restringe a enviar máximo **3 correos por hora** (para recuperar contraseña o confirmar cuentas). Si 4 clientes olvidan su contraseña a la 1 PM, el cuarto no podrá entrar.
-- **Tu Solución:** Crea una cuenta gratuita en **Resend** (Startups de correos, te da 3,000 correos al mes gratis). Copias su API Key y la pegas en Settings > Auth > SMTP de Supabase. Instántaneamente tienes 100 correos gratis al día sin bloqueos.
-
-### Truco 2: Evadir el Límite de Storage (1 GB)
-- **El Problema:** 1 GB de disco duro gratuito en Supabase se puede llenar si subes imágenes pesadas.
-- **Tu Solución:** **Regla estricta:** NINGUNA imagen visual de la interfaz (Tu logo, los fondos, los íconos, gráficos genéricos) debe vivir en Storage. Todo eso debe ir adentro de la carpeta `public/` de Next.js. De esta forma, esas miles de imágenes las regala Vercel en su CDN. Supabase Storage *solo* se debe usar para cosas dinámicas (La foto del taller que subió tu cliente o sus PDFs generados).
-
-### Truco 3: Evasión del Cuello de Botella de Conexiones (60 DB Connections)
-- **El Problema:** El plan gratis limita a 60 conexiones simultáneas directas a la base de datos (PostgreSQL). Si 61 clientes abren la web exacto al mismo segundo, la base explota.
-- **Tu Solución Inconsciente:** Tú **no** estás usando conexiones directas de Postgres. Tu código usa `supabase-js`, el cual se comunica a través de **PostgREST** (una API HTTP). Las APIs son "stateless" (sin estado), entran, piden el dato y se desconectan en milisegundos. Gracias a esta arquitectura de API, puedes tener **cientos** de clientes concurrentes sin jamás chocar con el límite mortal de 60 conexiones directas de TCP. ¡Ya tienes el nivel de escalabilidad de Netflix sin haber escrito código complejo!
+| Concepto | Costo | Frecuencia | Obligatorio |
+| :--- | :---: | :--- | :---: |
+| Dominio `.com` | ~S/ 40 | Anual | ✅ |
+| Hosting (Vercel) | S/ 0 | Mensual | ✅ |
+| Base de Datos (Supabase) | S/ 0 | Mensual | ✅ |
+| SMTP (Resend.com) | S/ 0 | Mensual | ✅ |
+| RUC SUNAT | S/ 0 | Único | ✅ |
+| **Total Inversión Inicial** | **~S/ 40** | — | — |
