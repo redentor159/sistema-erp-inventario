@@ -129,6 +129,20 @@ graph TD
 | **PDF Factura Digital genérico** | 0.05 MB (50 KB) | ~20,480 Documentos Totales | **Años.** Muy eficiente en espacio nativo. |
 | **Foto Comprimida (Con Truco 5)** | 0.15 MB (150 KB) | ~6,826 Imágenes Totales | **Años.** Escalabilidad en fotos físicas asegurada. |
 
+### 6. El Hack de la Aspiradora de Tuplas (Postgres VACUUM)
+*   **El Escenario Extremo:** Supabase te da un límite inamovible de **500 MB** de espacio físico para la Base de Datos. Con el tiempo, tus 50 inquilinos borrarán miles cotizaciones fallidas, clientes, o productos del catálogo maestro.
+*   **El Problema:** PostgreSQL (el motor de Supabase) **NUNCA borra los datos físicamente del disco duro al instante**. Cuando haces un `DELETE`, la base de datos simplemente marca la fila como "Tupla Muerta" (Dead Tuple) y la vuelve invisible para ti, pero el archivo en el disco duro sigue pesando Megabytes. En 2 años tendrás 300 MB de "basura invisible" devorando inútilmente tu límite gratuito.
+*   **El Truco Definitivo:** Aunque Supabase tiene un AutoVacuum, suele ser conservador. La táctica agresiva B2B es crear un Cron-Job SQL o abrir la consola de SQL temporalmente y ejecutar el comando militar `VACUUM FULL;`. Esto bloquea tu tabla por unos segundos y obliga al disco duro a reescribirse desde cero, triturando el aire vacío y **recuperando decenas o cientos de Megabytes de tu cuota de 500 MB al instante**.
+
+### 7. El Hack de Caching Periférico Modular (Zustand Local Persist)
+*   **El Escenario Extremo:** Tienes a 200 carpinteros entrando a tu sistema desde sus celulares. La primera pantalla que abren siempre pregunta a la base de datos por los catálogos estáticos de "Materiales", "Acabados", "Marcas" y "Familias".
+*   **El Problema:** 200 usuarios * 4 queries maestras = 800 lecturas a Supabase consumidas en el primer minuto del día de forma innecesaria. Se desperdicia Poder de Cómputo API.
+*   **El Truco Definitivo:** Los catálogos maestros de aluminio (Ej. "Línea Herrero") rara vez cambian. Cuando programemos la App Multi-Tenant, implementaremos librerías como `Zustand con Persist` para descargar el catálogo y guardarlo en la Memoria Interna (LocalStorage/IndexedDB) del propio navegador celular del cliente la primera vez que inicie sesión. Al día siguiente, el catálogo cargará de la memoria de su teléfono en `0.001 segundos` **haciendo CERO peticiones a Supabase**. Tu uso de API web caerá un 80% milagrosamente.
+
+### 8. El Hack de Inserción Balística (PostgREST RPC Batching)
+*   **El Escenario Extremo:** Un gran distribuidor de vidrios firma contigo y decide migrar su Excel de 5,000 productos a tu nuevo ERP mediante un botón "Importar Excel".
+*   **El Problema:** Si tu código Front-end lee el Excel y usa un bucle (Loop Javascript) haciendo `supabase.from('productos').insert(fila)` 5,000 veces seguidas, desencadenarás 5,000 golpes de red HTTP al servidor. El Firewall de Supabase lo detectará como un Ataque DDOS y **te baneará la IP de la API por exceso de tráfico**.
+*   **El Truco Definitivo:** Las operaciones masivas (Bulk Inserts) **JAMÁS** se hacen desde el Front-end fila por fila. Convertiremos todo el Excel a un masivo "Paquete JSON" en la memoria del cliente. Enviaremos ese bloque gigante en **1 sola petición HTTP (1 solo golpe de red)** hacia una función almacenada en el backend de Postgres (`RPC / Stored Procedure`). Supabase usará todo el poder bruto de su procesador local para devorar y guardar los 5,000 registros en medio segundo sin inmutarse, manteniendo tu cuota de tráfico totalmente limpia.
 ---
 
 ## 💎 PARTE 3: ESTRATEGIA DE NEGOCIO Y ARQUITECTURA "MULTI-TENANT"
