@@ -15,6 +15,8 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize,
+  Menu,
+  X,
 } from "lucide-react";
 import {
   Dialog,
@@ -168,6 +170,12 @@ export function HelpPanel({ collapsed }: { collapsed?: boolean }) {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const contentRef = useRef<HTMLDivElement>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Close mobile menu when doc changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [selectedDoc]);
 
   // Fetch manifest on first open
   useEffect(() => {
@@ -272,10 +280,25 @@ export function HelpPanel({ collapsed }: { collapsed?: boolean }) {
         </DialogHeader>
 
         <div className="flex flex-1 overflow-hidden relative">
+          {/* Mobile Backdrop */}
+          {isMobileMenuOpen && (
+            <div
+              className="absolute inset-0 bg-black/40 z-20 md:hidden transition-opacity"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+          )}
+
           {/* Sidebar File explorer */}
-          <div className="w-[300px] flex-shrink-0 border-r border-[#d0d7de] bg-white overflow-y-auto hidden md:flex flex-col">
-            <div className="px-4 py-3 border-b border-[#d0d7de] bg-[#f6f8fa]">
-              <div className="relative">
+          <div className={`absolute md:relative z-30 h-full w-[280px] sm:w-[300px] flex-shrink-0 border-r border-[#d0d7de] bg-white overflow-y-auto flex flex-col transition-transform duration-300 left-0 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+            }`}>
+            <div className="px-4 py-3 border-b border-[#d0d7de] bg-[#f6f8fa] flex items-center gap-2">
+              <button
+                className="md:hidden p-1.5 text-gray-500 hover:bg-gray-200 rounded-md shrink-0"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <X className="h-4 w-4" />
+              </button>
+              <div className="relative flex-1">
                 <Search className="absolute left-2.5 top-2 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
@@ -314,8 +337,8 @@ export function HelpPanel({ collapsed }: { collapsed?: boolean }) {
                       key={doc.id}
                       onClick={() => setSelectedDoc(doc)}
                       className={`w-full text-left px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors flex items-center gap-2 ${isSelected
-                          ? "bg-[#0969da] text-white"
-                          : "text-[#24292f] hover:bg-[#f3f4f6]"
+                        ? "bg-[#0969da] text-white"
+                        : "text-[#24292f] hover:bg-[#f3f4f6]"
                         }`}
                     >
                       <FileText
@@ -335,20 +358,27 @@ export function HelpPanel({ collapsed }: { collapsed?: boolean }) {
             className="flex-1 overflow-y-auto bg-white scroll-smooth relative"
           >
             {/* Breadcrumb Header estilo GitHub */}
-            <div className="sticky top-0 z-10 bg-[#f6f8fa] border-b border-[#d0d7de] px-6 py-2.5 flex items-center justify-between text-sm text-[#24292f]">
+            <div className="sticky top-0 z-10 bg-[#f6f8fa] border-b border-[#d0d7de] px-4 md:px-6 py-2.5 flex items-center justify-between text-sm text-[#24292f]">
               <div className="flex items-center gap-1 font-semibold">
+                <button
+                  className="md:hidden mr-1 p-1 text-gray-500 hover:bg-gray-200 hover:text-gray-900 rounded-md transition-colors"
+                  onClick={() => setIsMobileMenuOpen(true)}
+                  title="Toggle Menu"
+                >
+                  <Menu className="h-4 w-4" />
+                </button>
                 <span className="text-blue-600 hover:underline cursor-pointer">
                   docs
                 </span>
                 <span className="text-[#57606a] mx-1">/</span>
-                <span>{selectedDoc.path?.split("/").pop()}</span>
+                <span className="truncate max-w-[150px] sm:max-w-[300px]">{selectedDoc.path?.split("/").pop()}</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-[#57606a]">
                 <Bookmark className="h-4 w-4" /> Markdown Source
               </div>
             </div>
 
-            <div className="p-8 md:p-12">
+            <div className="p-4 sm:p-8 md:p-12 overflow-x-hidden">
               {loading ? (
                 <div className="flex flex-col items-center justify-center h-[50vh] space-y-4">
                   <div className="h-8 w-8 border-4 border-[#0969da] border-t-transparent rounded-full animate-spin"></div>
@@ -364,12 +394,12 @@ export function HelpPanel({ collapsed }: { collapsed?: boolean }) {
                       <div className="w-3 h-3 rounded-full bg-gray-300"></div>
                       <div className="w-3 h-3 rounded-full bg-gray-300"></div>
                     </div>
-                    <span className="text-[#24292f] text-sm font-semibold ml-4">
+                    <span className="text-[#24292f] text-sm font-semibold ml-4 truncate">
                       {selectedDoc.title}
                     </span>
                   </div>
                   <div
-                    className="markdown-body p-8 lg:p-10 font-sans"
+                    className="markdown-body p-4 sm:p-8 lg:p-10 font-sans w-full max-w-full overflow-x-auto"
                     style={{ backgroundColor: "white" }}
                   >
                     <ReactMarkdown
