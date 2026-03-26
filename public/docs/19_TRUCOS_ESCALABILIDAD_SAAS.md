@@ -1,224 +1,348 @@
-# 🚀 Enciclopedia de Hacks: Exprimir el Plan Gratis al 100%
+# Documento Técnico-Ejecutivo: Estrategia de Escalabilidad SaaS B2B "Zero-Cost"
 
-Esta es la investigación más profunda, exhaustiva y extrema sobre cómo evadir legalmente (y mediante pura ingeniería) los límites de tu infraestructura grauita (Vercel y Supabase). 
-
-Aquí no hay redundancia. Está dividido estrictamente en lo que **ya lograste sin darte cuenta** y lo que **tienes que programar urgentemente** cuando migres a SaaS.
+> **Clasificación:** Arquitectura de Infraestructura — ERP Metalmecánico Multi-Tenant  
+> **Stack:** Next.js (SPA Export) · Supabase (PostgreSQL + PostgREST) · Vercel (CDN Estático)  
+> **Versión:** 2.0 — Refactorizado y reestructurado por categoría temática y prioridad de implementación
 
 ---
 
-## ✅ PARTE 1: LOS TRUCOS QUE YA APLICAS (Y por qué eres invencible hoy)
+## Tabla de Contenidos
 
-Estos son los atajos arquitectónicos que tu aplicación ya ejecuta todos los días. Si fueras una empresa "típica", estos 5 puntos te costarían cientos de dólares mensuales en servidores AWS/Azure.
+1. [Resumen Ejecutivo](#1-resumen-ejecutivo)
+2. [Matriz de Priorización de Implementación](#2-matriz-de-priorización-de-implementación)
+3. [Categoría A — Infraestructura y Despliegue (Edge/CDN)](#3-categoría-a--infraestructura-y-despliegue)
+4. [Categoría B — Arquitectura de Base de Datos (PostgreSQL)](#4-categoría-b--arquitectura-de-base-de-datos)
+5. [Categoría C — Caché, Red y Operaciones Masivas](#5-categoría-c--caché-red-y-operaciones-masivas)
+6. [Categoría D — Storage, Monetización y Seguridad Multi-Tenant](#6-categoría-d--storage-monetización-y-seguridad-multi-tenant)
+7. [Escenario de Falla Estructural (Día del Juicio)](#7-escenario-de-falla-estructural)
 
-### 1. El Hack de "Vercel Zero-Compute" (Exportación Estática)
-*   **El Límite Técnico:** Vercel "Hobby" (Gratis) te da 100 GB-Horas de procesamiento. Quienes usan un framework normal de Next.js (`Server-Side Rendering`) gastan tiempo de procesador por cada clic que da un usuario. Cuando pasan el límite, Vercel apaga su página.
-*   **Tu Jugada:** Tu código tiene `output: 'export'` en `next.config.ts`. Esto mata a Next.js antes de subir a producción y lo convierte todo en archivos de texto HTML/JS muertos.
-*   **El Resultado:** Como entregas archivos muertos, Vercel no corre NINGÚN proceso. Tu consumo de servidor es **0.00 GB-Horas mensuales**. Vercel actúa únicamente como un disco duro global regalándote 100 GB de ancho de banda. Jamás te van a suspender por "pensar" demasiado.
+---
 
-### Cuadro Analítico: Cómputo SSR vs SPA (Exportación Estática)
-| Métrica Operativa | Web Tradicional SSR (Ej. Tienda Online) | Tu ERP SaaS SPA Estático | Ahorro Realizado |
-| :--- | :--- | :--- | :--- |
-| **Generación de HTML** | Por cada clic (Consume Servidor) | Cero (Ya compilado antes de subir) | 100% de GB-Horas |
-| **Consumo de Memoria RAM**| Alto (Node.js en background) | Inexistente (Archivos muertos) | 100% Memoria Libre |
-| **Tiempo Máxtimo (Timeouts)**| 10s límite (Funciones cortadas) | Infinito (Lo procesa la PC del cliente) | Interfaz a prueba de fallas |
+## 1. Resumen Ejecutivo
 
-### 2. El Hack del "Ancho de Banda Asimétrico" (Vercel vs Supabase)
-*   **El Límite Técnico:** Supabase Gratis solo te permite enviar 5 GB de datos al mes (Egress). Es un número bajísimo si tuvieras que enviar imágenes desde ahí, chocarías contra el muro rápido.
-*   **Tu Jugada:** Toda la carga gráfica pesada de tu App (fondos, fuentes de texto, íconos de Radix/Shadcn, gráficos de ventanas, Next.js SVG) vive en el frontend.
-*   **El Resultado:** Vercel (con sus 100 GB gratis) se come el impacto pesado de enviar tu diseño a los clientes. Supabase (con sus 5 GB gratis) se dedica **únicamente a enviar respuestas en formato JSON de texto puro**. Como un archivo JSON de 1,000 cotizaciones pesa solo unos pocos KiloBytes, es matemáticamente imposible agotar los 5 GB de Supabase usando solo texto. Tu motor está perfectamente divorciado: la pintura pesada la carga Vercel, el papel ligero lo carga Supabase.
+Este documento define la estrategia técnica completa para operar un ERP SaaS B2B Multi-Tenant con costos de infraestructura cercanos a **$0 USD** durante los primeros **23 meses** de operación comercial. La arquitectura explota las asimetrías de transferencia de datos entre Vercel (Capa Frontal CDN) y Supabase/PostgreSQL (Capa de Persistencia), neutralizando los límites duros de cómputo, almacenamiento, conexiones y ancho de banda.
+
+El documento agrupa **8 tácticas de ingeniería** en 4 categorías temáticas, diferenciando claramente las que **ya están operativas** de las que **requieren implementación** antes del lanzamiento SaaS, ordenadas por prioridad de riesgo.
+
+---
+
+## 2. Matriz de Priorización de Implementación
+
+Esta tabla consolida todas las tácticas del documento, ordena por criticidad descendente, y clasifica por estado actual.
+
+| Prioridad | Estado | ID | Táctica | Categoría | Límite que Neutraliza | Impacto si NO se Implementa |
+| :---: | :---: | :---: | :--- | :--- | :--- | :--- |
+| **P0 (Crítica)** | ✅ Operativa | A1 | Frontend SPA Estático (`output: 'export'`) | Infraestructura | 100 GB-Horas de CPU Vercel | Suspensión del sitio por exceso de cómputo |
+| **P0 (Crítica)** | ✅ Operativa | A2 | Ancho de Banda Asimétrico (Vercel ↔ Supabase) | Infraestructura | 5 GB Egress Supabase | Corte de servicio por saturación de Egress |
+| **P0 (Crítica)** | ✅ Operativa | A3 | Anti-Pausa Cron (Keep-Alive) | Infraestructura | Pausa automática tras 7 días de inactividad | Base de datos congelada, pantalla de error |
+| **P0 (Crítica)** | ✅ Operativa | B1 | Backups PITR vía GitHub Actions | Base de Datos | Sin backups en tier Free | Pérdida total e irreversible de datos |
+| **P0 (Crítica)** | ✅ Operativa | B2 | Evasión del Límite de 60 conexiones TCP (PostgREST) | Base de Datos | 60 conexiones simultáneas PostgreSQL | Colapso bajo concurrencia B2B |
+| **P1 (Alta)** | 🕒 Pendiente | B3 | Índices GIN/B-Tree sobre `tenant_id` (RLS) | Base de Datos | CPU al 100% por Sequential Scans | Timeout y suspensión del servicio |
+| **P1 (Alta)** | 🕒 Pendiente | D1 | Compresión Client-Side de Archivos Subidos | Storage | 1 GB Supabase Storage | Llenado del Storage en semanas |
+| **P1 (Alta)** | 🕒 Pendiente | D2 | SMTP Custom con Resend.com | Autenticación | 3 correos/hora Supabase Auth | Bloqueo del Onboarding de empleados |
+| **P2 (Media)** | 🕒 Pendiente | C1 | Zustand Persist (Caché de Catálogos Maestros) | Caché/Red | Lecturas API redundantes (Egress) | Consumo acelerado del Egress de 5 GB |
+| **P2 (Media)** | 🕒 Pendiente | A4 | Analíticas Off-Grid (PostHog / GA4) | Infraestructura | 2,500 eventos Vercel Analytics | Ceguera operativa o cobro de $20/mes |
+| **P3 (Baja)** | 🕒 Pendiente | C2 | RPC Batching (Inserciones Masivas) | Caché/Red | Rate Limiting / Flagging DDOS | Baneo de IP al importar catálogos Excel |
+| **P3 (Baja)** | 🕒 Pendiente | B4 | `VACUUM FULL` Programado (Desfragmentación) | Base de Datos | 500 MB de DB invadidos por Tuplas Muertas | Llenado fantasma del disco sin datos reales |
+| **P3 (Baja)** | 🕒 Pendiente | D3 | Cloudflare R2 para Catálogo de Imágenes | Storage | 1,000 optimizaciones de imagen Vercel | Fotos rotas con error `402 Payment Required` |
+
+---
+
+## 3. Categoría A — Infraestructura y Despliegue
+
+Esta categoría abarca las tácticas que gobiernan cómo el código llega al usuario final y cómo se distribuye el tráfico entre los proveedores de infraestructura.
+
+### A1. Neutralización de Cómputo Activo (SPA Export) — ✅ Operativa
+
+*   **Límite Técnico:** Vercel "Hobby" otorga 100 GB-Horas de procesamiento. En una arquitectura SSR (Server-Side Rendering), cada petición HTTP activa un proceso Node.js que consume CPU para generar HTML dinámicamente. Un ERP B2B con 50 usuarios concurrentes agotaría esta cuota en días.
+*   **Implementación Actual:** La directiva `output: 'export'` en `next.config.ts` transforma Next.js en un generador de archivos HTML/JS estáticos en tiempo de compilación. Vercel se degrada intencionalmente a un CDN (Content Delivery Network) que sirve binarios muertos.
+*   **Resultado:** Consumo de cómputo servidor: **0.00 GB-Horas**. La totalidad del renderizado (tablas, formularios, cálculos) se ejecuta en la CPU/RAM del dispositivo del usuario final.
+
+| Métrica Operativa | Arquitectura SSR Tradicional | Arquitectura SPA Estática (Actual) | Ahorro |
+| :--- | :--- | :--- | :---: |
+| Generación de HTML | Por cada petición (consume CPU servidor) | Precompilado antes del despliegue | **100%** |
+| Consumo de RAM en Servidor | Alto (instancias Node.js en background) | Inexistente (archivos estáticos) | **100%** |
+| Timeout por Funciones | 10s límite (funciones cortadas arbitrariamente) | Infinito (lo procesa el PC del cliente) | **N/A** |
+
+### A2. Distribución Asimétrica del Ancho de Banda — ✅ Operativa
+
+*   **Límite Técnico:** Supabase Free permite únicamente **5 GB de Egress mensal**. Vercel Free otorga **100 GB**.
+*   **Implementación Actual:** Todos los activos pesados (CSS, fuentes tipográficas, íconos SVG, JavaScript compilado) se sirven desde Vercel CDN. Supabase transmite exclusivamente payloads JSON de texto puro (cotizaciones, catálogos, clientes).
+*   **Resultado:** Una consulta JSON de 1,000 cotizaciones pesa ~50 KB. Para saturar los 5 GB de Supabase se necesitarían **~100,000 consultas masivas mensuales**, un volumen inalcanzable para un ERP de manufactura.
 
 ```mermaid
 graph TD
-    subgraph El_Hack_de_Ancho_De_Banda_Asimetrico
-        C((PC del Carpintero)) -- "1. Pide la App (15 MB de Fondos e Imágenes)" --> V[Vercel Global CDN]
-        C -- "2. Pide datos (5 KB JSON de las cotizaciones)" --> S[(Supabase)]
-        
-        V -- "Impacta tu Límite de 100 GB GRATIS" --> V_Lim(Sobrado)
-        S -- "Impacta tu Límite de 5 GB GRATIS" --> S_Lim(Sobrado)
+    subgraph Distribución Asimétrica de Tráfico
+        C["Navegador del Operario"] -- "1. Descarga Inicial: HTML/CSS/JS (15 MB)" --> V["Vercel CDN<br/>Límite: 100 GB"]
+        C -- "2. Peticiones de Datos: JSON (5 KB por query)" --> S["Supabase PostgREST<br/>Límite: 5 GB"]
+        V -- "Consumo: < 1% del límite mensual" --> V_OK["✅ Excedente masivo"]
+        S -- "Consumo: < 0.1% del límite mensual" --> S_OK["✅ Excedente masivo"]
     end
 ```
 
-### 3. El Hack de Inmortalidad (Anti-Pausa Inteligente)
-*   **El Límite Técnico:** Supabase odia los proyectos fantasma. Si nadie entra a tu app en 7 días, clavan un proceso que detiene (Pausa) tu base de datos para ahorrar dinero en sus servidores de Amazon. Si un cliente entra el día 8, verá la pantalla caída.
-*   **Tu Jugada:** Programaste un Workflow en tu repositorio de GitHub (`keep-alive-supabase.yml`) que se disfraza de usuario y golpea silenciosamente tu base de datos mediante tareas automatizadas Cron (agendadas en la nube).
-*   **El Resultado:** Como el robot de GitHub le dice "Hola" a Supabase regularmente, los servidores de Supabase creen que el sistema está siendo usado por una persona real. Obteniendo 100% de disponibilidad continua (Uptime) sin pagar el Plan Pro.
+### A3. Sistema Anti-Pausa Cron (Keep-Alive) — ✅ Operativa
 
-### 4. El Hack de Resiliencia Empresarial (Backups "PITR" Gratuitos)
-*   **El Límite Técnico:** Las bases de datos gratuitas en la nube modernas son un peligro porque no tienen respaldos diarios ("Point In Time Recovery" o PITR). Si borras algo por accidente, mueres. Para tener PITR en Supabase, la cuota es de $25 a $29 dólares al mes.
-*   **Tu Jugada:** Tienes un segundo robot en GitHub llamado `backup-base-datos.yml`.
-*   **El Resultado:** Ese robot extrae brutalmente todos tus datos puros en la madrugada vía `pg_dump` y los guarda en un archivo `backup.sql` en tu repositorio. Tienes la seguridad de un banco de clase mundial, sin pagar el sueldo del banco.
+*   **Límite Técnico:** Supabase suspende ("pausa") la instancia PostgreSQL de proyectos Free tras **7 días continuos sin actividad** registrada en el Dashboard. La detección ignora el tráfico API entrante, evaluando solo sesiones de consola.
+*   **Implementación Actual:** Workflow `keep-alive-supabase.yml` en GitHub Actions ejecuta un `SELECT 1` programado vía Cron cada 5 días, simulando actividad de usuario.
+*   **Resultado:** La instancia PostgreSQL permanece activa indefinidamente (**100% de Uptime**) sin intervención manual ni pago del Plan Pro.
 
-### 5. La Evasión del Límite de "60 Conexiones" (PostgREST)
-*   **El Límite Técnico:** Un servidor tradicional PostgreSQL sufre para tener más de 60 clientes conectados y mandando comandos TCP simultáneamente. Si en tu SaaS loguean 61 personas a la misma milésima de segundo, la base explota.
-*   **Tu Jugada:** Tú nunca conectas tu app a "PostgreSQL" directamente. Tú usas la librería `@supabase/supabase-js`, la cual pide las cosas a través de una API web rápida (PostgREST).
-*   **El Resultado:** Las conexiones por API son "Stateless" (no hay estado fijo). El usuario pide "dame la cotización", PostgREST saca la foto, se la avienta y le cierra la puerta en 10 milisegundos. Esta limpieza hiper-rápida permite que tu servidor gratuito atienda a miles de clientes al mismo tiempo dando la ilusión de concurrencia masiva.
+### A4. Analíticas Off-Grid (PostHog / GA4) — 🕒 Pendiente
+
+*   **Límite Técnico:** La función nativa "Analytics" del Dashboard de Vercel se congela al superar **2,500 eventos mensuales**. La activación es silenciosa y el cobro de $20 USD/mes es obligatorio para desbloquear.
+*   **Solución Propuesta:** Integrar **PostHog** (analítica de producto) o **Google Analytics 4** (analítica de adquisición) como proveedor externo inyectando un script de telemetría en el layout del frontend.
+
+| Proveedor | Eventos Gratuitos/Mes | Comportamiento al Agotar Cuota | Funcionalidad Extra | Costo por Exceso |
+| :--- | :---: | :--- | :--- | :---: |
+| **Vercel Analytics** | 2,500 | Métricas congeladas; cobro obligatorio | Ninguna | $20.00 USD/mes |
+| **PostHog** | **1,000,000** | Deja de registrar; la app NO se afecta | Session Replay (5,000/mes), Feature Flags | ~$0.0001/evento |
+| **Google Analytics 4** | **Ilimitado** | N/A | Integración con ecosistema Google Ads | Gratis |
+
+> **Nota Técnica:** PostHog renueva su cuota de 1,000,000 eventos el día 1 de cada mes. Estimando 20 eventos/día/usuario, se necesitarían **~2,500 usuarios activos diarios** para agotar la cuota. PostHog además incluye grabación de sesiones en video, permitiendo diagnosticar problemas de UX observando directamente la interacción del operario.
 
 ---
 
-## 🚧 PARTE 2: LOS TRUCOS QUE DEBES APLICAR ANTES DE LANZAR (Crucial para sobrevivir en SaaS)
+## 4. Categoría B — Arquitectura de Base de Datos
 
-A día de hoy eres un solo usuario. En el segundo en que decidas abrir esto a 10, 50 o 100 empresas carpinteras conectadas a un solo cerebro, van a nacer 5 problemas monstruosos si no los atajas. Estos son los "Hacks" que me debes pedir que programe en nuestro próximo hito:
+Esta categoría agrupa las tácticas que protegen la integridad, disponibilidad y rendimiento del motor PostgreSQL hospedado en Supabase.
 
-### 1. El Hack de Descompresión del Procesador (Índices GIN/B-Tree obligatorios sobre `tenant_id`)
-*   **El Escenario Extremo:** Tienes 500,000 cotizaciones sumadas entre tus 50 talleres usuarios (Inquilinos). El carpintero del Taller B hace clic en su pestaña "Mis Cotizaciones".
-*   **El Problema:** La "Seguridad a nivel de fila" (RLS) que usaremos obliga al procesador a barrer manualmente las 500,000 cotizaciones una por una (Sequential Scan) preguntando: *"¿Eres del Taller B? No. ¿Eres del Taller B? No."* El CPU de tu Supabase saltará al 100% en rojo y te cortarán el servicio de golpe.
-*   **El Truco Faltante:** Indexación. Inyectaremos comandos SQL: `CREATE INDEX idx_tenant_id_cotizaciones ON trx_cotizaciones(tenant_id)`.  Esto crea el índice de un libro. En vez de leer 500,000 páginas, el procesador va a la página 14 (Taller B) y saca 100 cotizaciones en **0.5 milisegundos usando 0% de CPU**.
+### B1. Backups PITR Gratuitos vía GitHub Actions — ✅ Operativa
+
+*   **Límite Técnico:** El tier Free de Supabase **no incluye** respaldos automáticos ("Point In Time Recovery"). Un `DELETE` accidental o una corrupción de datos resulta en pérdida total irreversible. El PITR nativo requiere el Plan Pro ($25/mes).
+*   **Implementación Actual:** Workflow `backup-base-datos.yml` ejecuta `pg_dump` automatizado en la madrugada, almacenando el archivo SQL resultante en el repositorio Git.
+*   **Resultado:** Respaldo diario completo con historial versionado por commits, emulando la funcionalidad PITR sin costo mensual alguno.
+
+### B2. Evasión del Límite de 60 Conexiones TCP (PostgREST) — ✅ Operativa
+
+*   **Límite Técnico:** PostgreSQL en el tier Micro de Supabase soporta un máximo de **60 conexiones directas** y **200 a través del Connection Pooler**. Una aplicación tradicional que mantenga conexiones persistentes (ej. ORM con pool abierto) saturaría el límite con 61 usuarios simultáneos.
+*   **Implementación Actual:** La librería `@supabase/supabase-js` canaliza todas las operaciones a través de PostgREST, un gateway HTTP que convierte peticiones REST en SQL, ejecuta la consulta, envía la respuesta JSON y destruye la conexión TCP inmediatamente ("stateless").
+*   **Resultado:** Cada operación consume la conexión durante **~10 milisegundos**. El reciclaje ultra-rápido permite servir miles de peticiones concurrentes con un pool teórico de 60 slots, creando la ilusión de concurrencia masiva.
+
+### B3. Indexación Obligatoria para RLS Multi-Tenant — 🕒 Pendiente (P1)
+
+*   **Escenario de Riesgo:** 500,000 cotizaciones acumuladas entre 50 tenants. Un operario del Taller B consulta "Mis Cotizaciones". La política RLS ejecuta un **Sequential Scan** recorriendo las 500,000 filas preguntando `WHERE tenant_id = 'taller_b'`.
+*   **Impacto:** CPU al 100%, timeout de la consulta, potencial suspensión del servicio por abuso de recursos.
+*   **Solución:** Crear índice B-Tree compuesto: `CREATE INDEX idx_tenant_id_cotizaciones ON trx_cotizaciones(tenant_id);`. La resolución pasa de recorrido lineal O(n) a búsqueda logarítmica O(log n), ejecutándose en **< 2 milisegundos** con **0% de carga CPU**.
 
 ```mermaid
 sequenceDiagram
-    participant PC as Cliente SaaS
-    participant CPU as Procesador Supabase
-    participant BD as Disco (500k filas)
+    participant PC as Operario SaaS
+    participant CPU as Procesador PostgreSQL
+    participant BD as Disco (500K filas)
 
-    Note over PC, BD: SIN EL TRUCO (Riesgo de Suspensión)
-    PC->>CPU: "Dame data del Taller B"
-    CPU->>BD: (Suda a 100%) Escanea fila 1, fila 2... hasta 500,000
-    BD-->>PC: Datos lentos (3 segundos)
+    rect rgb(127, 29, 29)
+    Note over PC, BD: ❌ SIN ÍNDICE — Sequential Scan
+    PC->>CPU: SELECT * FROM cotizaciones (RLS: tenant_id = 'B')
+    CPU->>BD: Escanea fila 1, fila 2... hasta fila 500,000
+    BD-->>PC: Respuesta lenta (3,000 ms) — CPU al 100%
+    end
 
-    Note over PC, BD: CON EL TRUCO (Índice GIN/B-Tree)
-    PC->>CPU: "Dame data del Taller B"
-    CPU->>BD: (0% esfuerzo) Salta directo a la línea física exacta
-    BD-->>PC: Datos instantáneos (0.001 segundos)
-```
-
-### 2. El Bypass del Límite de Optimización de Imágenes Frotend (Vercel)
-*   **El Escenario Extremo:** Un día pones un catálogo de tus aluminios en portada para vender más. Usas la etiqueta mágica de Next.js llamada `<Image src="...">`. 
-*   **El Problema:** `<Image>` llama un servidor oculto de Vercel que exprime y optimiza la imagen al tamaño perfecto (WebP). Tu plan gratis solo de da **1,000 optimizaciones al mes**. Si 100 usuarios ven 11 imágenes de aluminio en su catálogo, consumirías 1,100 créditos y Vercel literalmente dejará que tus fotos salgan rotas con error `<402 Payment Required>`.
-*   **¿Puedo usar Google Drive para mis miles de fotos?** **JAMÁS.** Drive no es un servidor web (CDN). Si el sistema de Google detecta que cientos de personas en tu SaaS están "jalando" imágenes desde tus links al mismo tiempo, banean el link por "abuso de tráfico" y las fotos salen rotas.
-*   **El Truco Real Definitivo:** Si tienes un catálogo enorme (ej. 1 millón de productos), usas la etiqueta HTML antigua `<img>` (que NO usa el procesador de Vercel). Para hospedar las fotos usas **Cloudflare R2**. Cloudflare te regala 10 GB de disco duro y **CERO COSTO de ancho de banda (Egress)**. Con esto burlas simultáneamente a Google Drive, Vercel y Supabase.
-
-```mermaid
-graph TD
-    subgraph Catálogo_SaaS_Masivo
-        A[App Next.js] -- "Usa etiqueta <img> simple" --> B(Evade límite de 1000 optimizaciones de Vercel)
-        B -- "El src='' apunta a" --> C[(Cloudflare R2 Bucket)]
-        C -- "Envía imágenes (Banda ancha $0)" --> D((Cliente Final))
-        E[(Google Drive)] -- "Baneo por saturación de peticiones" --> X[Ruptura del SaaS]
+    rect rgb(21, 128, 61)
+    Note over PC, BD: ✅ CON ÍNDICE B-Tree
+    PC->>CPU: SELECT * FROM cotizaciones (RLS: tenant_id = 'B')
+    CPU->>BD: Salto directo al bloque físico del Taller B
+    BD-->>PC: Respuesta instantánea (1.5 ms) — CPU al 0%
     end
 ```
 
-### 3. El Bypass de Analíticas (2,500 Monitoreos Mensuales)
-*   **El Escenario Extremo:** A las dos semanas de lanzamiento quieres saber qué parte de tu app SaaS es la más usada por tus clientes. Entras a la pestaña "Analytics" en el dashboard de Vercel, haces 1 simple clic para activarlo "gratis".
-*   **El Problema:** Esa trampa gratis muere al llegar a las **2,500 visitas web**. El mes 2, la gráfica queda plana y Vercel te pide sacar los $20 dólares.
-*   **El Truco Faltante:** Renunciar para siempre a cualquier cosa "analítica" o "estadística" que te regalen Vercel o Supabase allí dentro. Inyectaremos un código de "Telemetry Off-Grid" usando **Google Analytics 4** o **PostHog**.
-*   **¿Se acaba el millón de monitoreos de PostHog?** Te dan 1,000,000 **NUEVOS cada mes** (se renueva mes a mes). Un "evento" es un clic o una página vista. Un cliente normal en un día de trabajo puede generar 20 eventos en tu ERP. Para agotarte tu cuota gratuita tendrías que tener a **2,500 usuarios usándolo sin parar todos los días del mes**. ¿Qué pasa si tienes tanto éxito que lo agotas el día 28 del mes? ¡Absolutamente nada! Tu aplicación sigue funcionando perfecta. PostHog simplemente deja de registrar nuevas gráficas por 2 días y se vuelve a encender gratis el día 1 del siguiente mes.
+### B4. Desfragmentación con `VACUUM FULL` — 🕒 Pendiente (P3)
 
-### Tabla Comparativa: Vercel vs PostHog (Eventos Mensuales)
-| Proveedor | Eventos Incluidos (Gratis) | ¿Qué pasa si te acabas el saldo? | Costo por exceso |
-| :--- | :--- | :--- | :--- |
-| **Vercel Analytics** | Apenas 2,500 eventos | Las métricas se congelan, exige pasar a Plan Pro | $20.00 dólares obligatorios |
-| **PostHog / GA4** | **1,000,000 eventos** (Se reinicia cada mes) | Solo dejas de ver nuevos clics ese mes (tu app **NO** se cae) | Fracciones de centavo ($0.0001) |
+*   **Escenario de Riesgo:** Supabase otorga **500 MB** de espacio físico para la Base de Datos. PostgreSQL opera bajo MVCC (Multi-Version Concurrency Control): los comandos `DELETE` y `UPDATE` no eliminan datos del disco; generan "Tuplas Muertas" (Dead Tuples) que permanecen como espacio fantasma inutilizable.
+*   **Impacto:** En 2 años de operación con borrados frecuentes, hasta **300 MB** del límite podrían estar ocupados por basura invisible.
+*   **Solución:** Ejecución periódica (mensual o trimestral) de `VACUUM FULL;` en las tablas transaccionales principales. Este comando reescribe físicamente la tabla, recuperando espacio de disco al instante.
 
-### 4. El Bypass del Bloqueo Masivo de E-Mails (Restricción de Spam de Supabase Auth)
-*   **El Escenario Extremo:** Al ser un ERP, el dueño del taller (Admin) le creará una cuenta al "Maestro Soldador" de su plantilla enviándole un link "invitación" al correo, o un operario olvidará su contraseña.
-*   **El Problema:** El servicio automático de envío de correos de Supabase Free permite un estricto máximo de **3 correos electrónicos por hora** como medida antispam. Si le das tu SaaS a 10 empresas (que usarán en total a 50 operarios) y a las 8 AM tres personas olvidaron su contraseña, el pobre cuarto operario no podrá entrar hasta las 9 AM porque Supabase le abortó el reinicio de clave.
-*   **El Truco Faltante:** Deberás sacarte una cuenta gratis en la web **Resend.com** (Empresa de correos transaccionales). Resend regala el reenvío rápido de **3,000 correos al mes**. Configuras el "SMTP Custom" de Resend dentro de Supabase, reemplazando el motor viejo y esquivando con éxito el bloqueo brutal.
-
-### 5. Compresión Local de Contenido Subido por el Cliente B2B (Manejo de Storage)
-*   **El Escenario Extremo:** Tu cliente, emocionado, sube fotos y documentos PDF en los anexos de sus cotizaciones pesando cada foto del portacelular de su Samsung nuevo: 8 MegaBytes. En menos de 2 meses, tus 125 clientes habrán llenado los **1,000 MegaBytes (1 GB)** de tope máximo del Storage gratuito.
-*   **¿Por qué dejar subir archivos si no quieres?** Es cierto que actualmente tu módulo de configuración permite usar un "enlace de internet" (URL) para colocar el logo en el PDF, lo cual es una brillante solución temporal a costo 0. **PERO**, cuando empieces a vender el SaaS empresarial, el primer día el Cliente A te dirá: *"Mis instaladores necesitan adjuntar una foto al vuelo desde su celular de la pared embarrada del cliente a la cotización, no pueden crear un enlace de internet"*. Como CEO, vas a tener que habilitar subidas físicas directas para ganarte a la clientela B2B.
-*   **El Problema:** Si suben las fotos de pared directo desde el celular, chocas con el límite duro físico y te bloquean la base de cotizaciones o pasas a cobranza obligatoria. 
-*   **El Truco Faltante:** Intercepción Cliente-Lado (Client-Side Hijack). Cuando el cliente intente subir su foto de 8 MegaBytes, antes de decirle a Supabase "Guarda esto", el propio código React en el navegador del cliente comprimirá la foto usando el procesador de su propia computadora. La bajará a hermosos **150 KiloBytes**, y eso es lo que finalmente viajará a tu base. Tu límite de 1 GB que se llenaba en 125 fotos de celular, mágicamente ahora aguantará más de **6,000 fotos de la obra adjuntas por tus clientes**.
-
-### Tabla de Maduración de Límite Storage (1GB) B2B
-
-| Tipo de Subida | Peso de 1 Archivo | Capacidad del Free Tier (1GB = 1,024 MB) | Vida Útil Proyectada (Con 50 Clientes SaaS) |
-| :--- | :--- | :--- | :--- |
-| **Foto Directa Celular (Sin Truco)** | 8.00 MB | ~128 Imágenes Totales | **Semanas.** El storage se llena y el sistema colapsa. |
-| **Logo por URL (Lo que usas hoy)** | 0.00 MB (Atiende externo) | Capacidad Infinita | **Eterno.** Pero mala UX si el cliente no sabe crear URLs. |
-| **PDF Factura Digital genérico** | 0.05 MB (50 KB) | ~20,480 Documentos Totales | **Años.** Muy eficiente en espacio nativo. |
-| **Foto Comprimida (Con Truco 5)** | 0.15 MB (150 KB) | ~6,826 Imágenes Totales | **Años.** Escalabilidad en fotos físicas asegurada. |
-
-### 6. El Hack de la Aspiradora de Tuplas (Postgres VACUUM)
-*   **El Escenario Extremo:** Supabase te da un límite inamovible de **500 MB** de espacio físico para la Base de Datos. Con el tiempo, tus 50 inquilinos borrarán miles cotizaciones fallidas, clientes, o productos del catálogo maestro.
-*   **El Problema:** PostgreSQL (el motor de Supabase) **NUNCA borra los datos físicamente del disco duro al instante**. Cuando haces un `DELETE`, la base de datos simplemente marca la fila como "Tupla Muerta" (Dead Tuple) y la vuelve invisible para ti, pero el archivo en el disco duro sigue pesando Megabytes. En 2 años tendrás 300 MB de "basura invisible" devorando inútilmente tu límite gratuito.
-*   **El Truco Definitivo:** Aunque Supabase tiene un AutoVacuum, suele ser conservador. La táctica agresiva B2B es crear un Cron-Job SQL o abrir la consola de SQL temporalmente y ejecutar el comando militar `VACUUM FULL;`. Esto bloquea tu tabla por unos segundos y obliga al disco duro a reescribirse desde cero, triturando el aire vacío y **recuperando decenas o cientos de Megabytes de tu cuota de 500 MB al instante**.
-
-### 7. El Hack de Caching Periférico Modular (Zustand Local Persist)
-*   **El Escenario Extremo:** Tienes a 200 carpinteros entrando a tu sistema desde sus celulares. La primera pantalla que abren siempre pregunta a la base de datos por los catálogos estáticos de "Materiales", "Acabados", "Marcas" y "Familias".
-*   **El Problema:** 200 usuarios * 4 queries maestras = 800 lecturas a Supabase consumidas en el primer minuto del día de forma innecesaria. Se desperdicia Poder de Cómputo API.
-*   **El Truco Definitivo:** Los catálogos maestros de aluminio (Ej. "Línea Herrero") rara vez cambian. Cuando programemos la App Multi-Tenant, implementaremos librerías como `Zustand con Persist` para descargar el catálogo y guardarlo en la Memoria Interna (LocalStorage/IndexedDB) del propio navegador celular del cliente la primera vez que inicie sesión. Al día siguiente, el catálogo cargará de la memoria de su teléfono en `0.001 segundos` **haciendo CERO peticiones a Supabase**. Tu uso de API web caerá un 80% milagrosamente.
-
-### 8. El Hack de Inserción Balística (PostgREST RPC Batching)
-*   **El Escenario Extremo:** Un gran distribuidor de vidrios firma contigo y decide migrar su Excel de 5,000 productos a tu nuevo ERP mediante un botón "Importar Excel".
-*   **El Problema:** Si tu código Front-end lee el Excel y usa un bucle (Loop Javascript) haciendo `supabase.from('productos').insert(fila)` 5,000 veces seguidas, desencadenarás 5,000 golpes de red HTTP al servidor. El Firewall de Supabase lo detectará como un Ataque DDOS y **te baneará la IP de la API por exceso de tráfico**.
-*   **El Truco Definitivo:** Las operaciones masivas (Bulk Inserts) **JAMÁS** se hacen desde el Front-end fila por fila. Convertiremos todo el Excel a un masivo "Paquete JSON" en la memoria del cliente. Enviaremos ese bloque gigante en **1 sola petición HTTP (1 solo golpe de red)** hacia una función almacenada en el backend de Postgres (`RPC / Stored Procedure`). Supabase usará todo el poder bruto de su procesador local para devorar y guardar los 5,000 registros en medio segundo sin inmutarse, manteniendo tu cuota de tráfico totalmente limpia.
----
-
-## 💎 PARTE 3: ESTRATEGIA DE NEGOCIO Y ARQUITECTURA "MULTI-TENANT"
-
-### 1. ¿Es rentable usar un enlace de internet (URL) para su logo? ¿Podría seguir siendo así?
-¡Es **INFINITAMENTE RENTABLE**! Matemáticamente es el mejor negocio que puedes hacer. Al pedirles a tus clientes que peguen la URL de su logo (por ejemplo, sacándola de su página de Facebook o de Imgur), el costo de almacenamiento para ti es de **S/ 0.00** y el ancho de banda que gasta tu servidor al imprimirse en el PDF es de **S/ 0.00** (porque el peso del archivo lo asumen los servidores de Facebook, no el tuyo).
-
-Claro que **DEBERÍA** seguir siendo así. De hecho, lo que hacen los grandes SaaS (Software as a Service) es ofrecer diferentes planes:
-
-*   **Plan "MYPE Básico" (ej. S/ 50 al mes):** Solo pueden poner el logo mediante un Enlace URL. (Tus gastos son 0).
-*   **Plan "Empresarial ORO" (ej. S/ 150 al mes):** Les habilitas el botón para "Subir Archivo desde su PC", usando el Truco #5 de compresión para protegerte.
-
-### 2. ¿Cómo podría hacer para que cada imagen sea a un cliente y no se mezclen para su respectiva cotización?
-Esta es la magia del **"Multi-Tenant" (Múltiples Inquilinos)** y la **Seguridad a Nivel de Fila (RLS)** en PostgreSQL que vamos a implementar cuando empecemos a tocar el código.
-
-Actualmente, tu módulo de "Configuración" es una tabla global con una sola fila (porque el ERP era solo para tu empresa). El cambio arquitectónico que haremos será el siguiente:
-
-1.  Crearemos una tabla llamada `sys_empresas` (o `sys_tenants`). Si cierras 3 contratos, tendrás 3 filas (Carpintería Juan, Aluminio Pérez, Estructuras Gómez).
-2.  Tu módulo de configuración apuntará a una nueva tabla llamada `sys_configuracion_tenant`. Esta tabla tendrá obligatoriamente la columna **`tenant_id`**.
-    *   **Fila 1:** `tenant_id: 1` (Juan), `url_logo: http://fb.com/logo-juan.png`
-    *   **Fila 2:** `tenant_id: 2` (Pérez), `url_logo: http://imgur.com/logo-perez.png`
-3.  Cuando el usuario de Aluminio Pérez inicie sesión en la app, Supabase sabrá que pertenece al `tenant_id: 2`.
-4.  Cuando él imprima su cotización, la base de datos **automáticamente** (por sus reglas de seguridad RLS) bloqueará cryptográficamente las demás filas. Será matemáticamente imposible que, por un error de código, el sistema de Pérez cargue el logo o la firma de Juan, porque la base de datos rechaza cualquier consulta que no diga `tenant_id = 2`.
-*¿Está claro este concepto fundamental? Es la pieza central y la garantía legal que le vas a ofrecer a tus clientes de que su data nunca acabará impresa en el papel de su competencia.*
+> **Trade-Off Crítico:** Durante la ejecución de `VACUUM FULL`, la tabla objetivo queda **bloqueada para escrituras** (Lock exclusivo). En un SaaS con operarios activos, debe ejecutarse en horario de mantenimiento nocturno (ej. 3:00 AM vía Cron) para evitar interrupciones.
 
 ---
 
-## 💥 PARTE 4: EL ESCENARIO DEL DÍA DEL JUICIO (¿Dónde se rompe el sistema inevitablemente?)
+## 5. Categoría C — Caché, Red y Operaciones Masivas
 
-Incluso si configuras los **8 Trucos de Escalabilidad** perfectamente (Vercel Estático, Compresión de Fotos, Aspiradora VACUUM y Caching de Catálogos), existe una barrera de física cuántica que no puedes violar: **Los 500 MB máximos de capacidad de tu Base de Datos SQL en la capa Gratuita de Supabase.**
+Tácticas que reducen el volumen de peticiones HTTP hacia Supabase, protegiendo el límite de Egress (5 GB) y evitando penalizaciones por Rate Limiting.
 
-Este será, matemáticamente hablando, el punto de ruptura inevitable donde te verás **obligado** a sacar la tarjeta de crédito y pagar los $25 USD mensuales del Plan Pro.
+### C1. Caché Periférico de Catálogos Maestros (Zustand Persist) — 🕒 Pendiente (P2)
 
-### La Matemática del Colapso Estructural (500 MB de Texto Puro)
+*   **Escenario de Riesgo:** 200 operarios abren el ERP simultáneamente a las 8:00 AM. Cada sesión ejecuta 4 consultas a tablas maestras estáticas (Materiales, Acabados, Marcas, Familias). Resultado: **800 lecturas** a Supabase consumidas en el primer minuto del día laboral, todas devolviendo datos idénticos.
+*   **Solución:** Implementar `Zustand` con middleware `persist` (LocalStorage o IndexedDB). Al iniciar sesión por primera vez, el front-end descarga el catálogo maestro completo (~50 KB) y lo almacena en la memoria interna del dispositivo con un timestamp de expiración de 24 horas. En sesiones posteriores, los catálogos se leen desde el almacenamiento local en **~0.01 ms** sin generar tráfico de red hacia Supabase.
+*   **Impacto Proyectado:** Reducción del **~80%** de las consultas API en operación diaria normal.
 
-El texto es increíblemente ligero. Para llenar 500 Megabytes a punta de puro texto (JSON, Nombres de Clientes, Detalles de Cotización), necesitas almacenar un volumen bestial de transacciones B2B.
+```mermaid
+sequenceDiagram
+    participant PC as Dispositivo del Operario
+    participant Cache as IndexedDB / LocalStorage
+    participant API as Supabase PostgREST
 
-**Parámetros de la Ecuación:**
-1. Una `Cotizacion` estándar con sus datos de cliente y 10 `Detalles_Cotizacion` pesa en promedio **2 Kilobytes** en el motor PostgreSQL.
-2. El límite absoluto de Supabase Free es `500 MB = 512,000 KB`.
-3. Esto nos da un límite duro arquitectónico de **~256,000 Cotizaciones Históricas**.
+    rect rgb(30, 41, 59)
+    Note over PC, API: Día 1 — Primera Sesión (Cache Vacía)
+    PC->>API: GET /materiales, /acabados, /marcas, /familias
+    API-->>PC: JSON Payload Completo (~50 KB)
+    PC->>Cache: Guardar con TTL = 24 horas
+    end
 
-Si implementamos tu SaaS B2B "Zero-Cost" y tienes éxito reclutando talleres a nivel nacional, esta es la línea de tiempo hacia la falla catastrófica:
+    rect rgb(21, 128, 61)
+    Note over PC, API: Día 2+ — Sesiones Posteriores
+    PC->>Cache: Leer Catálogos (Latencia: 0.01 ms)
+    Cache-->>PC: Datos Instantáneos
+    Note over PC, API: CERO tráfico hacia Supabase durante 24 horas
+    end
+```
 
-### Tabla de Proyección de Colapso (Falla de 500MB)
+### C2. Inserción Balística por RPC Batching — 🕒 Pendiente (P3)
 
-| Mes de Operación | Número de Clientes (SaaS) | Cotizaciones Diarias Totales | Nuevos KB Mensuales | Base de Datos Total (MB/500MB) | Ingresos Mensuales SaaS ($50 USD/Cliente) | Estado de Supervivencia |
+*   **Escenario de Riesgo:** Un distribuidor migra un catálogo de 5,000 productos desde un archivo Excel al ERP mediante un botón "Importar".
+*   **Antipatrón:** Iterar en JavaScript ejecutando `supabase.from('productos').insert(fila)` en un bucle de 5,000 iteraciones. Resultado: 5,000 peticiones HTTP secuenciales. El Rate Limiter de Supabase detecta el patrón como un ataque DDOS y **banea la IP del cliente**.
+*   **Solución:** Serializar el Excel completo en un único payload JSON en memoria del navegador. Enviar el bloque en **1 sola petición HTTP** a un Procedimiento Almacenado (`RPC / Stored Procedure`) en PostgreSQL. El motor de la base de datos ejecuta el `INSERT` masivo internamente en una sola transacción atómica (~500 ms).
+
+| Método de Inserción | Peticiones HTTP | Tiempo Estimado | Riesgo de Baneo |
+| :--- | :---: | :---: | :---: |
+| **Loop Front-end (Antipatrón)** | 5,000 | 45-120 segundos | 🔴 Alto (DDOS Flag) |
+| **RPC Batch (1 Payload)** | 1 | 0.5 segundos | 🟢 Nulo |
+
+---
+
+## 6. Categoría D — Storage, Monetización y Seguridad Multi-Tenant
+
+Tácticas que protegen el límite de almacenamiento de archivos (1 GB), construyen la estrategia de monetización por planes, y garantizan el aislamiento total de datos entre empresas.
+
+### D1. Compresión Client-Side de Archivos Subidos — 🕒 Pendiente (P1)
+
+*   **Escenario de Riesgo:** Operarios suben fotos de obra desde smartphones modernos (resolución nativa: ~8 MB por foto). 125 fotos saturan el límite de **1 GB** del Storage gratuito de Supabase en semanas.
+*   **Contexto de Negocio:** Actualmente, el módulo de Configuración permite insertar logos mediante URL externa (costo de Storage: **S/ 0.00**). Sin embargo, al lanzar el SaaS B2B, los clientes exigirán subir fotos de instalación adjuntas a cotizaciones desde su celular. Prohibir las subidas es comercialmente inviable.
+*   **Solución:** Implementar interceptación Client-Side (Canvas HTML5 Resize). Antes de ejecutar el `upload()` a Supabase Storage, el código React en el navegador comprime la imagen a un techo fijo de **~150 KB**, utilizando el procesador del dispositivo del cliente.
+
+| Tipo de Subida | Peso Unitario | Capacidad del Free Tier (1 GB) | Vida Útil Proyectada (50 Tenants) |
+| :--- | :---: | :---: | :--- |
+| Foto directa celular (sin compresión) | 8.00 MB | ~128 imágenes totales | **Semanas.** Colapso inminente. |
+| Logo por URL externa (actual) | 0.00 MB | Infinito | **Eterno.** Pero limitado en UX para el cliente. |
+| PDF de cotización digital | 0.05 MB | ~20,480 documentos | **Años.** Altamente eficiente. |
+| **Foto comprimida Client-Side** | **0.15 MB** | **~6,826 imágenes** | **Años.** Escalabilidad B2B asegurada. |
+
+### D2. Bypass del Bloqueo de E-Mails (Resend SMTP) — 🕒 Pendiente (P1)
+
+*   **Límite Técnico:** Supabase Auth Free restringe el envío a **3 correos electrónicos por hora** (invitaciones, reseteo de contraseña, confirmación de email). En un SaaS con 10 empresas y 50 operarios, un pico matutino de "olvidé mi contraseña" bloquea al 4to usuario durante una hora completa.
+*   **Solución:** Registrar cuenta gratuita en **Resend.com** (3,000 correos/mes incluidos). Configurar las credenciales SMTP Custom de Resend en el panel de Supabase Auth, sustituyendo el motor de correos nativo.
+*   **Resultado:** Capacidad de envío escalada de 3/hora a **3,000/mes**, eliminando completamente el cuello de botella de onboarding.
+
+### D3. CDN de Imágenes con Cloudflare R2 — 🕒 Pendiente (P3)
+
+*   **Escenario de Riesgo:** Si el ERP evoluciona para incluir un catálogo visual de productos (ej. 1 millón de perfiles de aluminio con foto), la etiqueta `<Image>` de Next.js activaría el optimizador de imágenes de Vercel, el cual tiene un límite de **1,000 optimizaciones mensuales** en el tier Free. Superarlo devuelve un error `402 Payment Required`.
+*   **¿Por qué no usar Google Drive como CDN?** Google Drive no es un servidor web. Si detecta cientos de operarios descargando la misma imagen simultáneamente, **banea el enlace por abuso de tráfico** y las fotos aparecen rotas.
+*   **Solución:** Utilizar la etiqueta HTML nativa `<img>` (que no invoca el optimizador de Vercel) apuntando a un bucket de **Cloudflare R2**. R2 otorga 10 GB de almacenamiento y **$0.00 de costo por Egress**.
+
+```mermaid
+graph TD
+    subgraph Arquitectura de Catálogo Visual Masivo
+        A["App Next.js"] -- "Usa etiqueta <img> nativa" --> B["Evade límite de 1,000 optimizaciones Vercel"]
+        B -- "src apunta a" --> C["Cloudflare R2 Bucket<br/>10 GB gratis · Egress $0"]
+        C -- "Sirve imágenes globalmente" --> D["Operarios SaaS"]
+        E["Google Drive"] -- "Baneo por saturación" --> X["❌ Fotos rotas"]
+    end
+```
+
+### D4. Estrategia de Monetización por Planes (Logo URL vs Upload)
+
+La diferenciación de niveles de servicio permite monetizar funcionalidades cuyo costo marginal para el proveedor es cercano a cero.
+
+*   **Plan MYPE Básico (~S/ 50/mes):** El cliente coloca su logo corporativo mediante URL externa (Facebook, Imgur, sitio web propio). Costo de almacenamiento y Egress para el proveedor: **S/ 0.00**.
+*   **Plan Empresarial ORO (~S/ 150/mes):** Se habilita el botón "Subir Archivo desde PC", protegido por la compresión Client-Side (D1). Costo marginal: despreciable gracias a la compresión.
+
+### D5. Aislamiento Multi-Tenant (RLS Criptográfico)
+
+La arquitectura de aislamiento de datos garantiza que ningún tenant pueda acceder, visualizar o imprimir datos de otro tenant, incluso ante errores de código en el frontend.
+
+**Migración Arquitectónica:**
+
+1. Se crea la tabla `sys_empresas` (también llamada `sys_tenants`). Cada contrato comercial genera una fila.
+2. El módulo de Configuración se refactoriza hacia `sys_configuracion_tenant` con columna obligatoria `tenant_id`.
+3. Cada usuario autenticado porta su `tenant_id` en el JWT (JSON Web Token) emitido por Supabase Auth.
+4. Las políticas RLS validan automáticamente: `USING (tenant_id = auth.jwt()->>'tenant_id')`. Cualquier consulta que no coincida con el tenant del JWT activo es **rechazada a nivel de motor de base de datos**, haciendo matemáticamente imposible la filtración cruzada de datos.
+
+```mermaid
+erDiagram
+    sys_tenants ||--o{ sys_configuracion_tenant : "configura"
+    sys_tenants ||--o{ trx_cotizaciones : "posee"
+    sys_tenants ||--o{ auth_users : "emplea"
+
+    sys_tenants {
+        uuid id PK
+        text nombre_empresa
+        text ruc
+        timestamp created_at
+    }
+    sys_configuracion_tenant {
+        uuid id PK
+        uuid tenant_id FK
+        text url_logo
+        text url_firma
+        text moneda_default
+    }
+    trx_cotizaciones {
+        uuid id PK
+        uuid tenant_id FK
+        text nombre_proyecto
+        numeric total
+        timestamp fecha
+    }
+    auth_users {
+        uuid id PK
+        uuid tenant_id FK
+        text email
+        text rol
+    }
+```
+
+> **Garantía Legal para el Cliente:** La segregación RLS opera a nivel de motor PostgreSQL, no de código aplicativo. Incluso si un bug en el frontend omitiera un filtro `WHERE`, la base de datos rechazaría la consulta antes de devolver resultados. Esta es la garantía contractual de que los datos de un taller nunca aparecerán impresos en la cotización de su competidor.
+
+---
+
+## 7. Escenario de Falla Estructural
+
+Incluso con los 8 tácticas configuradas correctamente, existe un límite físico absoluto e infranqueable: los **500 MB de capacidad de la Base de Datos SQL** en el tier Free de Supabase.
+
+### 7.1. Parámetros de la Ecuación de Colapso
+
+| Parámetro | Valor |
+| :--- | :--- |
+| Peso promedio de 1 cotización (cabecera + 10 detalles + índices) | **~2 KB** |
+| Límite físico absoluto del Free Tier | **500 MB = 512,000 KB** |
+| Capacidad máxima teórica | **~256,000 cotizaciones históricas totales** |
+
+### 7.2. Proyección de Saturación Temporal
+
+Asumiendo crecimiento progresivo de la base de clientes SaaS con captación acelerada:
+
+| Mes | Clientes SaaS | Cotizaciones/Día (Total) | KB Nuevos/Mes | DB Acumulada (MB) | Ingreso Mensual ($50/cliente) | Estado |
 | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| Mes 1 | 5 Clientes | 50 Diarias | 2,500 KB | **2 MB** | $250 USD | 🟢 Estructura Sana (Excedente 99%) |
-| Mes 6 | 20 Clientes | 200 Diarias | 12,000 KB | **50 MB** | $1,000 USD | 🟢 Estructura Sana (VACUUM Limpiando) |
-| Mes 12 | 50 Clientes | 500 Diarias | 30,000 KB | **140 MB** | $2,500 USD | 🟡 Alerta Temprana (Caching Vital) |
-| Mes 18 | 100 Clientes | 1,000 Diarias | 60,000 KB | **320 MB** | $5,000 USD | 🟠 Peligro: Espacio degradándose |
-| **Mes 23** | **150 Clientes** | **1,500 Diarias** | **90,000 KB** | **500 MB (Tope)** | **$7,500 USD** | 🛑 **FALLA CRÍTICA. READ-ONLY MODE.** |
+| 1 | 5 | 50 | 2,500 | **2** | $250 | 🟢 Excedente 99% |
+| 6 | 20 | 200 | 12,000 | **50** | $1,000 | 🟢 VACUUM activo |
+| 12 | 50 | 500 | 30,000 | **140** | $2,500 | 🟡 Alerta temprana |
+| 18 | 100 | 1,000 | 60,000 | **320** | $5,000 | 🟠 Espacio degradándose |
+| **23** | **150** | **1,500** | **90,000** | **500 (Tope)** | **$7,500** | 🛑 **READ-ONLY MODE** |
 
-### El Gráfico del Día del Juicio (Proyección Cúbica)
+### 7.3. Gráfico de Saturación vs Límite Físico
 
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
 xychart-beta
-    title "Proyección de Llenado vs Límite Supabase Free (Meses)"
-    x-axis "Duración SaaS (Meses)" [1, 6, 12, 18, 20, 22, 23, 24]
-    y-axis "Espacio Físico Ocupado (MB)" 0 --> 600
+    title "Vector de Saturación: Almacenamiento vs Límite 500 MB (150 Tenants)"
+    x-axis "Meses de Operación" [M1, M6, M12, M18, M20, M22, M23, M24]
+    y-axis "Espacio Ocupado (MB)" 0 --> 600
     bar [2, 50, 140, 320, 370, 440, 500, 500]
     line [500, 500, 500, 500, 500, 500, 500, 500]
 ```
-*(La línea indica el Muro de la Muerte de los 500MB. Las barras rojas indican el consumo físico de los 150 inquilinos guardando data sin parar).*
 
-### Veredicto Técnico-Comercial Final
+*(La línea horizontal representa el tope físico de 500 MB. Las barras representan el consumo acumulado proyectado.)*
 
-¿Te das cuenta de lo **absurdo** de preocuparse por este colapso en este momento?
-El sistema obligatoriamente va a "romperse" y bloquearse en Modo Solo Lectura (Read-Only) por falta de espacio cuando llegues a la brutalidad de **256,000 cotizaciones** ejecutadas por más de 100 empresas carpinteras conectadas a tu sistema de manera simultánea.
+### 7.4. Resolución Operativa
 
-En el **Mes 23 (Día del Juicio)**, cuando tu Base de Datos finalmente colapse:
-*   El ERP estará facturando **$7,500 Dólares al mes en suscripciones** (a S/ 185 SOLES por cliente SaaS).
-*   En ese instante, simplemente entras al panel de Supabase y haces clic en **"Upgrade to Pro ($25/mes)"**.
-*   Los $25 dólares que le pagues a Supabase representarán el **0.33% de tus ganancias**. La capacidad de la Base de Datos automáticamente se inflará mágicamente de 500 MB a **8,000 MB (8 GB)**.
-*   Con 8 GB, ganarás inmediatamente otros **10 años de vida operativa ininterrumpida** antes de tener que preocuparte de nada más nuevamente.
+En el **Mes 23**, cuando la base de datos entre en modo Read-Only:
 
-Esa es la genialidad detrás de aplicar estos 8 Trucos Extremos de Arquitectura desde el Día 1. Transformas un gasto técnico paralizante de Cloud Computing en un insignificante trámite administrativo.
+| Métrica | Valor en el Punto de Quiebre |
+| :--- | :--- |
+| Ingresos mensuales por suscripciones SaaS | **$7,500 USD** |
+| Costo del Upgrade a Supabase Pro | **$25 USD/mes** |
+| Proporción del costo sobre los ingresos | **0.33%** |
+| Nueva capacidad de Base de Datos | **8 GB (8,192 MB)** |
+| Autonomía proyectada con 8 GB | **> 10 años adicionales** |
+
+El acto resolutorio es un clic administrativo en el dashboard de Supabase: `Upgrade to Pro`. El gasto de $25 USD/mes pasa a ser una línea insignificante del OPEX mensual frente a los $7,500 USD de ingresos recurrentes que la plataforma generará en ese momento.
+
+> **Conclusión Arquitectónica:** La implementación de estas 8 tácticas desde el Día 1 transforma un potencial gasto paralizante de Cloud Computing en un trámite administrativo irrelevante, ejecutable en el momento exacto en que el negocio genera ingresos suficientes para absorberlo sin impacto financiero.
