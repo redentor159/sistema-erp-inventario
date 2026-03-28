@@ -14,7 +14,8 @@
 4. [Categoría B — Arquitectura de Base de Datos (PostgreSQL)](#4-categoría-b--arquitectura-de-base-de-datos)
 5. [Categoría C — Caché, Red y Operaciones Masivas](#5-categoría-c--caché-red-y-operaciones-masivas)
 6. [Categoría D — Storage, Monetización y Seguridad Multi-Tenant](#6-categoría-d--storage-monetización-y-seguridad-multi-tenant)
-7. [Escenario de Falla Estructural (Día del Juicio)](#7-escenario-de-falla-estructural)
+7. [Categoría E — Operaciones y Observabilidad Multi-Tenant](#7-categoría-e--operaciones-y-observabilidad-multi-tenant)
+8. [Escenario de Falla Estructural (Día del Juicio)](#8-escenario-de-falla-estructural)
 
 ---
 
@@ -22,7 +23,7 @@
 
 Este documento define la estrategia técnica completa para operar un ERP SaaS B2B Multi-Tenant con costos de infraestructura cercanos a **$0 USD** durante los primeros **23 meses** de operación comercial. La arquitectura explota las asimetrías de transferencia de datos entre Vercel (Capa Frontal CDN) y Supabase/PostgreSQL (Capa de Persistencia), neutralizando los límites duros de cómputo, almacenamiento, conexiones y ancho de banda.
 
-El documento agrupa **8 tácticas de ingeniería** en 4 categorías temáticas, diferenciando claramente las que **ya están operativas** de las que **requieren implementación** antes del lanzamiento SaaS, ordenadas por prioridad de riesgo.
+El documento agrupa **10 tácticas de ingeniería** en 5 categorías temáticas, diferenciando claramente las que **ya están operativas** de las que **requieren implementación** antes del lanzamiento SaaS, ordenadas por prioridad de riesgo.
 
 ---
 
@@ -45,6 +46,8 @@ Esta tabla consolida todas las tácticas del documento, ordena por criticidad de
 | **P3 (Baja)** | 🕒 Pendiente | C2 | RPC Batching (Inserciones Masivas) | Caché/Red | Rate Limiting / Flagging DDOS | Baneo de IP al importar catálogos Excel |
 | **P3 (Baja)** | 🕒 Pendiente | B4 | `VACUUM FULL` Programado (Desfragmentación) | Base de Datos | 500 MB de DB invadidos por Tuplas Muertas | Llenado fantasma del disco sin datos reales |
 | **P3 (Baja)** | 🕒 Pendiente | D3 | Cloudflare R2 para Catálogo de Imágenes | Storage | 1,000 optimizaciones de imagen Vercel | Fotos rotas con error `402 Payment Required` |
+| **P2 (Media)** | 🕒 Pendiente | E1 | Protección contra "Noisy Neighbor" | Operaciones | Egress/CPU monopolizado por 1 tenant | Degradación de servicio para todos los tenants |
+| **P2 (Media)** | 🕒 Pendiente | E2 | Observabilidad Multi-Tenant (Logs con `tenant_id`) | Operaciones | Debugging ciego sin contexto de tenant | Incapacidad de diagnosticar problemas por empresa |
 
 ---
 
@@ -293,7 +296,58 @@ erDiagram
 
 ---
 
-## 7. Escenario de Falla Estructural
+## 7. Categoría E — Operaciones y Observabilidad Multi-Tenant
+
+Tácticas que garantizan la capacidad del operador SaaS para diagnosticar problemas, proteger la calidad del servicio entre tenants y monitorear el consumo de recursos por empresa.
+
+### E1. Protección contra "Noisy Neighbor" — 🕒 Pendiente (P2)
+
+*   **Escenario de Riesgo:** Un tenant ejecuta un script automatizado que realiza 10,000 consultas por minuto (ej. un bot que extrae datos por API), consumiendo la cuota de Egress de Supabase (5 GB) y saturando el Connection Pooler. Los demás tenants experimentan timeouts y lentitud.
+*   **Mitigación Nativa:** Supabase PostgREST incluye rate limiting por IP. Sin embargo, si múltiples operarios de un mismo tenant se conectan desde diferentes IPs, el rate limit no agrupa por `tenant_id`.
+*   **Solución Complementaria:**
+    1. **Monitoreo:** Consultar `pg_stat_statements` periódicamente para detectar tenants con número anormal de queries.
+    2. **Alerta:** Configurar notificación (email/PostHog) si un tenant supera 5,000 queries/hora.
+    3. **Acción:** Contactar al tenant y, si persiste, aplicar suspensión temporal (`estado_suscripcion = 'SUSPENDIDO'`).
+
+```sql
+-- Consulta para detectar tenants con alto consumo
+SELECT 
+  tenant_id,
+  COUNT(*) as total_queries,
+  MAX(created_at) as ultima_actividad
+FROM audit_log  -- tabla de logs opcional
+WHERE created_at > now() - interval '1 hour'
+GROUP BY tenant_id
+ORDER BY total_queries DESC
+LIMIT 10;
+```
+
+### E2. Observabilidad Multi-Tenant (Logs con `tenant_id`) — 🕒 Pendiente (P2)
+
+*   **Escenario de Riesgo:** Un operario del Taller C reporta que "las cotizaciones no cargan". Sin `tenant_id` en los logs del frontend, el admin SaaS debe revisar **todos** los errores de **todos** los tenants para encontrar el problema.
+*   **Solución:**
+    1. **Frontend:** Inyectar `tenant_id` en todos los mensajes de error del `errorHandler.ts`.
+    2. **PostHog:** Si se implementa PostHog (táctica A4), registrar `tenant_id` como propiedad de cada evento para filtrar dashboards por empresa.
+    3. **Supabase Logs:** Los logs nativos de Supabase ya incluyen el `user_id` del JWT, que se puede cruzar con `user_tenants` para identificar el tenant afectado.
+
+```typescript
+// lib/utils/errorHandler.ts — Inyección de tenant_id
+export function handleError(error: Error, context?: string) {
+  const tenantId = getJwtClaim('tenant_id'); // extraer del JWT decodificado
+  console.error(`[Tenant: ${tenantId}] [${context}]`, error.message);
+  
+  // Si PostHog está activo, enviar evento con tenant_id
+  posthog?.capture('error_occurred', {
+    tenant_id: tenantId,
+    error_message: error.message,
+    context: context,
+  });
+}
+```
+
+---
+
+## 8. Escenario de Falla Estructural
 
 Incluso con los 8 tácticas configuradas correctamente, existe un límite físico absoluto e infranqueable: los **500 MB de capacidad de la Base de Datos SQL** en el tier Free de Supabase.
 
@@ -345,4 +399,4 @@ En el **Mes 23**, cuando la base de datos entre en modo Read-Only:
 
 El acto resolutorio es un clic administrativo en el dashboard de Supabase: `Upgrade to Pro`. El gasto de $25 USD/mes pasa a ser una línea insignificante del OPEX mensual frente a los $7,500 USD de ingresos recurrentes que la plataforma generará en ese momento.
 
-> **Conclusión Arquitectónica:** La implementación de estas 8 tácticas desde el Día 1 transforma un potencial gasto paralizante de Cloud Computing en un trámite administrativo irrelevante, ejecutable en el momento exacto en que el negocio genera ingresos suficientes para absorberlo sin impacto financiero.
+> **Conclusión Arquitectónica:** La implementación de estas 10 tácticas desde el Día 1 transforma un potencial gasto paralizante de Cloud Computing en un trámite administrativo irrelevante, ejecutable en el momento exacto en que el negocio genera ingresos suficientes para absorberlo sin impacto financiero.

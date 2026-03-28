@@ -15,6 +15,10 @@
 5. [Matriz de Amenazas y Contramedidas de Seguridad](#5-matriz-de-amenazas-y-contramedidas)
 6. [Operaciones Administrativas sobre Tenants](#6-operaciones-administrativas)
 7. [Plan de Migración Detallado (Roadmap Técnico)](#7-plan-de-migración-detallado)
+8. [Implementación del Auth Hook (Custom JWT Claims)](#8-implementación-del-auth-hook)
+9. [Ciclo de Vida del Tenant (Suspensión / Reactivación)](#9-ciclo-de-vida-del-tenant)
+10. [Flujo de Onboarding Self-Service](#10-flujo-de-onboarding-self-service)
+11. [Restricciones de `output: 'export'` para SaaS](#11-restricciones-de-output-export-para-saas)
 
 ---
 
@@ -125,7 +129,8 @@ sequenceDiagram
 ```mermaid
 erDiagram
     sys_tenants ||--o{ sys_configuracion_tenant : "configura"
-    sys_tenants ||--o{ auth_users : "emplea"
+    sys_tenants ||--o{ user_tenants : "registra"
+    auth_users ||--o{ user_tenants : "pertenece"
     sys_tenants ||--o{ trx_cotizaciones : "genera"
     sys_tenants ||--o{ trx_entradas : "registra"
     sys_tenants ||--o{ trx_salidas : "despacha"
@@ -138,8 +143,20 @@ erDiagram
         text nombre_empresa
         text ruc
         text plan_suscripcion
-        text estado_suscripcion
-        timestamp created_at
+        text estado_suscripcion "TRIAL ACTIVO SUSPENDIDO CANCELADO"
+        integer dias_gracia "default 15"
+        timestamptz suspended_at "nullable"
+        timestamptz deleted_at "nullable soft-delete"
+        timestamptz created_at
+    }
+
+    user_tenants {
+        uuid id PK
+        uuid user_id FK "auth.users"
+        uuid tenant_id FK "sys_tenants"
+        text rol "admin operador visor"
+        boolean is_active "default true"
+        timestamptz created_at
     }
 
     sys_configuracion_tenant {
@@ -154,9 +171,7 @@ erDiagram
 
     auth_users {
         uuid id PK
-        uuid tenant_id FK
         text email
-        text rol
     }
 
     trx_cotizaciones {
@@ -196,14 +211,14 @@ erDiagram
         uuid id PK
         uuid tenant_id FK
         text tipo_entrada
-        timestamp fecha
+        timestamptz fecha
     }
 
     trx_salidas {
         uuid id PK
         uuid tenant_id FK
         text tipo_salida
-        timestamp fecha
+        timestamptz fecha
     }
 ```
 
@@ -222,8 +237,9 @@ erDiagram
 | `public` | `mst_materiales` | Evaluar: ¿Global o por Tenant? | 🟡 Media |
 | `public` | `mst_acabados_colores` | Evaluar: ¿Global o por Tenant? | 🟡 Media |
 | `public` | `mst_marcas` | Evaluar: ¿Global o por Tenant? | 🟡 Media |
-| — | `sys_tenants` | **CREAR NUEVA** | 🔴 Crítica |
+| — | `sys_tenants` | **CREAR NUEVA** (con estados de suscripción y soft-delete) | 🔴 Crítica |
 | — | `sys_configuracion_tenant` | **CREAR NUEVA** (migrar datos de config actual) | 🔴 Crítica |
+| — | `user_tenants` | **CREAR NUEVA** (junction table usuario ↔ tenant con rol) | 🔴 Crítica |
 
 ---
 
@@ -358,31 +374,45 @@ No se puede usar el botón genérico "Exportar base de datos" (descargaría dato
 ```mermaid
 graph TD
     subgraph Fase_1["Fase 1: Estructura de Datos"]
-        A["Crear tabla sys_tenants"] --> B["Crear tabla sys_configuracion_tenant"]
+        A["Crear tabla sys_tenants"] --> A2["Crear tabla user_tenants"]
+        A2 --> B["Crear tabla sys_configuracion_tenant"]
         B --> C["ALTER TABLE: Añadir tenant_id<br/>a ~13 tablas existentes"]
     end
 
     subgraph Fase_2["Fase 2: Migración de Datos"]
         C --> D["Crear 'Empresa Cero'<br/>(Tu propia carpintería)"]
-        D --> E["UPDATE masivo: Asignar tenant_id<br/>a todos los registros existentes"]
+        D --> D2["Crear registro en user_tenants<br/>para tu usuario actual"]
+        D2 --> E["UPDATE masivo: Asignar tenant_id<br/>a todos los registros existentes"]
     end
 
-    subgraph Fase_3["Fase 3: Seguridad"]
-        E --> F["Inyectar tenant_id en JWT<br/>(Supabase Auth Hook)"]
-        F --> G["Borrar políticas RLS antiguas"]
+    subgraph Fase_3["Fase 3: Auth Hook"]
+        E --> F["Crear función custom_access_token_hook<br/>(Sección 8)"]
+        F --> F2["Configurar hook en Dashboard<br/>Auth → Hooks → Custom Access Token"]
+    end
+
+    subgraph Fase_4["Fase 4: Seguridad RLS"]
+        F2 --> G["Borrar políticas RLS antiguas"]
         G --> H["Crear nuevas políticas RLS Multi-Tenant"]
-        H --> I["Crear índices B-Tree<br/>sobre tenant_id en cada tabla"]
+        H --> H2["Crear políticas de suspensión<br/>(Sección 9)"]
+        H2 --> I["Crear índices B-Tree<br/>sobre tenant_id en cada tabla"]
     end
 
-    subgraph Fase_4["Fase 4: Frontend"]
+    subgraph Fase_5["Fase 5: Frontend"]
         I --> J["Ajustar formula-engine.ts<br/>Respetar scope del Tenant"]
-        J --> K["Actualizar módulo de Configuración<br/>Leer desde sys_configuracion_tenant"]
+        J --> J2["Crear TenantGuard component<br/>(Verificar estado_suscripcion)"]
+        J2 --> K["Actualizar módulo de Configuración<br/>Leer desde sys_configuracion_tenant"]
     end
 
-    subgraph Fase_5["Fase 5: Validación"]
-        K --> L["Crear 2 empresas de prueba"]
+    subgraph Fase_6["Fase 6: Onboarding"]
+        K --> K2["Crear flujo de Onboarding<br/>(Sección 10)"]
+        K2 --> K3["Script de Seed para<br/>nuevos tenants"]
+    end
+
+    subgraph Fase_7["Fase 7: Validación"]
+        K3 --> L["Crear 2 empresas de prueba"]
         L --> M["Tests Playwright: Cotizar en paralelo<br/>Validar aislamiento cruzado"]
-        M --> N["✅ Sistema Multi-Tenant Operativo"]
+        M --> M2["Test: Suspender tenant y verificar<br/>bloqueo de escritura"]
+        M2 --> N["✅ Sistema Multi-Tenant Operativo"]
     end
 ```
 
@@ -390,11 +420,230 @@ graph TD
 
 | Fase | Descripción | Archivos Afectados | Estimación | Riesgo de Regresión |
 | :---: | :--- | :---: | :---: | :---: |
-| **1** | Estructura de Datos (DDL) | ~3 archivos SQL | 2-3 horas | 🟢 Bajo |
-| **2** | Migración de Datos (DML) | ~2 scripts SQL | 1-2 horas | 🟡 Medio |
-| **3** | Seguridad (RLS + Índices) | ~15 archivos SQL | 3-4 horas | 🔴 Alto |
-| **4** | Frontend (Ajustes React) | ~5 componentes TSX | 2-3 horas | 🟡 Medio |
-| **5** | Validación (Tests E2E) | ~3 archivos de test | 2-3 horas | 🟢 Bajo |
-| **Total** | — | **~28 archivos** | **10-15 horas** | — |
+| **1** | Estructura de Datos (DDL) | ~4 archivos SQL | 2-3 horas | 🟢 Bajo |
+| **2** | Migración de Datos (DML) | ~3 scripts SQL | 1-2 horas | 🟡 Medio |
+| **3** | Auth Hook (JWT Custom Claims) | ~2 archivos SQL | 1 hora | 🟡 Medio |
+| **4** | Seguridad (RLS + Índices + Suspensión) | ~15 archivos SQL | 3-4 horas | 🔴 Alto |
+| **5** | Frontend (Guards + Config) | ~7 componentes TSX | 3-4 horas | 🟡 Medio |
+| **6** | Onboarding (Seed + Flujo) | ~3 archivos | 2-3 horas | 🟢 Bajo |
+| **7** | Validación (Tests E2E) | ~4 archivos de test | 2-3 horas | 🟢 Bajo |
+| **Total** | — | **~38 archivos** | **14-20 horas** | — |
 
-> **Nota Operativa:** El grueso del trabajo es SQL puro (Fases 1-3). El frontend de React casi no se modifica porque RLS opera de forma transparente: el código React sigue haciendo `supabase.from('cotizaciones').select('*')` como siempre, pero ahora la base de datos filtra automáticamente por `tenant_id` sin que el frontend lo sepa. El código permanece "ciego" al hecho de que existen otros tenants en el sistema.
+> **Nota Operativa:** El grueso del trabajo es SQL puro (Fases 1-4). El frontend de React casi no se modifica porque RLS opera de forma transparente: el código React sigue haciendo `supabase.from('cotizaciones').select('*')` como siempre, pero ahora la base de datos filtra automáticamente por `tenant_id` sin que el frontend lo sepa.
+
+---
+
+## 8. Implementación del Auth Hook
+
+### 8.1. Función `custom_access_token_hook` (PL/pgSQL)
+
+Esta función se ejecuta automáticamente cada vez que Supabase emite o refresca un JWT. Inyecta el `tenant_id` del usuario activo en los claims del token.
+
+```sql
+-- Función que inyecta tenant_id en el JWT
+CREATE OR REPLACE FUNCTION public.custom_access_token_hook(event jsonb)
+RETURNS jsonb
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  claims jsonb;
+  v_tenant_id text;
+  v_rol text;
+BEGIN
+  -- Buscar el tenant activo del usuario en la junction table
+  SELECT ut.tenant_id::text, ut.rol INTO v_tenant_id, v_rol
+  FROM public.user_tenants ut
+  WHERE ut.user_id = (event->>'user_id')::uuid
+    AND ut.is_active = true
+  LIMIT 1;
+
+  claims := event->'claims';
+
+  -- Inyectar tenant_id y rol en los claims del JWT
+  IF v_tenant_id IS NOT NULL THEN
+    claims := jsonb_set(claims, '{tenant_id}', to_jsonb(v_tenant_id));
+    claims := jsonb_set(claims, '{tenant_rol}', to_jsonb(v_rol));
+  END IF;
+
+  RETURN jsonb_set(event, '{claims}', claims);
+END;
+$$;
+
+-- Permisos de seguridad (OBLIGATORIO)
+GRANT EXECUTE ON FUNCTION public.custom_access_token_hook TO supabase_auth_admin;
+GRANT USAGE ON SCHEMA public TO supabase_auth_admin;
+REVOKE EXECUTE ON FUNCTION public.custom_access_token_hook FROM authenticated, anon, public;
+```
+
+### 8.2. Activación en Supabase Dashboard
+
+**Ruta:** `Authentication → Hooks → Custom Access Token → Seleccionar función → custom_access_token_hook`
+
+### 8.3. SQL de la Junction Table `user_tenants`
+
+```sql
+CREATE TABLE public.user_tenants (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES sys_tenants(id) ON DELETE CASCADE,
+  rol TEXT NOT NULL DEFAULT 'operador' CHECK (rol IN ('admin', 'operador', 'visor')),
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(user_id, tenant_id)
+);
+
+ALTER TABLE public.user_tenants ENABLE ROW LEVEL SECURITY;
+
+-- Solo el Auth Hook (service_role) puede leer esta tabla
+CREATE POLICY "service_role_only"
+ON public.user_tenants FOR SELECT
+USING (auth.role() = 'service_role');
+```
+
+> **Nota de Seguridad:** La tabla `user_tenants` NO debe ser accesible desde el frontend. Solo el Auth Hook (que corre con `supabase_auth_admin`) y funciones administrativas con `service_role` deben poder leerla. Un usuario normal nunca debe poder ver a qué otros tenants pertenecen otros usuarios.
+
+---
+
+## 9. Ciclo de Vida del Tenant
+
+### 9.1. Máquina de Estados
+
+```mermaid
+graph LR
+    T["TRIAL"] -->|"Primer pago recibido"| A["ACTIVO"]
+    A -->|"Pago vencido + 15 días gracia"| S["SUSPENDIDO"]
+    S -->|"Pago recibido"| A
+    S -->|"30 días sin pago"| C["CANCELADO"]
+    C -->|"Solicita reactivación + paga"| A
+    C -->|"90 días sin actividad"| D["ELIMINADO"]
+```
+
+### 9.2. Comportamiento por Estado
+
+| Estado | Login | SELECT | INSERT/UPDATE/DELETE | Facturación | Retención de Datos |
+| :--- | :---: | :---: | :---: | :--- | :--- |
+| **TRIAL** | ✅ | ✅ | ✅ | Gratis (7-14 días) | Activa |
+| **ACTIVO** | ✅ | ✅ | ✅ | Suscripción vigente | Activa |
+| **SUSPENDIDO** | ✅ | ✅ (solo lectura) | ❌ Bloqueado por RLS | Pago vencido, gracia 15 días | Activa |
+| **CANCELADO** | ❌ | ❌ | ❌ | Sin cobro | 90 días (soft-delete) |
+| **ELIMINADO** | ❌ | ❌ | ❌ | N/A | `DELETE CASCADE` ejecutado |
+
+### 9.3. Política RLS de Suspensión
+
+```sql
+-- Permitir INSERT/UPDATE/DELETE solo si el tenant está ACTIVO o en TRIAL
+CREATE POLICY "active_tenant_write"
+ON trx_cotizaciones FOR INSERT
+WITH CHECK (
+  tenant_id = (auth.jwt() ->> 'tenant_id')::uuid
+  AND EXISTS (
+    SELECT 1 FROM sys_tenants
+    WHERE id = (auth.jwt() ->> 'tenant_id')::uuid
+    AND estado_suscripcion IN ('ACTIVO', 'TRIAL')
+  )
+);
+
+-- SELECT siempre permitido para ACTIVO, TRIAL y SUSPENDIDO (read-only)
+CREATE POLICY "tenant_read"
+ON trx_cotizaciones FOR SELECT
+USING (
+  tenant_id = (auth.jwt() ->> 'tenant_id')::uuid
+);
+```
+
+### 9.4. Guard Client-Side (React)
+
+Como la app usa `output: 'export'` (sin Middleware server-side), el bloqueo de acceso para tenants suspendidos se implementa con un componente React:
+
+```tsx
+// components/dashboard/TenantGuard.tsx
+function TenantGuard({ children }) {
+  const [estado, setEstado] = useState(null);
+
+  useEffect(() => {
+    supabase.from('sys_tenants')
+      .select('estado_suscripcion')
+      .eq('id', tenantId)
+      .single()
+      .then(({ data }) => setEstado(data?.estado_suscripcion));
+  }, []);
+
+  if (estado === 'SUSPENDIDO') return <SuspensionScreen />;
+  if (estado === 'CANCELADO') return <CancellationScreen />;
+  return children;
+}
+```
+
+---
+
+## 10. Flujo de Onboarding Self-Service
+
+### 10.1. Secuencia Completa de Provisioning
+
+```mermaid
+sequenceDiagram
+    participant Admin as Admin SaaS (Tú)
+    participant DB as Supabase Dashboard
+    participant Auth as Supabase Auth
+    participant Hook as Auth Hook
+    participant New as Nuevo Admin del Taller
+
+    rect rgb(230, 240, 255)
+    Note over Admin, New: Provisioning de Nuevo Tenant
+    Admin->>DB: INSERT INTO sys_tenants (nombre, ruc, estado = 'TRIAL')
+    Admin->>DB: INSERT INTO sys_configuracion_tenant (defaults)
+    Admin->>Auth: Crear usuario (email + password temporal)
+    Admin->>DB: INSERT INTO user_tenants (user_id, tenant_id, rol = 'admin')
+    Admin->>DB: Ejecutar Script de Seed (catálogo base, almacén default)
+    Admin->>New: Enviar email de bienvenida por WhatsApp
+    end
+
+    rect rgb(220, 255, 220)
+    Note over Admin, New: Primer Login del Nuevo Tenant
+    New->>Auth: Login (email + password temporal)
+    Auth->>Hook: custom_access_token_hook ejecutado
+    Hook-->>Auth: JWT con tenant_id inyectado
+    Auth-->>New: Sesión activa con tenant_id en claims
+    New->>DB: Pantalla Configurar Empresa (logo, razón social)
+    New->>DB: Cambiar contraseña temporal
+    Note over New: Dashboard operativo listo
+    end
+```
+
+### 10.2. Script de Seed para Nuevos Tenants
+
+Cada nuevo tenant debe recibir datos iniciales para poder operar desde el primer día:
+
+| Dato Semilla | Tabla | Cantidad Aproximada | Origen |
+| :--- | :--- | :---: | :--- |
+| Catálogo de perfiles base | `cat_productos` (Global) | ~500 SKUs | Ya existen como `tenant_id = NULL` |
+| Almacén por defecto | `mst_almacenes` | 1 | Script de seed |
+| Configuración inicial | `sys_configuracion_tenant` | 1 registro | Defaults (moneda = PEN, etc.) |
+| Familias de materiales | `mst_familias` (Global) | ~10 | Ya existen como globales |
+
+---
+
+## 11. Restricciones de `output: 'export'` para SaaS
+
+### 11.1. Funcionalidades Afectadas
+
+La directiva `output: 'export'` en `next.config.ts` elimina el runtime de servidor Node.js. Esto tiene implicaciones directas para la arquitectura multi-tenant:
+
+| Funcionalidad | Con SSR (Next.js Normal) | Con `output: 'export'` (Tu Caso) | Workaround Implementado |
+| :--- | :---: | :---: | :--- |
+| Middleware (interceptar requests) | ✅ Nativo | ❌ No disponible | `TenantGuard` React component |
+| Subdominios (`taller-a.tuapp.com`) | ✅ Middleware | ❌ No disponible | URL única: `tuapp.com/login` |
+| Auth check server-side | ✅ `getServerSideProps` | ❌ No disponible | Auth check Client-Side con `useEffect` |
+| Protección de rutas | ✅ Server Middleware | ❌ No disponible | `ProtectedRoute` React component |
+| SEO por tenant | ✅ Meta tags dinámicos | ❌ No disponible | N/A (ERP B2B no necesita SEO) |
+| Detección de tenant | ✅ `req.headers.host` | ❌ No disponible | JWT claim `tenant_id` vía Auth Hook |
+
+### 11.2. Por Qué Funciona para Tu Caso de Uso
+
+1. **Es un ERP B2B privado**, no un landing page pública. No necesita SEO por tenant.
+2. **Todos los usuarios se loguean en la misma URL** (`tuapp.com/login`). No se requieren subdominios.
+3. **El `tenant_id` viaja en el JWT**, no en el hostname. El Auth Hook resuelve la identificación del tenant.
+4. **RLS hace todo el filtrado a nivel de BD**, no de servidor. El frontend es "ciego" al multi-tenancy.
+5. **Guards Client-Side son suficientes** porque un usuario que manipule el frontend no puede evadir RLS.
+
+> **Decisión Arquitectónica Documentada:** Se acepta la ausencia de Middleware server-side como trade-off consciente a cambio de hosting gratuito ilimitado en Vercel CDN ($0/mes). La seguridad de datos está garantizada por RLS a nivel de motor PostgreSQL, que es una capa más baja y segura que cualquier middleware de aplicación.

@@ -259,3 +259,37 @@ graph TD
 | SMTP (Resend.com) | S/ 0 | Mensual | ✅ |
 | RUC SUNAT | S/ 0 | Único | ✅ |
 | **Total Inversión Inicial** | **~S/ 40** | — | — |
+
+---
+
+## 8. Requisitos Legales para Operar como SaaS B2B
+
+### 8.1. Documentos Obligatorios
+
+Cualquier SaaS B2B que almacene datos de terceros en Perú necesita documentación legal mínima antes de firmar contratos comerciales:
+
+| Documento | Propósito | ¿Cuándo? | Complejidad |
+| :--- | :--- | :--- | :---: |
+| **Términos de Servicio (ToS)** | Define responsabilidades, límites de servicio, derecho a suspender por falta de pago, SLA (uptime) | Antes del primer cliente | 🟡 Media |
+| **Política de Privacidad** | Explica cómo se almacenan, protegen y procesan datos personales | Antes del primer cliente | 🟡 Media |
+| **Acuerdo de Procesamiento de Datos (DPA)** | Si un taller almacena datos de *sus* clientes (nombre, RUC, teléfono) en tu sistema, tú eres "encargado del tratamiento" bajo la Ley 29733 | Antes de tener 5+ clientes | 🟠 Alta |
+
+### 8.2. Marco Legal Peruano Aplicable
+
+| Norma | Relevancia para tu SaaS |
+| :--- | :--- |
+| **Ley 29733** (Protección de Datos Personales) | Regula el tratamiento de datos de los clientes de tus clientes |
+| **D.S. 003-2013-JUS** (Reglamento) | Define obligaciones del "encargado del tratamiento" |
+| **Ley 27269** (Firmas y Certificados Digitales) | Aplica si implementas firma digital en cotizaciones |
+| **Código de Protección al Consumidor** | Aplica a tu relación con los talleres como clientes SaaS |
+
+### 8.3. Contenido Mínimo de los Términos de Servicio
+
+- Descripción del servicio y niveles de disponibilidad (SLA informativo: "99% uptime")
+- Derecho del proveedor a suspender acceso por falta de pago (alineado con Sección 9 del Doc 18)
+- Periodo de gracia antes de eliminación de datos (15 días suspensión → 90 días cancelado)
+- Propiedad intelectual: los datos del taller son propiedad del taller, no del proveedor SaaS
+- Exportación de datos: el taller puede solicitar exportación de sus datos en formato estándar (`.xlsx`, `.csv`)
+- Jurisdicción: Chiclayo, Perú. Tribunales competentes locales
+
+> **Acción Inmediata:** Generar una versión inicial de ToS y Política de Privacidad usando plantillas B2B adaptadas a Perú. Publicarlas como página estática en `/terminos` y `/privacidad` del ERP.
