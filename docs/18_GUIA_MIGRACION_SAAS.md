@@ -281,6 +281,40 @@ WITH CHECK ( tenant_id = (auth.jwt() ->> 'tenant_id')::uuid );
 | T3 | **Exposición del `SERVICE_ROLE_KEY`** | La clave `SERVICE_ROLE_KEY` (que bypasea todo RLS) se importa en un archivo `"use client"` del frontend, quedando visible en el navegador. | 🟡 Baja | 🔴 Catastrófico | Key restringida exclusivamente a archivos Server-Side (`server.ts`, API Routes). Auditoría previa confirmó ausencia de exposición. | ✅ |
 | T4 | **Concurrencia de Inventario Global** | Dos tenants venden el mismo producto "Global" simultáneamente. El Kardex resta de un stock compartido inexistente. | 🟡 Baja | 🟠 Alto | El Kardex y el inventario son **siempre 100% por tenant** (`tenant_id` obligatorio). El catálogo puede ser global, pero el stock físico es local. | ✅ |
 | T5 | **Omisión de `tenant_id` en INSERT** | Un bug en el frontend crea una cotización sin asignar `tenant_id`, generando un registro "huérfano" visible para nadie o para todos. | 🟠 Media | 🟠 Alto | Restricción `NOT NULL` en la columna `tenant_id` + Trigger que auto-inyecta el `tenant_id` del JWT en cada INSERT. | 🕒 |
+| T6 | **Colisión de Email Único Global en Auth** | Supabase Auth impone un índice `UNIQUE` global sobre `email` en `auth.users`. Si la Carpintería A registra `juan@gmail.com`, la Carpintería B **no puede** registrar a un empleado diferente con el mismo email. Viola la promesa de aislamiento multi-tenant. | 🟠 Media | 🟠 Alto | Diseñar el onboarding con un **selector de tenant**: un mismo email puede pertenecer a múltiples tenants. El `tenant_id` se asigna vía Auth Hook (Custom JWT Claim), no vía usuario duplicado. Si un consultor trabaja para 2 talleres, se le presenta un selector de empresa al iniciar sesión. | 🕒 |
+| T7 | **Enumeración de Emails (Email Enumeration Attack)** | Un atacante usa el formulario de registro o recuperación de contraseña para descubrir qué emails están registrados en el sistema. `supabase.auth.signUp({email})` devuelve un error diferente si el email ya existe vs. si no existe, exponiendo la existencia de cuentas de otros tenants. | 🟠 Media | 🟡 Medio | Activar **"Enable email enumeration protection"** en Supabase Dashboard → Auth Settings → Email. Con esta opción activa, Supabase devuelve la misma respuesta genérica sin importar si el email existe o no, bloqueando la fuga de información. | 🕒 |
+
+### 5.1. Detalle de Mitigación: T6 — Email Compartido entre Tenants
+
+```mermaid
+sequenceDiagram
+    participant U as Operario (juan@gmail.com)
+    participant Auth as Supabase Auth
+    participant Hook as Auth Hook (Custom JWT)
+    participant App as ERP SaaS
+
+    rect rgb(230, 240, 255)
+    Note over U, App: Escenario: Juan trabaja para Carpintería A y B simultáneamente
+    U->>Auth: Login (juan@gmail.com + password)
+    Auth->>Hook: Buscar tenants asociados a este user_id
+    Hook-->>Auth: tenant_ids = ['uuid-A', 'uuid-B']
+    Auth-->>U: JWT con lista de tenants disponibles
+    U->>App: Pantalla "Seleccionar Empresa"
+    App-->>U: [Carpintería A] [Carpintería B]
+    U->>App: Selecciona "Carpintería B"
+    App->>Auth: Refresh JWT con tenant_id = 'uuid-B'
+    Note over App: RLS filtra todo por tenant_id = 'uuid-B'
+    end
+```
+
+### 5.2. Detalle de Mitigación: T7 — Protección contra Enumeración
+
+**Ruta en Supabase Dashboard:** `Authentication → Email Auth → Enable email enumeration protection`
+
+| Configuración | Comportamiento al hacer `signUp` con email existente | Riesgo |
+| :--- | :--- | :---: |
+| **Protección DESACTIVADA** (default) | Devuelve error específico: *"User already registered"* | 🔴 Fuga de información |
+| **Protección ACTIVADA** (recomendado) | Devuelve respuesta genérica idéntica a un registro exitoso | 🟢 Sin fuga |
 
 ---
 
