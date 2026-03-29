@@ -2,8 +2,12 @@
 
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import PrintClient from "./client";
+import dynamic from 'next/dynamic';
 
+const PrintClient = dynamic(() => import("./client"), {
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center p-12">Cargando módulo de impresión...</div>
+});
 function PrintInner() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");

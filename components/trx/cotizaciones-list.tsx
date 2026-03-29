@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -25,11 +25,20 @@ import { useTableSort } from "@/hooks/useTableSort";
 
 export function CotizacionesList() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const toast = useToastHelper();
-  const [data, setData] = useState<CotizacionListItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  const { data: queryData, isLoading: loading, refetch: loadData } = useQuery({
+    queryKey: ["cotizacionesList"],
+    queryFn: async () => {
+      const res = await cotizacionesApi.getCotizaciones();
+      return res || [];
+    },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
 
+  const data = queryData || [];
+  
+  const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(50);
 
@@ -45,21 +54,6 @@ export function CotizacionesList() {
 
   const totalPages = Math.ceil(sortedCotizaciones.length / pageSize);
   const paginatedData = sortedCotizaciones.slice(page * pageSize, (page + 1) * pageSize);
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  async function loadData() {
-    try {
-      const res = await cotizacionesApi.getCotizaciones();
-      setData(res || []);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   async function handleCreate() {
     try {
@@ -218,6 +212,13 @@ export function CotizacionesList() {
                 <tr
                   key={row.id_cotizacion}
                   className="border-b border-slate-100/80 hover:bg-slate-50 transition-colors cursor-pointer"
+                  onMouseEnter={() => {
+                    queryClient.prefetchQuery({
+                      queryKey: ["cotizacion", row.id_cotizacion],
+                      queryFn: () => cotizacionesApi.getCotizacionById(row.id_cotizacion),
+                      staleTime: 1000 * 60 * 5,
+                    });
+                  }}
                   onClick={() =>
                     router.push(`/cotizaciones/detalle?id=${row.id_cotizacion}`)
                   }
@@ -281,6 +282,13 @@ export function CotizacionesList() {
             <div
               key={row.id_cotizacion}
               className="bg-white rounded-lg p-4 flex flex-col gap-3 shadow-sm ring-1 ring-slate-900/5 hover:bg-slate-50 transition-colors cursor-pointer"
+              onMouseEnter={() => {
+                queryClient.prefetchQuery({
+                  queryKey: ["cotizacion", row.id_cotizacion],
+                  queryFn: () => cotizacionesApi.getCotizacionById(row.id_cotizacion),
+                  staleTime: 1000 * 60 * 5,
+                });
+              }}
               onClick={() =>
                 router.push(`/cotizaciones/detalle?id=${row.id_cotizacion}`)
               }

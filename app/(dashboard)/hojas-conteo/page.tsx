@@ -32,7 +32,7 @@ import {
     type MasterData,
 } from "@/lib/export/hojas-conteo-queries";
 import { generateCountSheetExcel } from "@/lib/export/hojas-conteo-excel";
-import { generateCountSheetPDF } from "@/lib/export/hojas-conteo-pdf";
+// generateCountSheetPDF is loaded dynamically to avoid bundling @react-pdf/renderer on page load
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Preset card definitions
@@ -265,6 +265,7 @@ export default function HojasConteoPage() {
                 saveAs(blob, `${filename}.xlsx`);
                 setSuccessMsg(`Excel descargado: ${rows.length} productos`);
             } else {
+                const { generateCountSheetPDF } = await import("@/lib/export/hojas-conteo-pdf");
                 const blob = await generateCountSheetPDF(rows, config);
                 saveAs(blob, `${filename}.pdf`);
                 setSuccessMsg(`PDF descargado: ${rows.length} productos`);
