@@ -1,9 +1,4 @@
-import dynamic from 'next/dynamic';
-
-const PrintClient = dynamic(() => import("./client"), {
-  ssr: false, // Since it uses window.print() and heavy client logics
-  loading: () => <div className="flex items-center justify-center p-12">Cargando módulo de impresión...</div>
-});
+import { PrintClient } from "./wrapper";
 
 export async function generateStaticParams() {
   return [{ id: "placeholder" }];
